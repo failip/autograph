@@ -1,0 +1,429 @@
+{
+  "nodes": [
+    {
+      "key": "A",
+      "attributes": {
+        "name": "A",
+        "type": "species"
+      }
+    },
+    {
+      "key": "B",
+      "attributes": {
+        "name": "B",
+        "type": "species"
+      }
+    },
+    {
+      "key": "D",
+      "attributes": {
+        "name": "D",
+        "type": "species"
+      }
+    },
+    {
+      "key": "E",
+      "attributes": {
+        "name": "E",
+        "type": "species"
+      }
+    },
+    {
+      "key": "Y",
+      "attributes": {
+        "name": "Y",
+        "type": "species"
+      }
+    },
+    {
+      "key": "Z",
+      "attributes": {
+        "name": "Z",
+        "type": "species"
+      }
+    },
+    {
+      "key": "F",
+      "attributes": {
+        "name": "F",
+        "type": "species"
+      }
+    },
+    {
+      "key": "K",
+      "attributes": {
+        "name": "K",
+        "type": "species"
+      }
+    },
+    {
+      "key": "H",
+      "attributes": {
+        "name": "H",
+        "type": "species"
+      }
+    },
+    {
+      "key": "A => B",
+      "attributes": {
+        "name": "A => B",
+        "type": "reaction",
+        "weight": 6
+      }
+    },
+    {
+      "key": "B => A",
+      "attributes": {
+        "name": "B => A",
+        "type": "reaction",
+        "weight": 6
+      }
+    },
+    {
+      "key": "A => D + E",
+      "attributes": {
+        "name": "A => D + E",
+        "type": "reaction",
+        "weight": 1
+      }
+    },
+    {
+      "key": "D + E => A",
+      "attributes": {
+        "name": "D + E => A",
+        "type": "reaction",
+        "weight": 1
+      }
+    },
+    {
+      "key": "A => Y + Z",
+      "attributes": {
+        "name": "A => Y + Z",
+        "type": "reaction",
+        "weight": 2
+      }
+    },
+    {
+      "key": "Y + Z => A",
+      "attributes": {
+        "name": "Y + Z => A",
+        "type": "reaction",
+        "weight": 2
+      }
+    },
+    {
+      "key": "A => F",
+      "attributes": {
+        "name": "A => F",
+        "type": "reaction",
+        "weight": 4
+      }
+    },
+    {
+      "key": "F => A",
+      "attributes": {
+        "name": "F => A",
+        "type": "reaction",
+        "weight": 4
+      }
+    },
+    {
+      "key": "Z => B",
+      "attributes": {
+        "name": "Z => B",
+        "type": "reaction",
+        "weight": 3
+      }
+    },
+    {
+      "key": "B => Z",
+      "attributes": {
+        "name": "B => Z",
+        "type": "reaction",
+        "weight": 3
+      }
+    },
+    {
+      "key": "B + D => K",
+      "attributes": {
+        "name": "B + D => K",
+        "type": "reaction",
+        "weight": 1
+      }
+    },
+    {
+      "key": "K => B + D",
+      "attributes": {
+        "name": "K => B + D",
+        "type": "reaction",
+        "weight": 1
+      }
+    },
+    {
+      "key": "E + Z => F",
+      "attributes": {
+        "name": "E + Z => F",
+        "type": "reaction",
+        "weight": 2
+      }
+    },
+    {
+      "key": "F => E + Z",
+      "attributes": {
+        "name": "F => E + Z",
+        "type": "reaction",
+        "weight": 2
+      }
+    },
+    {
+      "key": "Y + Y => K",
+      "attributes": {
+        "name": "Y + Y => K",
+        "type": "reaction",
+        "weight": 4
+      }
+    },
+    {
+      "key": "K => Y + Y",
+      "attributes": {
+        "name": "K => Y + Y",
+        "type": "reaction",
+        "weight": 4
+      }
+    },
+    {
+      "key": "B + B => H",
+      "attributes": {
+        "name": "B + B => H",
+        "type": "reaction",
+        "weight": 3
+      }
+    },
+    {
+      "key": "H => B + B",
+      "attributes": {
+        "name": "H => B + B",
+        "type": "reaction",
+        "weight": 3
+      }
+    },
+    {
+      "key": "F + K => H",
+      "attributes": {
+        "name": "F + K => H",
+        "type": "reaction",
+        "weight": 1
+      }
+    },
+    {
+      "key": "H => F + K",
+      "attributes": {
+        "name": "H => F + K",
+        "type": "reaction",
+        "weight": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "A",
+      "target": "A => B"
+    },
+    {
+      "source": "A => B",
+      "target": "B"
+    },
+    {
+      "source": "B",
+      "target": "B => A"
+    },
+    {
+      "source": "B => A",
+      "target": "A"
+    },
+    {
+      "source": "A",
+      "target": "A => D + E"
+    },
+    {
+      "source": "A => D + E",
+      "target": "D"
+    },
+    {
+      "source": "A => D + E",
+      "target": "E"
+    },
+    {
+      "source": "D",
+      "target": "D + E => A"
+    },
+    {
+      "source": "E",
+      "target": "D + E => A"
+    },
+    {
+      "source": "D + E => A",
+      "target": "A"
+    },
+    {
+      "source": "A",
+      "target": "A => Y + Z"
+    },
+    {
+      "source": "A => Y + Z",
+      "target": "Y"
+    },
+    {
+      "source": "A => Y + Z",
+      "target": "Z"
+    },
+    {
+      "source": "Y",
+      "target": "Y + Z => A"
+    },
+    {
+      "source": "Z",
+      "target": "Y + Z => A"
+    },
+    {
+      "source": "Y + Z => A",
+      "target": "A"
+    },
+    {
+      "source": "A",
+      "target": "A => F"
+    },
+    {
+      "source": "A => F",
+      "target": "F"
+    },
+    {
+      "source": "F",
+      "target": "F => A"
+    },
+    {
+      "source": "F => A",
+      "target": "A"
+    },
+    {
+      "source": "Z",
+      "target": "Z => B"
+    },
+    {
+      "source": "Z => B",
+      "target": "B"
+    },
+    {
+      "source": "B",
+      "target": "B => Z"
+    },
+    {
+      "source": "B => Z",
+      "target": "Z"
+    },
+    {
+      "source": "B",
+      "target": "B + D => K"
+    },
+    {
+      "source": "D",
+      "target": "B + D => K"
+    },
+    {
+      "source": "B + D => K",
+      "target": "K"
+    },
+    {
+      "source": "K",
+      "target": "K => B + D"
+    },
+    {
+      "source": "K => B + D",
+      "target": "B"
+    },
+    {
+      "source": "K => B + D",
+      "target": "D"
+    },
+    {
+      "source": "E",
+      "target": "E + Z => F"
+    },
+    {
+      "source": "Z",
+      "target": "E + Z => F"
+    },
+    {
+      "source": "E + Z => F",
+      "target": "F"
+    },
+    {
+      "source": "F",
+      "target": "F => E + Z"
+    },
+    {
+      "source": "F => E + Z",
+      "target": "E"
+    },
+    {
+      "source": "F => E + Z",
+      "target": "Z"
+    },
+    {
+      "source": "Y",
+      "target": "Y + Y => K"
+    },
+    {
+      "source": "Y + Y => K",
+      "target": "K"
+    },
+    {
+      "source": "K",
+      "target": "K => Y + Y"
+    },
+    {
+      "source": "K => Y + Y",
+      "target": "Y"
+    },
+    {
+      "source": "B",
+      "target": "B + B => H"
+    },
+    {
+      "source": "B + B => H",
+      "target": "H"
+    },
+    {
+      "source": "H",
+      "target": "H => B + B"
+    },
+    {
+      "source": "H => B + B",
+      "target": "B"
+    },
+    {
+      "source": "F",
+      "target": "F + K => H"
+    },
+    {
+      "source": "K",
+      "target": "F + K => H"
+    },
+    {
+      "source": "F + K => H",
+      "target": "H"
+    },
+    {
+      "source": "H",
+      "target": "H => F + K"
+    },
+    {
+      "source": "H => F + K",
+      "target": "F"
+    },
+    {
+      "source": "H => F + K",
+      "target": "K"
+    }
+  ]
+}

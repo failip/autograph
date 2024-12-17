@@ -1,0 +1,1933 @@
+{
+  "nodes": [
+    {
+      "key": "gamma-Ketohydroperoxide",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH2]C=O + [CH][O] + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH2]C=O + [CH][O] + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH2]C=O",
+      "attributes": {
+        "name": "[CH2]C=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[CH][O]",
+      "attributes": {
+        "name": "[CH][O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O",
+      "attributes": {
+        "name": "O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O=CCC(O)O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O=CCC(O)O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O=CCC(O)O",
+      "attributes": {
+        "name": "O=CCC(O)O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O=CCC=O + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O=CCC=O + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O=CCC=O",
+      "attributes": {
+        "name": "O=CCC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => C1O[C@@H]2[C@H]1O2 + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => C1O[C@@H]2[C@H]1O2 + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "C1O[C@@H]2[C@H]1O2",
+      "attributes": {
+        "name": "C1O[C@@H]2[C@H]1O2",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [O][C]CC[O] + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [O][C]CC[O] + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[O][C]CC[O]",
+      "attributes": {
+        "name": "[O][C]CC[O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[CH]CC([O])O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[CH]CC([O])O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[CH]CC([O])O",
+      "attributes": {
+        "name": "O[CH]CC([O])O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH2]C(O)O + [O][CH]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH2]C(O)O + [O][CH]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH2]C(O)O",
+      "attributes": {
+        "name": "[CH2]C(O)O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[O][CH]",
+      "attributes": {
+        "name": "[O][CH]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OO[C@H]1C[C@@H]1O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OO[C@H]1C[C@@H]1O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OO[C@H]1C[C@@H]1O",
+      "attributes": {
+        "name": "OO[C@H]1C[C@@H]1O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OOC/C=C/O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OOC/C=C/O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OOC/C=C/O",
+      "attributes": {
+        "name": "OOC/C=C/O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => C=CC=O + OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => C=CC=O + OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "C=CC=O",
+      "attributes": {
+        "name": "C=CC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "OO",
+      "attributes": {
+        "name": "OO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH]OCCOO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH]OCCOO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH]OCCOO",
+      "attributes": {
+        "name": "[CH]OCCOO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O1CCOOC1",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O1CCOOC1",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O1CCOOC1",
+      "attributes": {
+        "name": "O1CCOOC1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[CH]CC(=O)O + [H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[CH]CC(=O)O + [H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[CH]CC(=O)O",
+      "attributes": {
+        "name": "O[CH]CC(=O)O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[H]",
+      "attributes": {
+        "name": "[H]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH2][C][O] + C=O + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH2][C][O] + C=O + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH2][C][O]",
+      "attributes": {
+        "name": "[CH2][C][O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "C=O",
+      "attributes": {
+        "name": "C=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OCCC(=O)O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OCCC(=O)O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OCCC(=O)O",
+      "attributes": {
+        "name": "OCCC(=O)O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O1C[C@H]2[C@@H](O1)O2 + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O1C[C@H]2[C@@H](O1)O2 + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O1C[C@H]2[C@@H](O1)O2",
+      "attributes": {
+        "name": "O1C[C@H]2[C@@H](O1)O2",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[H][H]",
+      "attributes": {
+        "name": "[H][H]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OO[C@H]1C[C@H]1O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OO[C@H]1C[C@H]1O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OO[C@H]1C[C@H]1O",
+      "attributes": {
+        "name": "OO[C@H]1C[C@H]1O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => COOC(=O)C",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => COOC(=O)C",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "COOC(=O)C",
+      "attributes": {
+        "name": "COOC(=O)C",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => CC(=O)COO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => CC(=O)COO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "CC(=O)COO",
+      "attributes": {
+        "name": "CC(=O)COO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O=C1CCOO1 + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O=C1CCOO1 + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O=C1CCOO1",
+      "attributes": {
+        "name": "O=C1CCOO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => COOCC=O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => COOCC=O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "COOCC=O",
+      "attributes": {
+        "name": "COOCC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => C[C@@H](C=O)OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => C[C@@H](C=O)OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "C[C@@H](C=O)OO",
+      "attributes": {
+        "name": "C[C@@H](C=O)OO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => C[C@H](C=O)OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => C[C@H](C=O)OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "C[C@H](C=O)OO",
+      "attributes": {
+        "name": "C[C@H](C=O)OO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH]C[C@@H](OO)O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH]C[C@@H](OO)O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH]C[C@@H](OO)O",
+      "attributes": {
+        "name": "[CH]C[C@@H](OO)O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[C@@H](C=O)CO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[C@@H](C=O)CO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[C@@H](C=O)CO",
+      "attributes": {
+        "name": "O[C@@H](C=O)CO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OCCC=O + [O]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OCCC=O + [O]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OCCC=O",
+      "attributes": {
+        "name": "OCCC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[O]",
+      "attributes": {
+        "name": "[O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => CCOOC=O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => CCOOC=O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "CCOOC=O",
+      "attributes": {
+        "name": "CCOOC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => C[CH][C][O] + OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => C[CH][C][O] + OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "C[CH][C][O]",
+      "attributes": {
+        "name": "C[CH][C][O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => CCC(=O)OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => CCC(=O)OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "CCC(=O)OO",
+      "attributes": {
+        "name": "CCC(=O)OO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OO[C@H]1CCO1",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OO[C@H]1CCO1",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OO[C@H]1CCO1",
+      "attributes": {
+        "name": "OO[C@H]1CCO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH2]CC(=O)[O] + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH2]CC(=O)[O] + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH2]CC(=O)[O]",
+      "attributes": {
+        "name": "[CH2]CC(=O)[O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OO[C]CC=O + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OO[C]CC=O + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OO[C]CC=O",
+      "attributes": {
+        "name": "OO[C]CC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH]CC(=O)OO + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH]CC(=O)OO + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH]CC(=O)OO",
+      "attributes": {
+        "name": "[CH]CC(=O)OO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OOC=C + O=[C] + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OOC=C + O=[C] + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OOC=C",
+      "attributes": {
+        "name": "OOC=C",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=[C]",
+      "attributes": {
+        "name": "O=[C]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH2]O[C][CH2] + OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH2]O[C][CH2] + OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH2]O[C][CH2]",
+      "attributes": {
+        "name": "[CH2]O[C][CH2]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OC[C@H]1COO1",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OC[C@H]1COO1",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OC[C@H]1COO1",
+      "attributes": {
+        "name": "OC[C@H]1COO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OC/C=C\\OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OC/C=C\\OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OC/C=C\\OO",
+      "attributes": {
+        "name": "OC/C=C\\OO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[C@H](C=O)CO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[C@H](C=O)CO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[C@H](C=O)CO",
+      "attributes": {
+        "name": "O[C@H](C=O)CO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[C@H]1CO1 + C=O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[C@H]1CO1 + C=O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[C@H]1CO1",
+      "attributes": {
+        "name": "O[C@H]1CO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OC1(O)CCO1",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OC1(O)CCO1",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OC1(O)CCO1",
+      "attributes": {
+        "name": "OC1(O)CCO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[C@H]1C[C]1[O] + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[C@H]1C[C]1[O] + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[C@H]1C[C]1[O]",
+      "attributes": {
+        "name": "O[C@H]1C[C]1[O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[C@H]1CCOO1",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[C@H]1CCOO1",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[C@H]1CCOO1",
+      "attributes": {
+        "name": "O[C@H]1CCOO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OCCC1OO1",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OCCC1OO1",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OCCC1OO1",
+      "attributes": {
+        "name": "OCCC1OO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH2]COC(=O)O + [H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH2]COC(=O)O + [H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH2]COC(=O)O",
+      "attributes": {
+        "name": "[CH2]COC(=O)O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OCC[C]OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OCC[C]OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OCC[C]OO",
+      "attributes": {
+        "name": "OCC[C]OO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[C]CCOO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[C]CCOO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[C]CCOO",
+      "attributes": {
+        "name": "O[C]CCOO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH]COOC=O + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH]COOC=O + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH]COOC=O",
+      "attributes": {
+        "name": "[CH]COOC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OO[C@@H]1CCO1",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OO[C@@H]1CCO1",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OO[C@@H]1CCO1",
+      "attributes": {
+        "name": "OO[C@@H]1CCO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => CCOC(=O)O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => CCOC(=O)O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "CCOC(=O)O",
+      "attributes": {
+        "name": "CCOC(=O)O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[C@H]1COC1=O + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[C@H]1COC1=O + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[C@H]1COC1=O",
+      "attributes": {
+        "name": "O[C@H]1COC1=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OOC/C=C\\O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OOC/C=C\\O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OOC/C=C\\O",
+      "attributes": {
+        "name": "OOC/C=C\\O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH]COO + C=O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH]COO + C=O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH]COO",
+      "attributes": {
+        "name": "[CH]COO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OO[C@@H]1C[C@H]1O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OO[C@@H]1C[C@H]1O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OO[C@@H]1C[C@H]1O",
+      "attributes": {
+        "name": "OO[C@@H]1C[C@H]1O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OOCC(=C)O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OOCC(=C)O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OOCC(=C)O",
+      "attributes": {
+        "name": "OOCC(=C)O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => CC(=O)OCO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => CC(=O)OCO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "CC(=O)OCO",
+      "attributes": {
+        "name": "CC(=O)OCO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [O]C[CH]C=O + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [O]C[CH]C=O + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[O]C[CH]C=O",
+      "attributes": {
+        "name": "[O]C[CH]C=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[CH][CH]COO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[CH][CH]COO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[CH][CH]COO",
+      "attributes": {
+        "name": "O[CH][CH]COO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH]COCOO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH]COCOO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH]COCOO",
+      "attributes": {
+        "name": "[CH]COCOO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => C=COOC=O + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => C=COOC=O + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "C=COOC=O",
+      "attributes": {
+        "name": "C=COOC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[CH]C[C][O] + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[CH]C[C][O] + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[CH]C[C][O]",
+      "attributes": {
+        "name": "O[CH]C[C][O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH]CC=O + OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH]CC=O + OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH]CC=O",
+      "attributes": {
+        "name": "[CH]CC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OOC[C]C=O + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OOC[C]C=O + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OOC[C]C=O",
+      "attributes": {
+        "name": "OOC[C]C=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OOCC(=O)[CH] + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OOCC(=O)[CH] + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OOCC(=O)[CH]",
+      "attributes": {
+        "name": "OOCC(=O)[CH]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O=C1COOC1 + [H][H]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O=C1COOC1 + [H][H]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O=C1COOC1",
+      "attributes": {
+        "name": "O=C1COOC1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OC/C=C/OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OC/C=C/OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OC/C=C/OO",
+      "attributes": {
+        "name": "OC/C=C/OO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OCC1OCO1",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OCC1OCO1",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OCC1OCO1",
+      "attributes": {
+        "name": "OCC1OCO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OCC=O + C=O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OCC=O + C=O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OCC=O",
+      "attributes": {
+        "name": "OCC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => CO[C@@H](C=O)O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => CO[C@@H](C=O)O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "CO[C@@H](C=O)O",
+      "attributes": {
+        "name": "CO[C@@H](C=O)O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => COO + [CH2][C][O]",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => COO + [CH2][C][O]",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "COO",
+      "attributes": {
+        "name": "COO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OC=O + OC=C",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OC=O + OC=C",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OC=O",
+      "attributes": {
+        "name": "OC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "OC=C",
+      "attributes": {
+        "name": "OC=C",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OOC=O + C=C",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OOC=O + C=C",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OOC=O",
+      "attributes": {
+        "name": "OOC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "C=C",
+      "attributes": {
+        "name": "C=C",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => C=COC=O + O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => C=COC=O + O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "C=COC=O",
+      "attributes": {
+        "name": "C=COC=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => [CH]OOCCO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => [CH]OOCCO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "[CH]OOCCO",
+      "attributes": {
+        "name": "[CH]OOCCO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => O[C@@H]1CO1 + C=O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => O[C@@H]1CO1 + C=O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "O[C@@H]1CO1",
+      "attributes": {
+        "name": "O[C@@H]1CO1",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => OCO + [CH]C=O",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => OCO + [CH]C=O",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "OCO",
+      "attributes": {
+        "name": "OCO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[CH]C=O",
+      "attributes": {
+        "name": "[CH]C=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "gamma-Ketohydroperoxide => C[C]C=O + OO",
+      "attributes": {
+        "name": "gamma-Ketohydroperoxide => C[C]C=O + OO",
+        "type": "reaction"
+      }
+    },
+    {
+      "key": "C[C]C=O",
+      "attributes": {
+        "name": "C[C]C=O",
+        "type": "species"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH2]C=O + [CH][O] + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]C=O + [CH][O] + O",
+      "target": "[CH2]C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]C=O + [CH][O] + O",
+      "target": "[CH][O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]C=O + [CH][O] + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O=CCC(O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O=CCC(O)O",
+      "target": "O=CCC(O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O=CCC=O + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O=CCC=O + O",
+      "target": "O=CCC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O=CCC=O + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => C1O[C@@H]2[C@H]1O2 + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C1O[C@@H]2[C@H]1O2 + O",
+      "target": "C1O[C@@H]2[C@H]1O2"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C1O[C@@H]2[C@H]1O2 + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [O][C]CC[O] + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [O][C]CC[O] + O",
+      "target": "[O][C]CC[O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [O][C]CC[O] + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[CH]CC([O])O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[CH]CC([O])O",
+      "target": "O[CH]CC([O])O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH2]C(O)O + [O][CH]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]C(O)O + [O][CH]",
+      "target": "[CH2]C(O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]C(O)O + [O][CH]",
+      "target": "[O][CH]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OO[C@H]1C[C@@H]1O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OO[C@H]1C[C@@H]1O",
+      "target": "OO[C@H]1C[C@@H]1O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OOC/C=C/O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOC/C=C/O",
+      "target": "OOC/C=C/O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => C=CC=O + OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C=CC=O + OO",
+      "target": "C=CC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C=CC=O + OO",
+      "target": "OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH]OCCOO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]OCCOO",
+      "target": "[CH]OCCOO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O1CCOOC1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O1CCOOC1",
+      "target": "O1CCOOC1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[CH]CC(=O)O + [H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[CH]CC(=O)O + [H]",
+      "target": "O[CH]CC(=O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[CH]CC(=O)O + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH2][C][O] + C=O + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2][C][O] + C=O + O",
+      "target": "[CH2][C][O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2][C][O] + C=O + O",
+      "target": "C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2][C][O] + C=O + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OCCC(=O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCCC(=O)O",
+      "target": "OCCC(=O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O1C[C@H]2[C@@H](O1)O2 + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O1C[C@H]2[C@@H](O1)O2 + [H][H]",
+      "target": "O1C[C@H]2[C@@H](O1)O2"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O1C[C@H]2[C@@H](O1)O2 + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OO[C@H]1C[C@H]1O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OO[C@H]1C[C@H]1O",
+      "target": "OO[C@H]1C[C@H]1O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => COOC(=O)C"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => COOC(=O)C",
+      "target": "COOC(=O)C"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => CC(=O)COO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => CC(=O)COO",
+      "target": "CC(=O)COO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O=C1CCOO1 + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O=C1CCOO1 + [H][H]",
+      "target": "O=C1CCOO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O=C1CCOO1 + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => COOCC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => COOCC=O",
+      "target": "COOCC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => C[C@@H](C=O)OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C[C@@H](C=O)OO",
+      "target": "C[C@@H](C=O)OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => C[C@H](C=O)OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C[C@H](C=O)OO",
+      "target": "C[C@H](C=O)OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH]C[C@@H](OO)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]C[C@@H](OO)O",
+      "target": "[CH]C[C@@H](OO)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[C@@H](C=O)CO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@@H](C=O)CO",
+      "target": "O[C@@H](C=O)CO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OCCC=O + [O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCCC=O + [O]",
+      "target": "OCCC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCCC=O + [O]",
+      "target": "[O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => CCOOC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => CCOOC=O",
+      "target": "CCOOC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => C[CH][C][O] + OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C[CH][C][O] + OO",
+      "target": "C[CH][C][O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C[CH][C][O] + OO",
+      "target": "OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => CCC(=O)OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => CCC(=O)OO",
+      "target": "CCC(=O)OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OO[C@H]1CCO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OO[C@H]1CCO1",
+      "target": "OO[C@H]1CCO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH2]CC(=O)[O] + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]CC(=O)[O] + O",
+      "target": "[CH2]CC(=O)[O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]CC(=O)[O] + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OO[C]CC=O + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OO[C]CC=O + [H][H]",
+      "target": "OO[C]CC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OO[C]CC=O + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH]CC(=O)OO + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]CC(=O)OO + [H][H]",
+      "target": "[CH]CC(=O)OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]CC(=O)OO + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OOC=C + O=[C] + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOC=C + O=[C] + [H][H]",
+      "target": "OOC=C"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOC=C + O=[C] + [H][H]",
+      "target": "O=[C]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOC=C + O=[C] + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH2]O[C][CH2] + OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]O[C][CH2] + OO",
+      "target": "[CH2]O[C][CH2]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]O[C][CH2] + OO",
+      "target": "OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OC[C@H]1COO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OC[C@H]1COO1",
+      "target": "OC[C@H]1COO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OC/C=C\\OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OC/C=C\\OO",
+      "target": "OC/C=C\\OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[C@H](C=O)CO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@H](C=O)CO",
+      "target": "O[C@H](C=O)CO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[C@H]1CO1 + C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@H]1CO1 + C=O",
+      "target": "O[C@H]1CO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@H]1CO1 + C=O",
+      "target": "C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OC1(O)CCO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OC1(O)CCO1",
+      "target": "OC1(O)CCO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[C@H]1C[C]1[O] + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@H]1C[C]1[O] + O",
+      "target": "O[C@H]1C[C]1[O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@H]1C[C]1[O] + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[C@H]1CCOO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@H]1CCOO1",
+      "target": "O[C@H]1CCOO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OCCC1OO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCCC1OO1",
+      "target": "OCCC1OO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH2]COC(=O)O + [H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]COC(=O)O + [H]",
+      "target": "[CH2]COC(=O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH2]COC(=O)O + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OCC[C]OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCC[C]OO",
+      "target": "OCC[C]OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[C]CCOO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C]CCOO",
+      "target": "O[C]CCOO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH]COOC=O + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]COOC=O + [H][H]",
+      "target": "[CH]COOC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]COOC=O + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OO[C@@H]1CCO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OO[C@@H]1CCO1",
+      "target": "OO[C@@H]1CCO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => CCOC(=O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => CCOC(=O)O",
+      "target": "CCOC(=O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[C@H]1COC1=O + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@H]1COC1=O + [H][H]",
+      "target": "O[C@H]1COC1=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@H]1COC1=O + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OOC/C=C\\O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOC/C=C\\O",
+      "target": "OOC/C=C\\O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH]COO + C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]COO + C=O",
+      "target": "[CH]COO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]COO + C=O",
+      "target": "C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OO[C@@H]1C[C@H]1O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OO[C@@H]1C[C@H]1O",
+      "target": "OO[C@@H]1C[C@H]1O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OOCC(=C)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOCC(=C)O",
+      "target": "OOCC(=C)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => CC(=O)OCO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => CC(=O)OCO",
+      "target": "CC(=O)OCO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [O]C[CH]C=O + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [O]C[CH]C=O + O",
+      "target": "[O]C[CH]C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [O]C[CH]C=O + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[CH][CH]COO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[CH][CH]COO",
+      "target": "O[CH][CH]COO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH]COCOO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]COCOO",
+      "target": "[CH]COCOO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => C=COOC=O + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C=COOC=O + [H][H]",
+      "target": "C=COOC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C=COOC=O + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[CH]C[C][O] + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[CH]C[C][O] + O",
+      "target": "O[CH]C[C][O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[CH]C[C][O] + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH]CC=O + OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]CC=O + OO",
+      "target": "[CH]CC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]CC=O + OO",
+      "target": "OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OOC[C]C=O + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOC[C]C=O + [H][H]",
+      "target": "OOC[C]C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOC[C]C=O + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OOCC(=O)[CH] + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOCC(=O)[CH] + [H][H]",
+      "target": "OOCC(=O)[CH]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOCC(=O)[CH] + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O=C1COOC1 + [H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O=C1COOC1 + [H][H]",
+      "target": "O=C1COOC1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O=C1COOC1 + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OC/C=C/OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OC/C=C/OO",
+      "target": "OC/C=C/OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OCC1OCO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCC1OCO1",
+      "target": "OCC1OCO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OCC=O + C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCC=O + C=O",
+      "target": "OCC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCC=O + C=O",
+      "target": "C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => CO[C@@H](C=O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => CO[C@@H](C=O)O",
+      "target": "CO[C@@H](C=O)O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => COO + [CH2][C][O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => COO + [CH2][C][O]",
+      "target": "COO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => COO + [CH2][C][O]",
+      "target": "[CH2][C][O]"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OC=O + OC=C"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OC=O + OC=C",
+      "target": "OC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OC=O + OC=C",
+      "target": "OC=C"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OOC=O + C=C"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOC=O + C=C",
+      "target": "OOC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OOC=O + C=C",
+      "target": "C=C"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => C=COC=O + O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C=COC=O + O",
+      "target": "C=COC=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C=COC=O + O",
+      "target": "O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => [CH]OOCCO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => [CH]OOCCO",
+      "target": "[CH]OOCCO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => O[C@@H]1CO1 + C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@@H]1CO1 + C=O",
+      "target": "O[C@@H]1CO1"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => O[C@@H]1CO1 + C=O",
+      "target": "C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => OCO + [CH]C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCO + [CH]C=O",
+      "target": "OCO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => OCO + [CH]C=O",
+      "target": "[CH]C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide",
+      "target": "gamma-Ketohydroperoxide => C[C]C=O + OO"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C[C]C=O + OO",
+      "target": "C[C]C=O"
+    },
+    {
+      "source": "gamma-Ketohydroperoxide => C[C]C=O + OO",
+      "target": "OO"
+    }
+  ]
+}
