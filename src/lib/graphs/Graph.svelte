@@ -29,6 +29,7 @@ import {
   Matrix4,
   InstancedMesh,
   CylinderGeometry,
+  SRGBColorSpace,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PathSearchGraph } from "./graph";
@@ -219,7 +220,8 @@ onMount(async () => {
     renderer.setSize(width, height);
   };
 
-  renderer.outputColorSpace = "srgb";
+  renderer.outputColorSpace = SRGBColorSpace;
+  renderer.pixelRatio = window.devicePixelRatio;
   renderer.setClearColor("white");
   controllers = [
     new OrbitControls(perspectiveCamera, graphElement),
@@ -1321,7 +1323,6 @@ function resizeMolecules() {
                 filters = filters;
                 filterSentences.splice(index, 1);
                 filterSentences = filterSentences;
-                filterGraph();
               }}>Remove</button
             >
           </div>
