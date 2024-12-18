@@ -3,6 +3,7 @@ import { Graph } from "ngraph.graph";
 import GraphElement from "$lib/graphs/Graph.svelte";
 import { createGraphFromString } from "$lib/graphs/graphs";
 import { chemkinFileToGraph, parseChemkinFile } from "$lib/files/chemkin";
+import { onMount } from "svelte";
 let loadedGraph = false;
 let graph: Graph;
 let xyzPath = "";
@@ -14,6 +15,38 @@ const startingSpeciesMap = new Map<string, Array<string>>();
 startingSpeciesMap.set("GKHP", ["gamma-Ketohydroperoxide"]);
 startingSpeciesMap.set("isooctane", ["CC(C)CC(C)(C)C"]);
 startingSpeciesMap.set("jam", ["[H][S][H]{0,1}", "[H][O]{0,2}"]);
+
+async function loadGraph(graphName: string) {
+    const jsongraphs = ["GKHP", "isooctane", "jam"];
+    if (jsongraphs.includes(graphName)) {
+        await fetch(`/graphs/${graphName}/graph.json`)
+            .then((response) => response.text())
+            .then((text) => {
+                graph = createGraphFromString(text);
+                xyzPath = `/graphs/${graphName}/`;
+            });
+    }
+    if ("aramco" === graphName) {
+        await fetch(`/graphs/aramco/AramcoMech2.0.mech`)
+            .then((response) => response.text())
+            .then((text) => {
+                const chemkin = parseChemkinFile(text);
+                graph = chemkinFileToGraph(chemkin);
+                xyzPath = "/graphs/aramco/structures/";
+            });
+    }
+
+    if ("gri" === graphName) {
+        await fetch(`/graphs/gri/grimech30.dat`)
+            .then((response) => response.text())
+            .then((text) => {
+                const chemkin = parseChemkinFile(text);
+                graph = chemkinFileToGraph(chemkin);
+                xyzPath = "/graphs/aramco/structures/";
+            });
+    }
+    startSpecies = startingSpeciesMap.get(graphName) || [];
+}
 </script>
 
 <h1>Autograph</h1>
@@ -27,35 +60,7 @@ startingSpeciesMap.set("jam", ["[H][S][H]{0,1}", "[H][O]{0,2}"]);
                     on:change={(event) => {
                         const value = event.target.value;
                         if (!value) return;
-                        const jsongraphs = ["GKHP", "isooctane", "jam"];
-                        if (jsongraphs.includes(value)) {
-                            fetch(`/graphs/${value}/graph.json`)
-                                .then((response) => response.text())
-                                .then((text) => {
-                                    graph = createGraphFromString(text);
-                                    xyzPath = `/graphs/${value}/`;
-                                });
-                        }
-                        if ("aramco" === value) {
-                            fetch(`/graphs/aramco/AramcoMech2.0.mech`)
-                                .then((response) => response.text())
-                                .then((text) => {
-                                    const chemkin = parseChemkinFile(text);
-                                    graph = chemkinFileToGraph(chemkin);
-                                    xyzPath = "/graphs/aramco/structures/";
-                                });
-                        }
-
-                        if ("gri" === value) {
-                            fetch(`/graphs/gri/grimech30.dat`)
-                                .then((response) => response.text())
-                                .then((text) => {
-                                    const chemkin = parseChemkinFile(text);
-                                    graph = chemkinFileToGraph(chemkin);
-                                    xyzPath = "/graphs/aramco/structures/";
-                                });
-                        }
-                        startSpecies = startingSpeciesMap.get(value) || [];
+                        loadGraph(value);
                     }}
                 >
                     <option disabled selected value> select an option </option>
