@@ -1,4 +1,5 @@
 <script lang="ts">
+import { PathSearchGraph } from "$lib/graphs/graph";
 import { filterByAtomCount, FILTERWORDS } from "$lib/filter/filter";
 import Fuse from "fuse.js";
 import createLayout, { type Vector } from "ngraph.forcelayout";
@@ -37,7 +38,6 @@ import {
   SRGBColorSpace,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { PathSearchGraph } from "./graph";
 
 export let graph: Graph;
 export let secondaryGraphs: Graph[] = [];
@@ -55,7 +55,7 @@ const queuedLinkEvents = new Array<{ changeType: string; link: Link }>();
 console.info("Number of nodes in graph: ", graph.getNodesCount());
 console.log("Number of links in graph: ", graph.getLinksCount());
 
-const pathSearchGraph = new PathSearchGraph(graph);
+let pathSearchGraph = new PathSearchGraph(graph);
 let shortestPath = new Array<string>();
 
 let initialSpecies = new Set<string>();
@@ -1335,6 +1335,7 @@ function resizeMolecules() {
             document.getElementById("filterInput").value = "";
             filterApplied = true;
             filterGraph();
+            pathSearchGraph = new PathSearchGraph(renderGraph);
           }}>Add</button
         >
         {#each filterSentences.entries() as [index, filter]}
