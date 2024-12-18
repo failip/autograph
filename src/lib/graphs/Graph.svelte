@@ -2,7 +2,12 @@
 import { filterByAtomCount, FILTERWORDS } from "$lib/filter/filter";
 import Fuse from "fuse.js";
 import createLayout, { type Vector } from "ngraph.forcelayout";
-import createGraph, { type Node, type Graph, type Link } from "ngraph.graph";
+import createGraph, {
+  type Node,
+  type Graph,
+  type Link,
+  type NodeId,
+} from "ngraph.graph";
 import KeycapButton from "$lib/ui/KeycapButton.svelte";
 
 import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
@@ -91,6 +96,11 @@ let reactionSize = 0.35;
 let lineWidth = 0.01;
 
 let filters = new Array<Filter>();
+let filterApplied = false;
+let removedByFilter = new Array<{
+  nodes: Set<NodeId>;
+  edges: Set<[NodeId, NodeId]>;
+}>();
 let filterSentences = new Array<string>();
 
 let most_freqent_species = new Set<string>();
@@ -309,9 +319,11 @@ onMount(async () => {
       currentLayoutIteration++;
     }
 
+    const removedNodes = new Set<NodeId>();
     queuedNodeEvents.forEach((change) => {
       if (change.changeType == "remove") {
         handleRemovedNode(change.node.id);
+        removedNodes.add(change.node.id);
       } else if (change.changeType == "add") {
         handleAddedNode(change.node.id);
       }
@@ -330,6 +342,14 @@ onMount(async () => {
       .filter((change) => change.changeType == "remove")
       .map((change) => change.link);
     handleRemovedLinks(removedLinks);
+
+    if (filterApplied) {
+      removedByFilter.push({
+        nodes: removedNodes,
+        edges: new Set(removedLinks.map((link) => [link.fromId, link.toId])),
+      });
+      filterApplied = false;
+    }
 
     if (queuedLinkEvents.length > 0) {
       lineInstances.instanceMatrix.needsUpdate = true;
@@ -781,8 +801,9 @@ function onKeyDown(event: KeyboardEvent) {
   }
 }
 
-function filterGraph() {
-  const nodesToRemove = new Set<string>();
+function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
+  const nodesToRemove = new Set<NodeId>();
+  const edgesToRemove = new Set<[NodeId, NodeId]>();
   console.log("Filtering graph");
   renderGraph.forEachNode((node: Node) => {
     if (node.data.type == "reaction") {
@@ -796,18 +817,18 @@ function filterGraph() {
       node.links.forEach((link) => {
         nodesToRemove.add(link.fromId);
         nodesToRemove.add(link.toId);
+        edgesToRemove.add([link.fromId, link.toId]);
         renderGraph.removeLink(link);
       });
     }
   });
-  nodesToRemove.forEach((node_id) => {
-    if (initialSpecies.has(node_id)) {
+  nodesToRemove.forEach((nodeId) => {
+    if (initialSpecies.has(nodeId)) {
       return;
     }
-    renderGraph.removeNode(node_id);
-    currentSpecies.delete(node_id);
+    renderGraph.removeNode(nodeId);
+    currentSpecies.delete(nodeId);
   });
-  nodesToRemove.clear();
 
   renderGraph.forEachNode((node: Node) => {
     if (node.data.type == "reaction") {
@@ -817,9 +838,12 @@ function filterGraph() {
       return;
     }
     if (node.links?.size == 0) {
+      nodesToRemove.add(node.id);
       renderGraph.removeNode(node.id);
     }
   });
+
+  return { nodes: nodesToRemove, edges: edgesToRemove };
 }
 
 function addLayer() {
@@ -1309,7 +1333,7 @@ function resizeMolecules() {
             document.getElementById("filterElement").value = "C";
             document.getElementById("filterOperator").value = "==";
             document.getElementById("filterInput").value = "";
-
+            filterApplied = true;
             filterGraph();
           }}>Add</button
         >
@@ -1323,6 +1347,23 @@ function resizeMolecules() {
                 filters = filters;
                 filterSentences.splice(index, 1);
                 filterSentences = filterSentences;
+                const removedNodesAndEdges = removedByFilter.splice(index, 1);
+                removedNodesAndEdges.forEach((removed) => {
+                  removed.nodes.forEach((nodeId) => {
+                    const node = graph.getNode(nodeId);
+                    if (!node) {
+                      return;
+                    }
+                    renderGraph.addNode(nodeId, node.data);
+                  });
+                  removed.edges.forEach((edgeNodes) => {
+                    const edge = graph.getLink(edgeNodes[0], edgeNodes[1]);
+                    if (!edge) {
+                      return;
+                    }
+                    renderGraph.addLink(edgeNodes[0], edgeNodes[1], edge.data);
+                  });
+                });
               }}>Remove</button
             >
           </div>
