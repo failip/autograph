@@ -1,8 +1,8 @@
 <script lang="ts">
 import { filterByAtomCount, FILTERWORDS } from "$lib/filter/filter";
 import Fuse from "fuse.js";
-import createLayout, { Vector } from "ngraph.forcelayout";
-import createGraph, { Node, type Graph, type Link } from "ngraph.graph";
+import createLayout, { type Vector } from "ngraph.forcelayout";
+import createGraph, { type Node, type Graph, type Link } from "ngraph.graph";
 import KeycapButton from "$lib/ui/KeycapButton.svelte";
 
 import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
@@ -25,12 +25,12 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
+  Color,
+  Matrix4,
+  InstancedMesh,
+  CylinderGeometry,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { CylinderGeometry } from "three/src/geometries/CylinderGeometry";
-import { Color } from "three/src/math/Color";
-import { Matrix4 } from "three/src/math/Matrix4";
-import { InstancedMesh } from "three/src/objects/InstancedMesh";
 import { PathSearchGraph } from "./graph";
 
 export let graph: Graph;
