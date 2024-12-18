@@ -661,7 +661,7 @@ onMount(async () => {
       } else {
         const url = useHash
           ? `${xyzPath}${node.hash}/molecule.xyz`
-          : `${xyzPath}${node.name}.xyz`;
+          : `${xyzPath}${node.name.includes("#") ? encodeURIComponent(node.name) : node.name}.xyz`;
         const response = await fetch(url);
         if (!response.ok) {
           return;
