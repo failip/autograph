@@ -156,7 +156,7 @@ export class MoleculeGenerator {
                 const posB = new Vector3(positions[3 * j], positions[3 * j + 1], positions[3 * j + 2]);
 
                 const distance = posA.distanceTo(posB);
-                let max_distance = 1.5;
+                let max_distance = 2.0;
                 let radius_a = this.covalent_radii.get(symbols[i]);
                 let radius_b = this.covalent_radii.get(symbols[j]);
                 if (radius_a && radius_b) {
