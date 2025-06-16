@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onMount } from "svelte";
 import GraphElement from "$lib/graphs/Graph.svelte";
 import { createGraphFromString } from "$lib/graphs/graphs";
 import type { Graph } from "ngraph.graph";
@@ -8,7 +9,7 @@ let xyzPath = "";
 let useHash = false;
 let xyzFiles: Map<string, File> | null = null;
 let startSpecies = new Array<string>();
-let databaseURL = "http://10.42.144.124:43070";
+let databaseURL = "https://autograph.kuboth.dev";
 
 let databaseList: Promise<string[]> = fetch(databaseURL + "/api/database_list")
   .then((response) => response.json())
@@ -34,6 +35,17 @@ async function loadGraph(graphName: string) {
       return graph;
     });
 }
+
+onMount(async () => {
+  // get url search params
+  const urlParams = new URLSearchParams(window.location.search);
+  const databaseParam = urlParams.get("database");
+  if (databaseParam) {
+    console.log(databaseParam);
+    await loadGraph(databaseParam);
+    loadedGraph = true;
+  }
+});
 </script>
 
 <h1>Autograph</h1>
