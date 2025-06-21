@@ -30,6 +30,11 @@ async function loadGraph(graphName: string) {
     .then((response) => response.text())
     .then((text) => {
       const graph = createGraphFromString(text);
+      graph.forEachNode((node) => {
+        if (node.data.type === "species") {
+          startSpecies.push(node.id);
+        }
+      });
       useHash = true;
       xyzPath = `${databaseURL}/${graphName}/`;
       return graph;
