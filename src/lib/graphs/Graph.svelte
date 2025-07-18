@@ -1,6 +1,6 @@
 <script lang="ts">
 import { PathSearchGraph } from "$lib/graphs/graph";
-import { filterByAtomCount, FILTERWORDS } from "$lib/filter/filter";
+import { filterByAtomCount, filterChargeCount, filterMultiplicityCount, FILTERWORDS } from "$lib/filter/filter";
 import Fuse from "fuse.js";
 import createLayout, { type Vector } from "ngraph.forcelayout";
 import createGraph, {
@@ -758,6 +758,7 @@ function onKeyDown(event: KeyboardEvent) {
 
   if (event.key == "r") {
     rClick();
+  }
 }
 
 function qClick() {
@@ -1098,27 +1099,57 @@ function resizeMolecules() {
   <div id="keys_overlay">
     <div class="key_input">
       <KeycapButton key="Q"></KeycapButton>
-      <p>add inital species</p>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <p
+        on:click={() => {
+          qClick();
+        }}
+      >add inital species</p>
     </div>
-
+    
     <div class="key_input">
       <KeycapButton key="W"></KeycapButton>
-      <p>add layer</p>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <p
+        on:click={() => {
+          wClick();
+        }}
+      >add layer</p>
     </div>
 
     <div class="key_input">
       <KeycapButton key="F"></KeycapButton>
-      <p>filter graph</p>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <p
+        on:click={() => {
+          fClick();
+        }}
+      >filter graph</p>
     </div>
 
     <div class="key_input">
       <KeycapButton key="P"></KeycapButton>
-      <p>find path</p>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <p
+        on:click={() => {
+          pClick();
+        }}
+      >find path</p>
     </div>
 
     <div class="key_input">
       <KeycapButton key="R"></KeycapButton>
-      <p>reset graph</p>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <p
+        on:click={() => {
+          rClick();
+        }}
+      >reset graph</p>
     </div>
   </div>
 
@@ -1314,49 +1345,120 @@ function resizeMolecules() {
 
   {#if filterVisible}
     <div class="overlay" style="backdrop-filter: blur(10px);">
-      <div style="pointer-events: all;">
-        <select name="filterElement" id="filterElement">
-          <option value="C">C</option>
-          <option value="H">H</option>
-          <option value="O">O</option>
-          <option value="N">N</option>
-          <option value="F">F</option>
-          <option value="Cl">Cl</option>
-          <option value="Br">Br</option>
-          <option value="I">I</option>
-          <option value="P">P</option>
-          <option value="S">S</option>
-        </select>
-        <select name="operator" id="filterOperator">
-          {#each COUNT_OPERATORS.keys() as key}
-            <option value={key}>{key}</option>
-          {/each}
-        </select>
-        <input type="number" id="filterInput" />
-        <button
-          on:click={() => {
-            const element = document.getElementById("filterElement").value;
-            const operatorKey = document.getElementById("filterOperator").value;
-            const operator = COUNT_OPERATORS.get(operatorKey);
-            const count = document.getElementById("filterInput").value;
-            filters.push((node) =>
-              filterByAtomCount(node, element, count, operator),
-            );
-            filters = filters;
+      <div class="filters_overlay">
+        <div class="filter_overlay">
+          <div style="pointer-events: all;">
+            <p>Elements</p>
+            <select name="filterElement" id="filterElement">
+              <option value="C">C</option>
+              <option value="H">H</option>
+              <option value="O">O</option>
+              <option value="N">N</option>
+              <option value="F">F</option>
+              <option value="Cl">Cl</option>
+              <option value="Br">Br</option>
+              <option value="I">I</option>
+              <option value="P">P</option>
+              <option value="S">S</option>
+            </select>
+            <select name="operator" id="filterElementOperator">
+              {#each COUNT_OPERATORS.keys() as key}
+                <option value={key}>{key}</option>
+              {/each}
+            </select>
+            <input type="number" id="filterElementInput" />
+            <button
+              on:click={() => {
+                const element = document.getElementById("filterElement").value;
+                const operatorKey = document.getElementById("filterElementOperator").value;
+                const operator = COUNT_OPERATORS.get(operatorKey);
+                const count = document.getElementById("filterElementInput").value;
+                filters.push((node) =>
+                  filterByAtomCount(node, element, count, operator),
+                );
+                filters = filters;
 
-            filterSentences.push(
-              `Remove all molecules where the number of ${element} atoms is ${FILTERWORDS.get(operatorKey)} ${count}`,
-            );
-            filterSentences = filterSentences;
+                filterSentences.push(
+                  `Remove all molecules where the number of ${element} atoms is ${FILTERWORDS.get(operatorKey)} ${count}`,
+                );
+                filterSentences = filterSentences;
 
-            document.getElementById("filterElement").value = "C";
-            document.getElementById("filterOperator").value = "==";
-            document.getElementById("filterInput").value = "";
-            filterApplied = true;
-            filterGraph();
-            pathSearchGraph = new PathSearchGraph(renderGraph);
-          }}>Add</button
-        >
+                document.getElementById("filterElement").value = "C";
+                document.getElementById("filterELementOperator").value = "==";
+                document.getElementById("filterElementInput").value = "";
+                filterApplied = true;
+                filterGraph();
+                pathSearchGraph = new PathSearchGraph(renderGraph);
+              }}>Add</button
+            >
+          </div>
+        </div>
+        <div class="filter_overlay">
+          <div style="pointer-events: all;">
+            <p>Charge</p>
+            <select name="operator" id="filterChargeOperator">
+              {#each COUNT_OPERATORS.keys() as key}
+                <option value={key}>{key}</option>
+              {/each}
+            </select>
+            <input type="number" step="1" id="filterChargeInput" />
+            <button
+              on:click={() => {
+                const chargeOperatorKey = document.getElementById("filterChargeOperator").value;
+                const chargeOperator = COUNT_OPERATORS.get(chargeOperatorKey);
+                const cargeCount = document.getElementById("filterChargeInput").value;
+                filters.push((node) =>
+                  filterChargeCount(node, cargeCount, chargeOperator),
+                );
+                filters = filters;
+
+                filterSentences.push(
+                  `Remove all molecules where the charge is ${FILTERWORDS.get(chargeOperatorKey)} ${cargeCount}`,
+                );
+                filterSentences = filterSentences;
+
+                document.getElementById("filterChargeOperator").value = "==";
+                document.getElementById("filterChargeInput").value = "";
+                filterApplied = true;
+                filterGraph();
+                pathSearchGraph = new PathSearchGraph(renderGraph);
+              }}>Add</button
+            >
+          </div>
+        </div>
+        <div class="filter_overlay">
+          <div style="pointer-events: all;">
+            <p>Multiplicity</p>
+            <select name="operator" id="filterMultiplicityOperator">
+              {#each COUNT_OPERATORS.keys() as key}
+                <option value={key}>{key}</option>
+              {/each}
+            </select>
+            <input type="number" step="1" id="filterMultiplicityInput" />
+            <button
+              on:click={() => {
+                const multiplicityOperatorKey = document.getElementById("filterMultiplicityOperator").value;
+                const multiplicityOperator = COUNT_OPERATORS.get(multiplicityOperatorKey);
+                const multiplicityCount = document.getElementById("filterMultiplicityInput").value;
+                filters.push((node) =>
+                  filterMultiplicityCount(node, multiplicityCount, multiplicityOperator),
+                );
+                filters = filters;
+
+                filterSentences.push(
+                  `Remove all molecules where the spin-multilpicity is ${FILTERWORDS.get(multiplicityOperatorKey)} ${multiplicityCount}`,
+                );
+                filterSentences = filterSentences;
+
+                document.getElementById("filterMultiplicityOperator").value = "==";
+                document.getElementById("filterMultiplicityInput").value = "";
+                filterApplied = true;
+                filterGraph();
+                pathSearchGraph = new PathSearchGraph(renderGraph);
+              }}>Add</button
+            >
+          </div>
+        </div>
         {#each filterSentences.entries() as [index, filter]}
           <div style="display: flex; align-items: center">
             <p>{filter}</p>
@@ -1429,9 +1531,21 @@ function resizeMolecules() {
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.filters_overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.filter_overlay {
+  display: flex;
+  flex-direction: row;
 }
 
 #settings {
