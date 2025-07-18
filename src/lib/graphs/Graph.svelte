@@ -741,64 +741,83 @@ function onKeyDown(event: KeyboardEvent) {
   }
 
   if (event.key == "q") {
-    searchVisible = !searchVisible;
-    search_value = "";
-
-    if (searchVisible) {
-      search_results.clear();
-      most_freqent_species.forEach((species) => {
-        search_results.add(species);
-      });
-      search_results = search_results;
-      pathSearchVisible = false;
-      filterVisible = false;
-      settingsVisible = false;
-    }
+    qClick();
   }
 
   if (event.key == "p") {
-    pathSearchVisible = !pathSearchVisible;
-    pathSearchStart = [];
-    if (pathSearchVisible) {
-      searchVisible = false;
-      filterVisible = false;
-      settingsVisible = false;
-    }
+    pClick();
   }
 
   if (event.key == "f") {
-    filterVisible = !filterVisible;
-    if (filterVisible) {
-      searchVisible = false;
-      pathSearchVisible = false;
-      settingsVisible = false;
-    }
+    fClick();
   }
 
   if (event.key == "w") {
-    const anyOverlaysVisible =
-      searchVisible || pathSearchVisible || filterVisible || settingsVisible;
-    if (anyOverlaysVisible) {
-      return;
-    }
-    addLayer();
-    console.log("Adding layer");
-    console.log("Nodes: ", renderGraph.getNodesCount());
-    console.log("Links: ", renderGraph.getLinksCount());
+    wClick();
   }
 
   if (event.key == "r") {
-    const anyOverlaysVisible =
-      searchVisible || pathSearchVisible || filterVisible || settingsVisible;
-    if (anyOverlaysVisible) {
-      return;
-    }
-    renderGraph.clear();
-    initialSpecies.clear();
-    initialReactions.clear();
-    currentSpecies.clear();
-    shortestPath = [];
+    rClick();
+}
+
+function qClick() {
+  searchVisible = !searchVisible;
+  search_value = "";
+
+  if (searchVisible) {
+    search_results.clear();
+    most_freqent_species.forEach((species) => {
+      search_results.add(species);
+    });
+    search_results = search_results;
+    pathSearchVisible = false;
+    filterVisible = false;
+    settingsVisible = false;
   }
+}
+
+function pClick() {
+  pathSearchVisible = !pathSearchVisible;
+  pathSearchStart = [];
+  if (pathSearchVisible) {
+    searchVisible = false;
+    filterVisible = false;
+    settingsVisible = false;
+  }
+}
+
+function fClick() {
+  filterVisible = !filterVisible;
+  if (filterVisible) {
+    searchVisible = false;
+    pathSearchVisible = false;
+    settingsVisible = false;
+  }
+}
+
+function wClick() {
+  const anyOverlaysVisible =
+    searchVisible || pathSearchVisible || filterVisible || settingsVisible;
+  if (anyOverlaysVisible) {
+    return;
+  }
+  addLayer();
+  console.log("Adding layer");
+  console.log("Nodes: ", renderGraph.getNodesCount());
+  console.log("Links: ", renderGraph.getLinksCount());
+}
+
+function rClick() {
+  const anyOverlaysVisible =
+    searchVisible || pathSearchVisible || filterVisible || settingsVisible;
+  if (anyOverlaysVisible) {
+    return;
+  }
+  renderGraph.clear();
+  initialSpecies.clear();
+  initialReactions.clear();
+  currentSpecies.clear();
+  shortestPath = [];
 }
 
 function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
