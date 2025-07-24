@@ -54,6 +54,39 @@ export function filterByAtomCount(
   return false;
 }
 
+export function filterChargeCount(
+  node: Node,
+  count: number,
+  operator: CountOperator,
+): boolean {
+  const chargeCheck = node.data.name.split("{");
+  if (chargeCheck.length !== 2) {
+    return false;
+  }
+  const chargeValue = chargeCheck[1].split(",")[0];
+
+  if (operator(chargeValue, count)) {
+    return true;
+  }
+  return false;
+}
+
+export function filterMultiplicityCount(
+  node: Node,
+  count: number,
+  operator: CountOperator,
+): boolean {
+  const multiplicityCheck = node.data.name.split(",");
+  if (multiplicityCheck.length !== 2) {
+    return false;
+  }
+  const multipilicityValue = multiplicityCheck[1].split("}")[0];
+
+  if (operator(multipilicityValue, count)) {
+    return true;
+  }
+  return false;
+}
 
 export function filterByDoubleBond(
   node: Node,
