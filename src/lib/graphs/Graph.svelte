@@ -106,6 +106,100 @@ let filterSentences = new Array<string>();
 let most_freqent_species = new Set<string>();
 let species_count = new Map<string, number>();
 
+
+// Begin VR adapdter
+let xrSession: XRSession | null = null;
+
+setupXRSession().catch(err => {
+  console.error("Fehler beim Starten der XR Session:", err);
+});
+
+async function setupXRSession() {
+  if (!navigator.xr) {
+    console.warn("WebXR wird nicht unterstützt.");
+    return;
+  }
+  console.warn("WebXR wird unterstützt.");
+
+  const supported = await navigator.xr.isSessionSupported('inline');
+  if (!supported) {
+    console.warn("WebXR inline-Modus wird nicht unterstützt.");
+    return;
+  }
+
+  xrSession = await navigator.xr.requestSession('inline');
+  console.log("XR inline Session gestartet");
+
+  xrSession.addEventListener('inputsourceschange', () => {
+    console.log("InputSources aktualisiert:", xrSession!.inputSources);
+  });
+
+  // Startet die kontinuierliche Eingabeschleife
+  xrSession.requestAnimationFrame(onXRFrame);
+}
+
+function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+  if (!xrSession) return;
+
+  const inputSources = xrSession.inputSources;
+
+  for (const source of inputSources) {
+    if (source.gamepad) {
+      const buttons = source.gamepad.buttons;
+      const hand = source.handedness;
+
+      handleControllerInput(source, buttons, hand);
+    }
+  }
+
+  // Schleife fortsetzen
+  xrSession.requestAnimationFrame(onXRFrame);
+}
+// End VR Adapter
+
+// Begin VR Input
+function handleControllerInput(
+  source: XRInputSource,
+  buttons: GamepadButton[],
+  hand: XRHandedness
+) {
+  if (buttons[0]?.pressed) {
+    console.log(`[${hand}] Trigger gedrückt`);
+    onTriggerPress(hand);
+  }
+
+  if (buttons[1]?.pressed) {
+    console.log(`[${hand}] Grip gedrückt`);
+    onGripPress(hand);
+  }
+
+  if (buttons[2]?.pressed) {
+    console.log(`Unterer Tastenknopf [${hand}] gedrückt`);
+    onGripPress(hand);
+  }
+
+  if (buttons[3]?.pressed) {
+    console.log(`Oberer Tastenknopf [${hand}] gedrückt`);
+    onGripPress(hand);
+  }
+
+  if (buttons[4]?.pressed) {
+    console.log(`Klick auf den [${hand}]en Stick`);
+    onGripPress(hand);
+  }
+}
+
+// Beispielaktionen
+function onTriggerPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Trigger (${hand})`);
+  // Deine eigene Logik hier z. B. Navigation, Animation etc.
+}
+
+function onGripPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Grip (${hand})`);
+}
+// Ednd VR Input 
+
 const reactionNodes = new Array<Node>();
 graph.forEachNode((node) => {
   if (!node.data) {
