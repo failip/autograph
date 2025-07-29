@@ -175,28 +175,38 @@ function handleControllerInput(
 
   if (buttons[2]?.pressed) {
     console.log(`Unterer Tastenknopf [${hand}] gedrückt`);
-    onGripPress(hand);
+    onLowerButtonPress(hand);
   }
 
   if (buttons[3]?.pressed) {
     console.log(`Oberer Tastenknopf [${hand}] gedrückt`);
-    onGripPress(hand);
+    onUpperButtonPress(hand);
   }
 
   if (buttons[4]?.pressed) {
     console.log(`Klick auf den [${hand}]en Stick`);
-    onGripPress(hand);
+    onStickPress(hand);
   }
 }
 
-// Beispielaktionen
 function onTriggerPress(hand: XRHandedness) {
   console.log(`→ Aktion: Trigger (${hand})`);
-  // Deine eigene Logik hier z. B. Navigation, Animation etc.
 }
 
 function onGripPress(hand: XRHandedness) {
   console.log(`→ Aktion: Grip (${hand})`);
+}
+
+function onLowerButtonPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Lower button (${hand})`);
+}
+
+function onUpperButtonPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Upper button (${hand})`);
+}
+
+function onStickPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Stick (${hand})`);
 }
 // Ednd VR Input 
 
@@ -283,6 +293,49 @@ const layout = createLayout(renderGraph, {
 const objects = new Map<string, Object3D>();
 
 onMount(async () => {
+  if (!navigator.xr) {
+    console.warn('WebXR wird nicht unterstützt.');
+    return;
+  }
+
+  const supported = await navigator.xr.isSessionSupported('inline');
+  if (!supported) {
+    console.warn('WebXR inline-Modus nicht unterstützt.');
+    return;
+  }
+
+  const session = await navigator.xr.requestSession('inline');
+  console.log('XR inline Session gestartet');
+
+  session.requestAnimationFrame(function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+    for (const source of session.inputSources) {
+      if (source.gamepad && source.handedness === 'right') {
+        const buttons = source.gamepad.buttons;
+
+        if (buttons[0].pressed) {
+          selectMoleculeVR();
+        }
+      }
+    }
+
+    session.requestAnimationFrame(onXRFrame);
+  });
+
+  function getElementAtCenter(): HTMLElement | null {
+    const x = window.innerWidth / 2;
+    const y = window.innerHeight / 2;
+    return document.elementFromPoint(x, y) as HTMLElement | null;
+  }
+
+  function simulateClick(el: HTMLElement) {
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+    });
+    el.dispatchEvent(event);
+  }
+
   const scene = new Scene();
 
   perspectiveCamera = new PerspectiveCamera(
@@ -664,6 +717,7 @@ onMount(async () => {
   }
 
   function selectMolecule(event: PointerEvent) {
+    console.log("inside selectMolecule");
     if (!hoveredNode) return;
 
     let parent = hoveredNode.parent;
@@ -681,6 +735,26 @@ onMount(async () => {
 
     lockedOnMolecule = true;
   }
+
+  function selectMoleculeVR() {
+      console.log("inside selectMoleculeVR");
+      if (!hoveredNode) return;
+
+      let parent = hoveredNode.parent;
+
+      if (parent?.parent !== meshes) {
+        parent = parent?.parent;
+      }
+
+      if (parent) {
+        parent.getWorldPosition(newCameraTarget);
+        zoomTarget = 60.0;
+        zoomFinished = false;
+        targetedNode = parent;
+      }
+
+      lockedOnMolecule = true;
+    }
 
   async function handleAddedNode(nodeId: string) {
     let mostDistantPosition = {
