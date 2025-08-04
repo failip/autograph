@@ -65,7 +65,7 @@ async function loadGraph(graphName: string) {
                 >
                     <option disabled selected value> select an option </option>
                     <option value="GKHP">gamma-ketohydroperoxide</option>
-                    <option value="isooctane">Combustion of Isooctane</option>
+                    <option value="isooctane">Pyrolysis of Isooctane</option>
                     <option value="jam">Oxidation of Hydrogensulfide</option>
                     <option value="aramco">AramcoMech2.0</option>
                     <option value="gri">GRI-Mech 3.0</option>
