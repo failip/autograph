@@ -114,18 +114,35 @@ setupXRSession().catch(err => {
   console.error("Fehler beim Starten der XR Session:", err);
 });
 
+async function isInlineXrAvailable(): Promise<boolean> {
+  if (!('xr' in navigator)) return false;
+  try {
+    return await navigator.xr.isSessionSupported('inline');
+  } catch {
+    return false;
+  }
+}
+
 async function setupXRSession() {
-  if (!navigator.xr) {
+  if (!('xr' in navigator)) {
     console.warn("WebXR wird nicht unterstützt.");
     return;
   }
-  console.warn("WebXR wird unterstützt.");
 
-  const supported = await navigator.xr.isSessionSupported('inline');
-  if (!supported) {
-    console.warn("WebXR inline-Modus wird nicht unterstützt.");
+  let supported = false;
+  try {
+    supported = await navigator.xr.isSessionSupported('immersive-vr');
+  } catch (err) {
+    console.error("Fehler beim Prüfen von WebXR-Unterstützung:", err);
     return;
   }
+
+  if (!supported) {
+    console.warn("Immersive VR wird nicht unterstützt.");
+    return;
+  }
+
+  console.log("WebXR und immersive-vr werden unterstützt. Setup beginnt...");
 
   xrSession = await navigator.xr.requestSession('inline');
   console.log("XR inline Session gestartet");
@@ -293,33 +310,33 @@ const layout = createLayout(renderGraph, {
 const objects = new Map<string, Object3D>();
 
 onMount(async () => {
-  if (!navigator.xr) {
-    console.warn('WebXR wird nicht unterstützt.');
-    return;
-  }
+  if (!(await isInlineXrAvailable())) {
+    console.warn("XR nicht verfügbar.");
+  } else {
 
-  const supported = await navigator.xr.isSessionSupported('inline');
-  if (!supported) {
-    console.warn('WebXR inline-Modus nicht unterstützt.');
-    return;
-  }
-
-  const session = await navigator.xr.requestSession('inline');
-  console.log('XR inline Session gestartet');
-
-  session.requestAnimationFrame(function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
-    for (const source of session.inputSources) {
-      if (source.gamepad && source.handedness === 'right') {
-        const buttons = source.gamepad.buttons;
-
-        if (buttons[0].pressed) {
-          selectMoleculeVR();
-        }
-      }
+    const supported = await navigator.xr.isSessionSupported('inline');
+    if (!supported) {
+      console.warn('WebXR inline-Modus nicht unterstützt.');
+      return;
     }
 
-    session.requestAnimationFrame(onXRFrame);
-  });
+    const session = await navigator.xr.requestSession('inline');
+    console.log('XR inline Session gestartet');
+
+    session.requestAnimationFrame(function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+      for (const source of session.inputSources) {
+        if (source.gamepad && source.handedness === 'right') {
+          const buttons = source.gamepad.buttons;
+
+          if (buttons[0].pressed) {
+            selectMoleculeVR();
+          }
+        }
+      }
+
+      session.requestAnimationFrame(onXRFrame);
+    })
+  } 
 
   function getElementAtCenter(): HTMLElement | null {
     const x = window.innerWidth / 2;
