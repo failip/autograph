@@ -38,6 +38,7 @@ import {
   SRGBColorSpace,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+    import { ConstNode } from "three/examples/jsm/nodes/Nodes.js";
 
 export let graph: Graph;
 export let secondaryGraphs: Graph[] = [];
