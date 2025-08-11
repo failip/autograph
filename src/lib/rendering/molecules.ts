@@ -109,7 +109,7 @@ export class MoleculeGenerator {
         return closestPoint;
     }
 
-    public generateMolecule(run: Run, move_to_center: boolean = true, smiles: string | undefined = undefined): Group {
+    public generateMolecule(run: Run, hiddenSymbols: Set<string> = new Set(), move_to_center: boolean = true, smiles: string | undefined = undefined): Group {
         const positions = run.frames[0].positions;
         // move to origin
 
@@ -133,10 +133,11 @@ export class MoleculeGenerator {
         const atomGeometry = new SphereGeometry(1.0, 32, 32);
         const atomMaterial = new MeshPhongMaterial({ color: 0xffffff, transparent: false, opacity: 1.0 });
         const atomInstances = new InstancedMesh(atomGeometry, atomMaterial, number_of_atoms);
-
+        
         for (let i = 0; i < number_of_atoms; i++) {
             atomInstances.setColorAt(i, new Color(this.colors.get(symbols[i])));
-            const scale = symbols[i] === "H" ? 0.3 : 0.4;
+            const isHidden = hiddenSymbols.has(symbols[i]);
+            const scale = isHidden ? 0 : (symbols[i] === "H" ? 0.3 : 0.4);
             const matrix = new Matrix4().makeTranslation(positions[3 * i], positions[3 * i + 1], positions[3 * i + 2]);
             matrix.scale(new Vector3(scale, scale, scale));
             atomInstances.setMatrixAt(i, matrix);

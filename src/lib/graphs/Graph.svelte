@@ -107,6 +107,9 @@ let filterSentences = new Array<string>();
 let most_freqent_species = new Set<string>();
 let species_count = new Map<string, number>();
 
+let hiddenElements = new Set<string>();
+hiddenElements.add("Cu");
+
 
 // Begin VR adapdter
 let xrSession: XRSession | null = null;
@@ -855,7 +858,7 @@ onMount(async () => {
         data = await response.text();
       }
       const run = parseRun(data);
-      const molecule = moleculeGenerator.generateMolecule(run);
+      const molecule = moleculeGenerator.generateMolecule(run, hiddenElements);
       if (!molecule) return;
       molecule.traverse((child) => {
         child.userData = node;
