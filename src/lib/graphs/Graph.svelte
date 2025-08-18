@@ -951,37 +951,43 @@ function onKeyDown(event: KeyboardEvent) {
 }
 
 function qClick() {
-  searchVisible = !searchVisible;
-  search_value = "";
+  if (!searchVisible) {
+    searchVisible = !searchVisible;
+    search_value = "";
 
-  if (searchVisible) {
-    search_results.clear();
-    most_freqent_species.forEach((species) => {
-      search_results.add(species);
-    });
-    search_results = search_results;
-    pathSearchVisible = false;
-    filterVisible = false;
-    settingsVisible = false;
+    if (searchVisible) {
+      search_results.clear();
+      most_freqent_species.forEach((species) => {
+        search_results.add(species);
+      });
+      search_results = search_results;
+      pathSearchVisible = false;
+      filterVisible = false;
+      settingsVisible = false;
+    }
   }
 }
 
 function pClick() {
-  pathSearchVisible = !pathSearchVisible;
-  pathSearchStart = [];
-  if (pathSearchVisible) {
-    searchVisible = false;
-    filterVisible = false;
-    settingsVisible = false;
+  if (!pathSearchVisible) {
+    pathSearchVisible = !pathSearchVisible;
+    pathSearchStart = [];
+    if (pathSearchVisible) {
+      searchVisible = false;
+      filterVisible = false;
+      settingsVisible = false;
+    }
   }
 }
 
 function fClick() {
-  filterVisible = !filterVisible;
-  if (filterVisible) {
-    searchVisible = false;
-    pathSearchVisible = false;
-    settingsVisible = false;
+  if (!filterVisible) {
+    filterVisible = !filterVisible;
+    if (filterVisible) {
+      searchVisible = false;
+      pathSearchVisible = false;
+      settingsVisible = false;
+    }
   }
 }
 
@@ -1379,6 +1385,16 @@ function resizeMolecules() {
   {/if}
   {#if pathSearchVisible}
     <div id="pathSearchOverlay">
+      <button
+        style="padding-left: 25%; font-size: 1rem; background-color: transparent; border: none; cursor: pointer"
+        on:click={() => {
+          searchVisible = false;
+          pathSearchVisible = false;
+          filterVisible = false;
+          settingsVisible = false;
+          search_value = "";
+        }}>X</button
+      >
       <div>
         <datalist id="species">
           {#each currentSpecies as species}
@@ -1535,6 +1551,16 @@ function resizeMolecules() {
   {#if filterVisible}
     <div class="overlay" style="backdrop-filter: blur(10px);">
       <div class="filters_overlay">
+        <button
+          style="display: flex; align-self: end; font-size: 1rem; background-color: transparent; border: none; cursor: pointer"
+          on:click={() => {
+            searchVisible = false;
+            pathSearchVisible = false;
+            filterVisible = false;
+            settingsVisible = false;
+            search_value = "";
+          }}>X</button
+        >
         <div class="filter_overlay">
           <div style="pointer-events: all;">
             <p>Elements</p>
