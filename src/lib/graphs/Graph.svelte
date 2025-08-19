@@ -1,6 +1,11 @@
 <script lang="ts">
 import { PathSearchGraph } from "$lib/graphs/graph";
-import { filterByAtomCount, filterChargeCount, filterMultiplicityCount, FILTERWORDS } from "$lib/filter/filter";
+import {
+  filterByAtomCount,
+  filterChargeCount,
+  filterMultiplicityCount,
+  FILTERWORDS,
+} from "$lib/filter/filter";
 import Fuse from "fuse.js";
 import createLayout, { type Vector } from "ngraph.forcelayout";
 import createGraph, {
@@ -38,7 +43,8 @@ import {
   SRGBColorSpace,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-    import { ConstNode } from "three/examples/jsm/nodes/Nodes.js";
+import { VRButton } from "three/examples/jsm/webxr/VRButton.js";
+import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
 
 export let graph: Graph;
 export let secondaryGraphs: Graph[] = [];
@@ -46,6 +52,7 @@ export let xyzPath: string;
 export let useHash: boolean = false;
 export let xyzFiles: Map<string, File> | null = null;
 export let startSpecies: string[] = [];
+export let webXR: boolean = false;
 
 let pathSearchStart = new Array<string>();
 let pathChanged = false;
@@ -109,127 +116,6 @@ let species_count = new Map<string, number>();
 
 let hiddenElements = new Set<string>();
 hiddenElements.add("Cu");
-
-
-// Begin VR adapdter
-let xrSession: XRSession | null = null;
-
-setupXRSession().catch(err => {
-  console.error("Fehler beim Starten der XR Session:", err);
-});
-
-async function isInlineXrAvailable(): Promise<boolean> {
-  if (!('xr' in navigator)) return false;
-  try {
-    return await navigator.xr.isSessionSupported('inline');
-  } catch {
-    return false;
-  }
-}
-
-async function setupXRSession() {
-  if (!('xr' in navigator)) {
-    console.warn("WebXR wird nicht unterstützt.");
-    return;
-  }
-
-  let supported = false;
-  try {
-    supported = await navigator.xr.isSessionSupported('immersive-vr');
-  } catch (err) {
-    console.error("Fehler beim Prüfen von WebXR-Unterstützung:", err);
-    return;
-  }
-
-  if (!supported) {
-    console.warn("Immersive VR wird nicht unterstützt.");
-    return;
-  }
-
-  console.log("WebXR und immersive-vr werden unterstützt. Setup beginnt...");
-
-  xrSession = await navigator.xr.requestSession('inline');
-  console.log("XR inline Session gestartet");
-
-  xrSession.addEventListener('inputsourceschange', () => {
-    console.log("InputSources aktualisiert:", xrSession!.inputSources);
-  });
-
-  // Startet die kontinuierliche Eingabeschleife
-  xrSession.requestAnimationFrame(onXRFrame);
-}
-
-function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
-  if (!xrSession) return;
-
-  const inputSources = xrSession.inputSources;
-
-  for (const source of inputSources) {
-    if (source.gamepad) {
-      const buttons = source.gamepad.buttons;
-      const hand = source.handedness;
-
-      handleControllerInput(source, buttons, hand);
-    }
-  }
-
-  // Schleife fortsetzen
-  xrSession.requestAnimationFrame(onXRFrame);
-}
-// End VR Adapter
-
-// Begin VR Input
-function handleControllerInput(
-  source: XRInputSource,
-  buttons: GamepadButton[],
-  hand: XRHandedness
-) {
-  if (buttons[0]?.pressed) {
-    console.log(`[${hand}] Trigger gedrückt`);
-    onTriggerPress(hand);
-  }
-
-  if (buttons[1]?.pressed) {
-    console.log(`[${hand}] Grip gedrückt`);
-    onGripPress(hand);
-  }
-
-  if (buttons[2]?.pressed) {
-    console.log(`Unterer Tastenknopf [${hand}] gedrückt`);
-    onLowerButtonPress(hand);
-  }
-
-  if (buttons[3]?.pressed) {
-    console.log(`Oberer Tastenknopf [${hand}] gedrückt`);
-    onUpperButtonPress(hand);
-  }
-
-  if (buttons[4]?.pressed) {
-    console.log(`Klick auf den [${hand}]en Stick`);
-    onStickPress(hand);
-  }
-}
-
-function onTriggerPress(hand: XRHandedness) {
-  console.log(`→ Aktion: Trigger (${hand})`);
-}
-
-function onGripPress(hand: XRHandedness) {
-  console.log(`→ Aktion: Grip (${hand})`);
-}
-
-function onLowerButtonPress(hand: XRHandedness) {
-  console.log(`→ Aktion: Lower button (${hand})`);
-}
-
-function onUpperButtonPress(hand: XRHandedness) {
-  console.log(`→ Aktion: Upper button (${hand})`);
-}
-
-function onStickPress(hand: XRHandedness) {
-  console.log(`→ Aktion: Stick (${hand})`);
-}
-// Ednd VR Input 
 
 const reactionNodes = new Array<Node>();
 graph.forEachNode((node) => {
@@ -314,34 +200,6 @@ const layout = createLayout(renderGraph, {
 const objects = new Map<string, Object3D>();
 
 onMount(async () => {
-  if (!(await isInlineXrAvailable())) {
-    console.warn("XR nicht verfügbar.");
-  } else {
-
-    const supported = await navigator.xr.isSessionSupported('inline');
-    if (!supported) {
-      console.warn('WebXR inline-Modus nicht unterstützt.');
-      return;
-    }
-
-    const session = await navigator.xr.requestSession('inline');
-    console.log('XR inline Session gestartet');
-
-    session.requestAnimationFrame(function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
-      for (const source of session.inputSources) {
-        if (source.gamepad && source.handedness === 'right') {
-          const buttons = source.gamepad.buttons;
-
-          if (buttons[0].pressed) {
-            selectMoleculeVR();
-          }
-        }
-      }
-
-      session.requestAnimationFrame(onXRFrame);
-    })
-  } 
-
   function getElementAtCenter(): HTMLElement | null {
     const x = window.innerWidth / 2;
     const y = window.innerHeight / 2;
@@ -349,7 +207,7 @@ onMount(async () => {
   }
 
   function simulateClick(el: HTMLElement) {
-    const event = new MouseEvent('click', {
+    const event = new MouseEvent("click", {
       bubbles: true,
       cancelable: true,
       view: window,
@@ -382,6 +240,52 @@ onMount(async () => {
     antialias: true,
     alpha: true,
   });
+
+  // VR setup variables
+  let dolly;
+  let moveSpeed = 0.1;
+
+  // Enable WebXR if the prop is set
+  if (webXR) {
+    renderer.xr.enabled = true;
+    document.body.appendChild(VRButton.createButton(renderer));
+
+    // Create dolly for VR movement
+    dolly = new Object3D();
+    scene.add(dolly);
+
+    // Add VR controllers
+    const controller1 = renderer.xr.getController(0);
+    const controller2 = renderer.xr.getController(1);
+    dolly.add(controller1);
+    dolly.add(controller2);
+
+    // Add controller models
+    const controllerModelFactory = new XRControllerModelFactory();
+
+    const controllerGrip1 = renderer.xr.getControllerGrip(0);
+    controllerGrip1.add(
+      controllerModelFactory.createControllerModel(controllerGrip1),
+    );
+    dolly.add(controllerGrip1);
+
+    const controllerGrip2 = renderer.xr.getControllerGrip(1);
+    controllerGrip2.add(
+      controllerModelFactory.createControllerModel(controllerGrip2),
+    );
+    dolly.add(controllerGrip2);
+
+    // Add controller interaction
+    controller1.addEventListener("selectstart", () => {
+      console.log("Controller 1 select start");
+      selectMoleculeVR();
+    });
+
+    controller2.addEventListener("selectstart", () => {
+      console.log("Controller 2 select start");
+      selectMoleculeVR();
+    });
+  }
 
   const raycaster = new Raycaster();
 
@@ -482,6 +386,61 @@ onMount(async () => {
   }
 
   const animate = function () {
+    // Handle VR controller movement if in WebXR mode
+    if (webXR) {
+      const session = renderer.xr.getSession();
+      if (session) {
+        for (const source of session.inputSources) {
+          if (source.gamepad) {
+            const gamepad = source.gamepad;
+            const hand = source.handedness;
+
+            // Use thumbstick/touchpad for movement
+            if (gamepad.axes.length >= 2) {
+              const xAxis = gamepad.axes[2] || 0; // Right stick X or touchpad X
+              const yAxis = gamepad.axes[3] || 0; // Right stick Y or touchpad Y
+
+              if (Math.abs(xAxis) > 0.1 || Math.abs(yAxis) > 0.1) {
+                // Get the camera's forward and right directions
+                const cameraDirection = new Vector3();
+                const cameraRight = new Vector3();
+
+                renderer.xr.getCamera().getWorldDirection(cameraDirection);
+                cameraDirection.y = 0; // Keep movement horizontal
+                cameraDirection.normalize();
+
+                cameraRight.crossVectors(cameraDirection, new Vector3(0, 1, 0));
+                cameraRight.normalize();
+
+                // Calculate movement vector
+                const moveVector = new Vector3();
+                moveVector.addScaledVector(cameraDirection, -yAxis * 0.1);
+                moveVector.addScaledVector(cameraRight, xAxis * 0.1);
+
+                // Apply movement to dolly
+                const dolly = renderer.xr.getCamera().parent;
+                if (dolly) {
+                  dolly.position.add(moveVector);
+                }
+              }
+            }
+
+            // Use left thumbstick for up/down movement if available
+            if (gamepad.axes.length >= 4 && hand === "left") {
+              const leftYAxis = gamepad.axes[1] || 0; // Left stick Y
+
+              if (Math.abs(leftYAxis) > 0.1) {
+                const dolly = renderer.xr.getCamera().parent;
+                if (dolly) {
+                  dolly.position.y += leftYAxis * 0.1;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     if (currentLayoutIteration < layoutIterations) {
       layout.step();
       currentLayoutIteration++;
@@ -593,10 +552,19 @@ onMount(async () => {
     }
 
     renderer.render(scene, camera);
-    requestAnimationFrame(animate);
+
+    // Continue animation loop only if not in WebXR mode
+    if (!webXR) {
+      requestAnimationFrame(animate);
+    }
   };
 
-  animate();
+  // Start the animation loop - use setAnimationLoop for WebXR, regular requestAnimationFrame otherwise
+  if (webXR) {
+    renderer.setAnimationLoop(animate);
+  } else {
+    animate();
+  }
 
   renderGraph.on("changed", (changes) => {
     const non_update = changes.filter(
@@ -758,24 +726,24 @@ onMount(async () => {
   }
 
   function selectMoleculeVR() {
-      console.log("inside selectMoleculeVR");
-      if (!hoveredNode) return;
+    console.log("inside selectMoleculeVR");
+    if (!hoveredNode) return;
 
-      let parent = hoveredNode.parent;
+    let parent = hoveredNode.parent;
 
-      if (parent?.parent !== meshes) {
-        parent = parent?.parent;
-      }
-
-      if (parent) {
-        parent.getWorldPosition(newCameraTarget);
-        zoomTarget = 60.0;
-        zoomFinished = false;
-        targetedNode = parent;
-      }
-
-      lockedOnMolecule = true;
+    if (parent?.parent !== meshes) {
+      parent = parent?.parent;
     }
+
+    if (parent) {
+      parent.getWorldPosition(newCameraTarget);
+      zoomTarget = 60.0;
+      zoomFinished = false;
+      targetedNode = parent;
+    }
+
+    lockedOnMolecule = true;
+  }
 
   async function handleAddedNode(nodeId: string) {
     let mostDistantPosition = {
@@ -1294,18 +1262,22 @@ function resizeMolecules() {
         on:click={() => {
           qClick();
         }}
-      >add inital species</p>
+      >
+        add inital species
+      </p>
     </div>
-    
+
     <div class="key_input">
       <KeycapButton key="W"></KeycapButton>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
         on:click={() => {
           wClick();
         }}
-      >add layer</p>
+      >
+        add layer
+      </p>
     </div>
 
     <div class="key_input">
@@ -1316,7 +1288,9 @@ function resizeMolecules() {
         on:click={() => {
           fClick();
         }}
-      >filter graph</p>
+      >
+        filter graph
+      </p>
     </div>
 
     <div class="key_input">
@@ -1327,7 +1301,9 @@ function resizeMolecules() {
         on:click={() => {
           pClick();
         }}
-      >find path</p>
+      >
+        find path
+      </p>
     </div>
 
     <div class="key_input">
@@ -1338,7 +1314,9 @@ function resizeMolecules() {
         on:click={() => {
           rClick();
         }}
-      >reset graph</p>
+      >
+        reset graph
+      </p>
     </div>
   </div>
 
@@ -1559,9 +1537,12 @@ function resizeMolecules() {
             <button
               on:click={() => {
                 const element = document.getElementById("filterElement").value;
-                const operatorKey = document.getElementById("filterElementOperator").value;
+                const operatorKey = document.getElementById(
+                  "filterElementOperator",
+                ).value;
                 const operator = COUNT_OPERATORS.get(operatorKey);
-                const count = document.getElementById("filterElementInput").value;
+                const count =
+                  document.getElementById("filterElementInput").value;
                 filters.push((node) =>
                   filterByAtomCount(node, element, count, operator),
                 );
@@ -1593,9 +1574,12 @@ function resizeMolecules() {
             <input type="number" step="1" id="filterChargeInput" />
             <button
               on:click={() => {
-                const chargeOperatorKey = document.getElementById("filterChargeOperator").value;
+                const chargeOperatorKey = document.getElementById(
+                  "filterChargeOperator",
+                ).value;
                 const chargeOperator = COUNT_OPERATORS.get(chargeOperatorKey);
-                const cargeCount = document.getElementById("filterChargeInput").value;
+                const cargeCount =
+                  document.getElementById("filterChargeInput").value;
                 filters.push((node) =>
                   filterChargeCount(node, cargeCount, chargeOperator),
                 );
@@ -1626,11 +1610,21 @@ function resizeMolecules() {
             <input type="number" step="1" id="filterMultiplicityInput" />
             <button
               on:click={() => {
-                const multiplicityOperatorKey = document.getElementById("filterMultiplicityOperator").value;
-                const multiplicityOperator = COUNT_OPERATORS.get(multiplicityOperatorKey);
-                const multiplicityCount = document.getElementById("filterMultiplicityInput").value;
+                const multiplicityOperatorKey = document.getElementById(
+                  "filterMultiplicityOperator",
+                ).value;
+                const multiplicityOperator = COUNT_OPERATORS.get(
+                  multiplicityOperatorKey,
+                );
+                const multiplicityCount = document.getElementById(
+                  "filterMultiplicityInput",
+                ).value;
                 filters.push((node) =>
-                  filterMultiplicityCount(node, multiplicityCount, multiplicityOperator),
+                  filterMultiplicityCount(
+                    node,
+                    multiplicityCount,
+                    multiplicityOperator,
+                  ),
                 );
                 filters = filters;
 
@@ -1639,7 +1633,8 @@ function resizeMolecules() {
                 );
                 filterSentences = filterSentences;
 
-                document.getElementById("filterMultiplicityOperator").value = "==";
+                document.getElementById("filterMultiplicityOperator").value =
+                  "==";
                 document.getElementById("filterMultiplicityInput").value = "";
                 filterApplied = true;
                 filterGraph();
