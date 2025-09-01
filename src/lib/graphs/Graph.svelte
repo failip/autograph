@@ -46,6 +46,7 @@ export let xyzPath: string;
 export let useHash: boolean = false;
 export let xyzFiles: Map<string, File> | null = null;
 export let startSpecies: string[] = [];
+export let hideCu: boolean = false;
 
 let pathSearchStart = new Array<string>();
 let pathChanged = false;
@@ -108,8 +109,9 @@ let most_freqent_species = new Set<string>();
 let species_count = new Map<string, number>();
 
 let hiddenElements = new Set<string>();
-hiddenElements.add("Cu");
-
+  if (hideCu) {
+    hiddenElements.add("Cu");
+  }
 
 // Begin VR adapdter
 let xrSession: XRSession | null = null;
@@ -1599,7 +1601,7 @@ function resizeMolecules() {
                 filterSentences = filterSentences;
 
                 document.getElementById("filterElement").value = "C";
-                document.getElementById("filterELementOperator").value = "==";
+                document.getElementById("filterElementOperator").value = "==";
                 document.getElementById("filterElementInput").value = "";
                 filterApplied = true;
                 filterGraph();
