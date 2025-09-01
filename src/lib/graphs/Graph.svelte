@@ -10,6 +10,8 @@ import createGraph, {
   type NodeId,
 } from "ngraph.graph";
 import KeycapButton from "$lib/ui/KeycapButton.svelte";
+import RoundButton from "$lib/ui/RoundButton.svelte";
+import SideButton from "$lib/ui/SideButton.svelte";
 
 import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
 import { MoleculeGenerator } from "$lib/rendering/molecules";
@@ -115,6 +117,7 @@ let hiddenElements = new Set<string>();
 
 // Begin VR adapdter
 let xrSession: XRSession | null = null;
+let isXrSession = false;
 
 setupXRSession().catch(err => {
   console.error("Fehler beim Starten der XR Session:", err);
@@ -159,6 +162,7 @@ async function setupXRSession() {
 
   // Startet die kontinuierliche Eingabeschleife
   xrSession.requestAnimationFrame(onXRFrame);
+  isXrSession = true;
 }
 
 function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
@@ -218,14 +222,27 @@ function onTriggerPress(hand: XRHandedness) {
 
 function onGripPress(hand: XRHandedness) {
   console.log(`→ Aktion: Grip (${hand})`);
+  if (hand === 'left') {
+    rClick();
+  }
 }
 
 function onLowerButtonPress(hand: XRHandedness) {
   console.log(`→ Aktion: Lower button (${hand})`);
+  if (hand === 'left') {
+    pClick();
+  } else {
+    qClick();
+  }
 }
 
 function onUpperButtonPress(hand: XRHandedness) {
   console.log(`→ Aktion: Upper button (${hand})`);
+  if (hand === 'left') {
+    fClick();
+  } else {
+    wClick();
+  }
 }
 
 function onStickPress(hand: XRHandedness) {
@@ -1295,7 +1312,11 @@ function resizeMolecules() {
 
   <div id="keys_overlay">
     <div class="key_input">
-      <KeycapButton key="Q"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="A"></RoundButton>
+      {:else}
+        <KeycapButton key="Q"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1306,7 +1327,11 @@ function resizeMolecules() {
     </div>
     
     <div class="key_input">
-      <KeycapButton key="W"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="B"></RoundButton>
+      {:else}
+        <KeycapButton key="W"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1317,7 +1342,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="F"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="Y"></RoundButton>
+      {:else}
+        <KeycapButton key="F"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1328,7 +1357,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="P"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="X"></RoundButton>
+      {:else}
+        <KeycapButton key="P"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1339,7 +1372,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="R"></KeycapButton>
+      {#if isXrSession}
+        <SideButton key="LB"></SideButton>
+      {:else}
+        <KeycapButton key="R"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
