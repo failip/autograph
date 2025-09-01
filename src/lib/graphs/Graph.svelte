@@ -10,6 +10,8 @@ import createGraph, {
   type NodeId,
 } from "ngraph.graph";
 import KeycapButton from "$lib/ui/KeycapButton.svelte";
+import RoundButton from "$lib/ui/RoundButton.svelte";
+import SideButton from "$lib/ui/SideButton.svelte";
 
 import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
 import { MoleculeGenerator } from "$lib/rendering/molecules";
@@ -46,6 +48,7 @@ export let xyzPath: string;
 export let useHash: boolean = false;
 export let xyzFiles: Map<string, File> | null = null;
 export let startSpecies: string[] = [];
+export let hideCu: boolean = false;
 
 let pathSearchStart = new Array<string>();
 let pathChanged = false;
@@ -108,11 +111,13 @@ let most_freqent_species = new Set<string>();
 let species_count = new Map<string, number>();
 
 let hiddenElements = new Set<string>();
-hiddenElements.add("Cu");
-
+  if (hideCu) {
+    hiddenElements.add("Cu");
+  }
 
 // Begin VR adapdter
 let xrSession: XRSession | null = null;
+let isXrSession = false;
 
 setupXRSession().catch(err => {
   console.error("Fehler beim Starten der XR Session:", err);
@@ -157,6 +162,7 @@ async function setupXRSession() {
 
   // Startet die kontinuierliche Eingabeschleife
   xrSession.requestAnimationFrame(onXRFrame);
+  isXrSession = true;
 }
 
 function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
@@ -216,14 +222,27 @@ function onTriggerPress(hand: XRHandedness) {
 
 function onGripPress(hand: XRHandedness) {
   console.log(`→ Aktion: Grip (${hand})`);
+  if (hand === 'left') {
+    rClick();
+  }
 }
 
 function onLowerButtonPress(hand: XRHandedness) {
   console.log(`→ Aktion: Lower button (${hand})`);
+  if (hand === 'left') {
+    pClick();
+  } else {
+    qClick();
+  }
 }
 
 function onUpperButtonPress(hand: XRHandedness) {
   console.log(`→ Aktion: Upper button (${hand})`);
+  if (hand === 'left') {
+    fClick();
+  } else {
+    wClick();
+  }
 }
 
 function onStickPress(hand: XRHandedness) {
@@ -951,37 +970,43 @@ function onKeyDown(event: KeyboardEvent) {
 }
 
 function qClick() {
-  searchVisible = !searchVisible;
-  search_value = "";
+  if (!searchVisible) {
+    searchVisible = !searchVisible;
+    search_value = "";
 
-  if (searchVisible) {
-    search_results.clear();
-    most_freqent_species.forEach((species) => {
-      search_results.add(species);
-    });
-    search_results = search_results;
-    pathSearchVisible = false;
-    filterVisible = false;
-    settingsVisible = false;
+    if (searchVisible) {
+      search_results.clear();
+      most_freqent_species.forEach((species) => {
+        search_results.add(species);
+      });
+      search_results = search_results;
+      pathSearchVisible = false;
+      filterVisible = false;
+      settingsVisible = false;
+    }
   }
 }
 
 function pClick() {
-  pathSearchVisible = !pathSearchVisible;
-  pathSearchStart = [];
-  if (pathSearchVisible) {
-    searchVisible = false;
-    filterVisible = false;
-    settingsVisible = false;
+  if (!pathSearchVisible) {
+    pathSearchVisible = !pathSearchVisible;
+    pathSearchStart = [];
+    if (pathSearchVisible) {
+      searchVisible = false;
+      filterVisible = false;
+      settingsVisible = false;
+    }
   }
 }
 
 function fClick() {
-  filterVisible = !filterVisible;
-  if (filterVisible) {
-    searchVisible = false;
-    pathSearchVisible = false;
-    settingsVisible = false;
+  if (!filterVisible) {
+    filterVisible = !filterVisible;
+    if (filterVisible) {
+      searchVisible = false;
+      pathSearchVisible = false;
+      settingsVisible = false;
+    }
   }
 }
 
@@ -1287,7 +1312,11 @@ function resizeMolecules() {
 
   <div id="keys_overlay">
     <div class="key_input">
-      <KeycapButton key="Q"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="A"></RoundButton>
+      {:else}
+        <KeycapButton key="Q"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1298,7 +1327,11 @@ function resizeMolecules() {
     </div>
     
     <div class="key_input">
-      <KeycapButton key="W"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="B"></RoundButton>
+      {:else}
+        <KeycapButton key="W"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1309,7 +1342,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="F"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="Y"></RoundButton>
+      {:else}
+        <KeycapButton key="F"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1320,7 +1357,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="P"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="X"></RoundButton>
+      {:else}
+        <KeycapButton key="P"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1331,7 +1372,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="R"></KeycapButton>
+      {#if isXrSession}
+        <SideButton key="LB"></SideButton>
+      {:else}
+        <KeycapButton key="R"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1379,6 +1424,16 @@ function resizeMolecules() {
   {/if}
   {#if pathSearchVisible}
     <div id="pathSearchOverlay">
+      <button
+        style="padding-left: 25%; font-size: 1rem; background-color: transparent; border: none; cursor: pointer"
+        on:click={() => {
+          searchVisible = false;
+          pathSearchVisible = false;
+          filterVisible = false;
+          settingsVisible = false;
+          search_value = "";
+        }}>X</button
+      >
       <div>
         <datalist id="species">
           {#each currentSpecies as species}
@@ -1535,6 +1590,16 @@ function resizeMolecules() {
   {#if filterVisible}
     <div class="overlay" style="backdrop-filter: blur(10px);">
       <div class="filters_overlay">
+        <button
+          style="display: flex; align-self: end; font-size: 1rem; background-color: transparent; border: none; cursor: pointer"
+          on:click={() => {
+            searchVisible = false;
+            pathSearchVisible = false;
+            filterVisible = false;
+            settingsVisible = false;
+            search_value = "";
+          }}>X</button
+        >
         <div class="filter_overlay">
           <div style="pointer-events: all;">
             <p>Elements</p>
@@ -1573,7 +1638,7 @@ function resizeMolecules() {
                 filterSentences = filterSentences;
 
                 document.getElementById("filterElement").value = "C";
-                document.getElementById("filterELementOperator").value = "==";
+                document.getElementById("filterElementOperator").value = "==";
                 document.getElementById("filterElementInput").value = "";
                 filterApplied = true;
                 filterGraph();
