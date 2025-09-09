@@ -1,4 +1,4 @@
-import createGraph, { Graph } from "ngraph.graph";
+import createGraph, { type Graph } from "ngraph.graph";
 
 interface ChemkinFile {
   elements: string[];

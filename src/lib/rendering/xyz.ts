@@ -1,5 +1,4 @@
 import npyjs from "npyjs";
-import { run } from "svelte/internal";
 
 let numpyjs = new npyjs();
 

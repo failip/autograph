@@ -1,9 +1,8 @@
 <script lang="ts">
-import { Graph } from "ngraph.graph";
+import { chemkinFileToGraph, parseChemkinFile } from "$lib/files/chemkin";
 import GraphElement from "$lib/graphs/Graph.svelte";
 import { createGraphFromString } from "$lib/graphs/graphs";
-import { chemkinFileToGraph, parseChemkinFile } from "$lib/files/chemkin";
-import { onMount } from "svelte";
+import type { Graph } from "ngraph.graph";
 let loadedGraph = false;
 let graph: Graph;
 let xyzPath = "";

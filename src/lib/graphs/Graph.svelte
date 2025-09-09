@@ -315,8 +315,13 @@ onMount(async () => {
   scene.add(perspectiveCamera);
   scene.add(orthographicCamera);
   orthographicCamera.zoom = 10.0;
-  camera = orthographicCamera;
-  controls = controllers[1];
+  if (webXR) {
+    camera = perspectiveCamera;
+    controls = controllers[0];
+  } else {
+    camera = orthographicCamera;
+    controls = controllers[1];
+  }
   controls.target = cameraTarget;
   controls.update();
 
@@ -1437,8 +1442,20 @@ function resizeMolecules() {
         <select
           name="camera"
           id="camera"
+          disabled={webXR}
           on:change={(event) => {
             const value = event.target.value;
+
+            if (webXR) {
+              // Force perspective in VR mode
+              camera.remove(directionalLight);
+              camera = perspectiveCamera;
+              camera.add(directionalLight);
+              controls.enabled = false;
+              controls = controllers[0];
+              controls.enabled = true;
+              return;
+            }
 
             if (value == "orthographic") {
               camera.remove(directionalLight);

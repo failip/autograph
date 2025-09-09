@@ -1,4 +1,4 @@
-import { Node } from "ngraph.graph";
+import type { Node } from "ngraph.graph";
 import { Molecule, SmilesParser } from "openchemlib";
 
 export type Filter = (node: Node) => boolean;
