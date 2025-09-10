@@ -4,7 +4,7 @@ import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerM
 export class VRControls {
   public target: Object3D
   public camera: PerspectiveCamera;
-  public distanceFromFocus = 100.0;
+  public distanceFromFocus = 50.0;
   public rotationSpeed = 1.0;
   public enabled = true;
   private xrSession: XRSession;
@@ -30,7 +30,7 @@ export class VRControls {
 
   // Control limits
   public minDistance = 5;
-  public maxDistance = 10;
+  public maxDistance = 100000.0;
   public minPolarAngle = 0;
   public maxPolarAngle = Math.PI;
   public enableDamping = true;
@@ -102,7 +102,17 @@ export class VRControls {
     this.rotateDelta = new Vector2();
 
     // Initialize dolly position based on target and distance
-    this.setDollyPositionFromSpherical();
+    this.initializeDollyPosition();
+  }
+
+  private initializeDollyPosition(): void {
+    // Initialize spherical coordinates with proper values
+    this.spherical.radius = this.distanceFromFocus;
+    this.spherical.phi = Math.PI / 2; // Start at horizontal level
+    this.spherical.theta = 0; // Start facing the target
+
+    // Set dolly position based on spherical coordinates
+    this.updateDollyFromSpherical();
   }
 
   private setDollyPositionFromSpherical(): void {
@@ -146,15 +156,6 @@ export class VRControls {
     return Math.pow(0.95, normalizedDelta);
   }
 
-  private moveDollyToProperDistance(): void {
-    // Initialize dolly position if needed
-    if (this.spherical.radius === 0) {
-      this.spherical.radius = this.distanceFromFocus;
-      this.spherical.phi = Math.PI / 2;
-      this.spherical.theta = 0;
-    }
-  }
-
   private handleControllerInput(): void {
     if (!this.controllers || this.controllers.length === 0) return;
 
@@ -191,21 +192,10 @@ export class VRControls {
   public update(delta: number = 0.0001): void {
     if (!this.enabled) return;
 
-    this.moveDollyToProperDistance();
-
     // Handle VR controller input
     this.handleControllerInput();
 
-    // Apply orbit controls logic similar to OrbitControls
-    const position = this.dolly.position;
-    const offset = new Vector3().copy(position).sub(this.target.position);
-
-    // Rotate offset to "y-axis-is-up" space
-    offset.applyQuaternion(this.quat);
-
-    // Update spherical coordinates
-    this.spherical.setFromVector3(offset);
-
+    // Apply damping and delta changes to spherical coordinates
     if (this.enableDamping) {
       this.spherical.theta += this.sphericalDelta.theta * this.dampingFactor;
       this.spherical.phi += this.sphericalDelta.phi * this.dampingFactor;
@@ -223,13 +213,14 @@ export class VRControls {
 
     this.spherical.makeSafe();
 
-    // Convert back to world coordinates
-    offset.setFromSpherical(this.spherical);
+    // Convert spherical coordinates back to world position
+    const offset = new Vector3().setFromSpherical(this.spherical);
     offset.applyQuaternion(this.quatInverse);
 
     // Update dolly position
-    position.copy(this.target.position).add(offset);
+    this.dolly.position.copy(this.target.position).add(offset);
     this.dolly.lookAt(this.target.position);
+    this.dolly.rotateZ(Math.PI); // Ensure the dolly faces the target
 
     if (this.enableDamping) {
       this.sphericalDelta.theta *= (1 - this.dampingFactor);
