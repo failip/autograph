@@ -1037,6 +1037,9 @@ function rClick() {
   shortestPath = [];
 }
 
+/**
+ * applies filters and returns 
+ */
 function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
   const nodesToRemove = new Set<NodeId>();
   const reactionNodesToRemove = new Set<NodeId>();
@@ -1049,7 +1052,7 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
     let removeReactionNode = false;
 
     if (node.data.type === "reaction") {
-      console.warn(node);
+      //console.warn(node);
       removeReactionNode = reactionFilters.some((filter) => filter(node));
 
       if (removeReactionNode) {
@@ -1093,11 +1096,18 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
   });
 
   /**
+   * add all chosen reactionNodes to nodesToRemove after deleating all links to them
+  */
+  reactionNodesToRemove.forEach((nodeId) => {
+    nodesToRemove.add(nodeId);
+  })
+
+  /**
    * remove all chosen nodes exept nodes of the initial species
   */
   nodesToRemove.forEach((nodeId) => {
     if (initialSpecies.has(nodeId)) {
-      console.log("initialSpecies wird nicht entfernt: "+nodeId);
+      //console.log("initialSpecies wird nicht entfernt: "+nodeId);
       return;
     }
     renderGraph.removeNode(nodeId);
