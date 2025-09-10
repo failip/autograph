@@ -30,7 +30,42 @@ export const FILTERWORDS: Map<string, string> = new Map([
 const MOLECULE_CACHE = new Map<string, Molecule>();
 const SMILES_PARSER = new SmilesParser();
 
+/**
+ * Used to check if node fulfills the condition of a specific sum of atoms of a specific element.
+ * @param node node, the node to check by the filter
+ * @param atom string, the atom that is to be counted
+ * @param count number, the number to check against
+ * @param operator the operator to check atom against count
+ * @returns boolean, true if the node fulfills the filter conditions
+ */
 export function filterByAtomCount(
+  node: Node,
+  atom: string,
+  count: number,
+  operator: CountOperator,
+): boolean {
+  const smiles = node.data.name;
+
+  const atomRegex = new RegExp(`\\b${atom}\\b`, "g");
+  const matches = smiles.match(atomRegex);
+  const actualCount = matches ? matches.length : 0;
+
+  if (operator(actualCount, count)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * originaly used to filter molecules by atom count. 
+ * Discontinued due to somehow non working SMILES_PARSER handling
+ * @param node node, the node to check by the filter
+ * @param atom string, the atom that is to be counted
+ * @param count number, the number to check against
+ * @param operator the operator to check atom against count
+ * @returns boolean, true if the node fulfills the filter conditions
+ */
+export function filterByAtomCountOld(
   node: Node,
   atom: string,
   count: number,
@@ -164,21 +199,36 @@ export function filterByRingSize(
   return false;
 }
 
-export function filterReactionEqualReactantProduct(
-  node: Node,
-): boolean {
-  if (node.data.type !== "reaction") {
+export function makeDuplicateReactionFilter(
+  seen: Set<string>
+): (node: Node) => boolean {
+  return (node: Node) => {
+    if (node.data.type !== "reaction") return false;
+
+    const educts = Array.from(node.links ?? [])
+      .filter(link => link.toId === node.id)
+      .map(link => link.fromId)
+      .sort()
+      .join(" + ");
+
+    const products = Array.from(node.links ?? [])
+      .filter(link => link.fromId === node.id)
+      .map(link => link.toId)
+      .sort()
+      .join(" + ");
+
+    const key = `${educts} => ${products}`;
+
+    if (seen.has(key)) {
+      console.log(`Doppelte Reaktion erkannt: ${key}`);
+      return true;
+    }
+
+    seen.add(key);
     return false;
-  }
-  const partners = node.data.name.split(" => ");
-  if (partners.length !== 2) {
-    return false;
-  }
-  if (partners[0] == partners[1]) {
-    return true;
-  }
-  return false;
+  };
 }
+
 
 export function filterReactionMaxPartners(
   node: Node,

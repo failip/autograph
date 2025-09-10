@@ -1,6 +1,6 @@
 <script lang="ts">
 import { PathSearchGraph } from "$lib/graphs/graph";
-import { filterByAtomCount, filterChargeCount, filterMultiplicityCount, FILTERWORDS } from "$lib/filter/filter";
+import { filterByAtomCount, filterChargeCount, filterMultiplicityCount, makeDuplicateReactionFilter, FILTERWORDS } from "$lib/filter/filter";
 import Fuse from "fuse.js";
 import createLayout, { type Vector } from "ngraph.forcelayout";
 import createGraph, {
@@ -40,7 +40,7 @@ import {
   SRGBColorSpace,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-    import { ConstNode } from "three/examples/jsm/nodes/Nodes.js";
+    import { bool, ConstNode } from "three/examples/jsm/nodes/Nodes.js";
 
 export let graph: Graph;
 export let secondaryGraphs: Graph[] = [];
@@ -100,12 +100,14 @@ let reactionSize = 0.35;
 let lineWidth = 0.01;
 
 let filters = new Array<Filter>();
+let reactionFilters: Array<(node: Node) => boolean> = [];
 let filterApplied = false;
 let removedByFilter = new Array<{
   nodes: Set<NodeId>;
   edges: Set<[NodeId, NodeId]>;
 }>();
 let filterSentences = new Array<string>();
+let seenReactions = new Set<string>();
 
 let most_freqent_species = new Set<string>();
 let species_count = new Map<string, number>();
@@ -777,24 +779,24 @@ onMount(async () => {
   }
 
   function selectMoleculeVR() {
-      console.log("inside selectMoleculeVR");
-      if (!hoveredNode) return;
+    console.log("inside selectMoleculeVR");
+    if (!hoveredNode) return;
 
-      let parent = hoveredNode.parent;
+    let parent = hoveredNode.parent;
 
-      if (parent?.parent !== meshes) {
-        parent = parent?.parent;
-      }
-
-      if (parent) {
-        parent.getWorldPosition(newCameraTarget);
-        zoomTarget = 60.0;
-        zoomFinished = false;
-        targetedNode = parent;
-      }
-
-      lockedOnMolecule = true;
+    if (parent?.parent !== meshes) {
+      parent = parent?.parent;
     }
+
+    if (parent) {
+      parent.getWorldPosition(newCameraTarget);
+      zoomTarget = 60.0;
+      zoomFinished = false;
+      targetedNode = parent;
+    }
+
+    lockedOnMolecule = true;
+  }
 
   async function handleAddedNode(nodeId: string) {
     let mostDistantPosition = {
@@ -1037,33 +1039,74 @@ function rClick() {
 
 function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
   const nodesToRemove = new Set<NodeId>();
+  const reactionNodesToRemove = new Set<NodeId>();
   const edgesToRemove = new Set<[NodeId, NodeId]>();
-  console.log("Filtering graph");
+  /**
+   * iterate over all nodes and add their id to sets when a filter aplies to them
+  */
+  renderGraph.forEachNode((node: Node) => {
+    let removeNode = false;
+    let removeReactionNode = false;
+
+    if (node.data.type === "reaction") {
+      console.warn(node);
+      removeReactionNode = reactionFilters.some((filter) => filter(node));
+
+      if (removeReactionNode) {
+        if (!node.id) {
+          return;
+        }
+        reactionNodesToRemove.add(node.id);
+      }
+    } else {
+      removeNode = filters.some((filter) => filter(node));
+
+      if (removeNode) {
+        if (!node.links) {
+          return;
+        }
+        node.links.forEach((link) => {
+          nodesToRemove.add(link.fromId);
+          nodesToRemove.add(link.toId);
+          edgesToRemove.add([link.fromId, link.toId]);
+          renderGraph.removeLink(link);
+        });
+      }
+    }
+  });
+
+  /**
+   * remove Links from or to reactions that will be removed by filters
+  */
   renderGraph.forEachNode((node: Node) => {
     if (node.data.type == "reaction") {
       return;
     }
-    const removeNode = filters.some((filter) => filter(node));
-    if (removeNode) {
-      if (!node.links) {
-        return;
-      }
-      node.links.forEach((link) => {
-        nodesToRemove.add(link.fromId);
-        nodesToRemove.add(link.toId);
-        edgesToRemove.add([link.fromId, link.toId]);
-        renderGraph.removeLink(link);
-      });
+    if (!node.links) {
+      return;
     }
+    node.links.forEach((link) => {
+      if (reactionNodesToRemove.has(link.fromId) || reactionNodesToRemove.has(link.toId)) {
+      edgesToRemove.add([link.fromId, link.toId]);
+    }
+    });
   });
+
+  /**
+   * remove all chosen nodes exept nodes of the initial species
+  */
   nodesToRemove.forEach((nodeId) => {
     if (initialSpecies.has(nodeId)) {
+      console.log("initialSpecies wird nicht entfernt: "+nodeId);
       return;
     }
     renderGraph.removeNode(nodeId);
     currentSpecies.delete(nodeId);
   });
 
+  /**
+   * remove all nodes that are left with no connection to the network exept of the initial species
+  */
   renderGraph.forEachNode((node: Node) => {
     if (node.data.type == "reaction") {
       return;
@@ -1283,6 +1326,15 @@ function resizeMolecules() {
       object.scale.set(moleculeSize, moleculeSize, moleculeSize);
     }
   });
+}
+
+function canonicalizeReaction(reaction: string): string {
+  const [eductStr, productStr] = reaction.split("=>").map(s => s.trim());
+
+  const educts = eductStr.split("+").map(s => s.trim()).sort();
+  const products = productStr.split("+").map(s => s.trim()).sort();
+
+  return `${educts.join(" + ")} ⇌ ${products.join(" + ")}`;
 }
 </script>
 
@@ -1711,6 +1763,24 @@ function resizeMolecules() {
                 pathSearchGraph = new PathSearchGraph(renderGraph);
               }}>Add</button
             >
+          </div>
+        </div>
+        <div class="filter_overlay">
+          <div style="pointer-events: all;">
+            <p>Pruduct Educt double</p>
+            <button
+              on:click={() => {   
+                reactionFilters.push(makeDuplicateReactionFilter(seenReactions));
+                reactionFilters = reactionFilters;
+
+                filterSentences.push("Remove duplicate reactions based on educt permutation");
+                filterSentences = filterSentences;
+
+                filterApplied = true;
+                filterGraph();
+                pathSearchGraph = new PathSearchGraph(renderGraph);
+              }}
+          >Add</button>
           </div>
         </div>
         {#each filterSentences.entries() as [index, filter]}
