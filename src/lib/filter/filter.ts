@@ -199,32 +199,40 @@ export function filterByRingSize(
   return false;
 }
 
-export function makeDuplicateReactionFilter(
+function cleanSmiles(smiles: string): string {
+  return smiles.replace(/\{[^}]+\}/g, '').trim(); // entfernt charge und multiplicity
+}
+
+function parseReactionName(name: string): [string[], string[]] {
+  const [left, right] = name.split("=>").map(side =>
+    side.split("+").map(sm => cleanSmiles(sm)).sort()
+  );
+  return [left, right];
+}
+
+export function filterDuplicateReactions(
   seen: Set<string>
 ): (node: Node) => boolean {
   return (node: Node) => {
     if (node.data.type !== "reaction") return false;
 
-    const educts = Array.from(node.links ?? [])
-      .filter(link => link.toId === node.id)
-      .map(link => link.fromId)
-      .sort()
-      .join(" + ");
+    const name = node.data.name;
+    if (!name.includes("=>")) return false;
 
-    const products = Array.from(node.links ?? [])
-      .filter(link => link.fromId === node.id)
-      .map(link => link.toId)
-      .sort()
-      .join(" + ");
+    const [educts, products] = parseReactionName(name);
 
-    const key = `${educts} => ${products}`;
+    // Erzeuge kanonischen, richtungsunabhängigen Schlüssel
+    const key1 = JSON.stringify([educts, products]);
+    const key2 = JSON.stringify([products, educts]);
 
-    if (seen.has(key)) {
-      console.log(`Doppelte Reaktion erkannt: ${key}`);
+    const canonicalKey = key1 < key2 ? key1 : key2;
+
+    if (seen.has(canonicalKey)) {
+      console.log("Doppelte Reaktion erkannt:", canonicalKey);
       return true;
     }
 
-    seen.add(key);
+    seen.add(canonicalKey);
     return false;
   };
 }
