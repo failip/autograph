@@ -1804,6 +1804,9 @@ function canonicalizeReaction(reaction: string): string {
                 filters = filters;
                 filterSentences.splice(index, 1);
                 filterSentences = filterSentences;
+                reactionFilters.splice(index, 1);
+                reactionFilters = reactionFilters;
+                
                 const removedNodesAndEdges = removedByFilter.splice(index, 1);
                 removedNodesAndEdges.forEach((removed) => {
                   removed.nodes.forEach((nodeId) => {
