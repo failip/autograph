@@ -1,6 +1,6 @@
 <script lang="ts">
 import { PathSearchGraph } from "$lib/graphs/graph";
-import { filterByAtomCount, filterChargeCount, filterMultiplicityCount, makeDuplicateReactionFilter, FILTERWORDS } from "$lib/filter/filter";
+import { filterByAtomCount, filterChargeCount, filterMultiplicityCount, filterDuplicateReactions, FILTERWORDS } from "$lib/filter/filter";
 import Fuse from "fuse.js";
 import createLayout, { type Vector } from "ngraph.forcelayout";
 import createGraph, {
@@ -1044,6 +1044,9 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
   const nodesToRemove = new Set<NodeId>();
   const reactionNodesToRemove = new Set<NodeId>();
   const edgesToRemove = new Set<[NodeId, NodeId]>();
+
+  seenReactions.clear(); //clean start
+  console.warn(seenReactions);
   /**
    * iterate over all nodes and add their id to sets when a filter aplies to them
   */
@@ -1052,7 +1055,6 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
     let removeReactionNode = false;
 
     if (node.data.type === "reaction") {
-      //console.warn(node);
       removeReactionNode = reactionFilters.some((filter) => filter(node));
 
       if (removeReactionNode) {
@@ -1077,7 +1079,6 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
       }
     }
   });
-
   /**
    * remove Links from or to reactions that will be removed by filters
   */
@@ -1098,6 +1099,7 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
   /**
    * add all chosen reactionNodes to nodesToRemove after deleating all links to them
   */
+ console.warn(reactionNodesToRemove);
   reactionNodesToRemove.forEach((nodeId) => {
     nodesToRemove.add(nodeId);
   })
@@ -1107,7 +1109,6 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
   */
   nodesToRemove.forEach((nodeId) => {
     if (initialSpecies.has(nodeId)) {
-      //console.log("initialSpecies wird nicht entfernt: "+nodeId);
       return;
     }
     renderGraph.removeNode(nodeId);
@@ -1780,7 +1781,7 @@ function canonicalizeReaction(reaction: string): string {
             <p>Pruduct Educt double</p>
             <button
               on:click={() => {   
-                reactionFilters.push(makeDuplicateReactionFilter(seenReactions));
+                reactionFilters.push(filterDuplicateReactions(seenReactions));
                 reactionFilters = reactionFilters;
 
                 filterSentences.push("Remove duplicate reactions based on educt permutation");
