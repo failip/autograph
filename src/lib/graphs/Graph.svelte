@@ -45,6 +45,7 @@ import {
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { VRButton } from "three/examples/jsm/webxr/VRButton.js";
 import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
+import { VRControls } from "$lib/vr/controls/VRControls";
 
 export let graph: Graph;
 export let secondaryGraphs: Graph[] = [];
@@ -84,7 +85,7 @@ let rerenderLines = false;
 let perspectiveCamera: PerspectiveCamera;
 let orthographicCamera: OrthographicCamera;
 let camera: PerspectiveCamera | OrthographicCamera;
-let controls: OrbitControls;
+let controls: OrbitControls | VRControls;
 let controllers: [OrbitControls, OrbitControls];
 let directionalLight: DirectionalLight;
 let lineInstances: InstancedMesh;
@@ -116,6 +117,8 @@ let species_count = new Map<string, number>();
 
 let hiddenElements = new Set<string>();
 hiddenElements.add("Cu");
+
+let initializeVR = () => {};
 
 const reactionNodes = new Array<Node>();
 graph.forEachNode((node) => {
@@ -241,51 +244,62 @@ onMount(async () => {
     alpha: true,
   });
 
-  // VR setup variables
-  let dolly;
-  let moveSpeed = 0.1;
-
-  // Enable WebXR if the prop is set
-  if (webXR) {
+  initializeVR = () => {
     renderer.xr.enabled = true;
-    document.body.appendChild(VRButton.createButton(renderer));
+    const sessionOptions = {
+      optionalFeatures: ["local-floor", "bounded-floor", "layers"],
+    };
+    navigator.xr
+      .requestSession("immersive-vr", sessionOptions)
+      .then(async (session) => {
+        await renderer.xr.setSession(session);
+        camera = perspectiveCamera;
+        controls.enabled = false;
+        controls = new VRControls(renderer, scene, perspectiveCamera, meshes);
+      });
+  };
 
-    // Create dolly for VR movement
-    dolly = new Object3D();
-    scene.add(dolly);
+  // // VR setup variables
+  // let dolly;
 
-    // Add VR controllers
-    const controller1 = renderer.xr.getController(0);
-    const controller2 = renderer.xr.getController(1);
-    dolly.add(controller1);
-    dolly.add(controller2);
+  // // Enable WebXR if the prop is set
 
-    // Add controller models
-    const controllerModelFactory = new XRControllerModelFactory();
+  //   // Create dolly for VR movement
+  //   dolly = new Object3D();
+  //   scene.add(dolly);
 
-    const controllerGrip1 = renderer.xr.getControllerGrip(0);
-    controllerGrip1.add(
-      controllerModelFactory.createControllerModel(controllerGrip1),
-    );
-    dolly.add(controllerGrip1);
+  //   // Add VR controllers
+  //   const controller1 = renderer.xr.getController(0);
+  //   const controller2 = renderer.xr.getController(1);
+  //   dolly.add(controller1);
+  //   dolly.add(controller2);
 
-    const controllerGrip2 = renderer.xr.getControllerGrip(1);
-    controllerGrip2.add(
-      controllerModelFactory.createControllerModel(controllerGrip2),
-    );
-    dolly.add(controllerGrip2);
+  //   // Add controller models
+  //   const controllerModelFactory = new XRControllerModelFactory();
 
-    // Add controller interaction
-    controller1.addEventListener("selectstart", () => {
-      console.log("Controller 1 select start");
-      selectMoleculeVR();
-    });
+  //   const controllerGrip1 = renderer.xr.getControllerGrip(0);
+  //   controllerGrip1.add(
+  //     controllerModelFactory.createControllerModel(controllerGrip1),
+  //   );
+  //   dolly.add(controllerGrip1);
 
-    controller2.addEventListener("selectstart", () => {
-      console.log("Controller 2 select start");
-      selectMoleculeVR();
-    });
-  }
+  //   const controllerGrip2 = renderer.xr.getControllerGrip(1);
+  //   controllerGrip2.add(
+  //     controllerModelFactory.createControllerModel(controllerGrip2),
+  //   );
+  //   dolly.add(controllerGrip2);
+
+  //   // Add controller interaction
+  //   controller1.addEventListener("selectstart", () => {
+  //     console.log("Controller 1 select start");
+  //     selectMoleculeVR();
+  //   });
+
+  //   controller2.addEventListener("selectstart", () => {
+  //     console.log("Controller 2 select start");
+  //     selectMoleculeVR();
+  //   });
+  // }
 
   const raycaster = new Raycaster();
 
@@ -315,13 +329,9 @@ onMount(async () => {
   scene.add(perspectiveCamera);
   scene.add(orthographicCamera);
   orthographicCamera.zoom = 10.0;
-  if (webXR) {
-    camera = perspectiveCamera;
-    controls = controllers[0];
-  } else {
-    camera = orthographicCamera;
-    controls = controllers[1];
-  }
+
+  camera = orthographicCamera;
+  controls = controllers[1];
   controls.target = cameraTarget;
   controls.update();
 
@@ -391,60 +401,7 @@ onMount(async () => {
   }
 
   const animate = function () {
-    // Handle VR controller movement if in WebXR mode
-    if (webXR) {
-      const session = renderer.xr.getSession();
-      if (session) {
-        for (const source of session.inputSources) {
-          if (source.gamepad) {
-            const gamepad = source.gamepad;
-            const hand = source.handedness;
-
-            // Use thumbstick/touchpad for movement
-            if (gamepad.axes.length >= 2) {
-              const xAxis = gamepad.axes[2] || 0; // Right stick X or touchpad X
-              const yAxis = gamepad.axes[3] || 0; // Right stick Y or touchpad Y
-
-              if (Math.abs(xAxis) > 0.1 || Math.abs(yAxis) > 0.1) {
-                // Get the camera's forward and right directions
-                const cameraDirection = new Vector3();
-                const cameraRight = new Vector3();
-
-                renderer.xr.getCamera().getWorldDirection(cameraDirection);
-                cameraDirection.y = 0; // Keep movement horizontal
-                cameraDirection.normalize();
-
-                cameraRight.crossVectors(cameraDirection, new Vector3(0, 1, 0));
-                cameraRight.normalize();
-
-                // Calculate movement vector
-                const moveVector = new Vector3();
-                moveVector.addScaledVector(cameraDirection, -yAxis * 0.1);
-                moveVector.addScaledVector(cameraRight, xAxis * 0.1);
-
-                // Apply movement to dolly
-                const dolly = renderer.xr.getCamera().parent;
-                if (dolly) {
-                  dolly.position.add(moveVector);
-                }
-              }
-            }
-
-            // Use left thumbstick for up/down movement if available
-            if (gamepad.axes.length >= 4 && hand === "left") {
-              const leftYAxis = gamepad.axes[1] || 0; // Left stick Y
-
-              if (Math.abs(leftYAxis) > 0.1) {
-                const dolly = renderer.xr.getCamera().parent;
-                if (dolly) {
-                  dolly.position.y += leftYAxis * 0.1;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    controls.update();
 
     if (currentLayoutIteration < layoutIterations) {
       layout.step();
@@ -558,7 +515,6 @@ onMount(async () => {
 
     renderer.render(scene, camera);
 
-    // Continue animation loop only if not in WebXR mode
     if (!webXR) {
       requestAnimationFrame(animate);
     }
@@ -1259,6 +1215,9 @@ function resizeMolecules() {
   </button>
 
   <div id="keys_overlay">
+    {#if webXR}
+      <button on:click={initializeVR} style="color: black">Enter VR</button>
+    {/if}
     <div class="key_input">
       <KeycapButton key="Q"></KeycapButton>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -1445,17 +1404,6 @@ function resizeMolecules() {
           disabled={webXR}
           on:change={(event) => {
             const value = event.target.value;
-
-            if (webXR) {
-              // Force perspective in VR mode
-              camera.remove(directionalLight);
-              camera = perspectiveCamera;
-              camera.add(directionalLight);
-              controls.enabled = false;
-              controls = controllers[0];
-              controls.enabled = true;
-              return;
-            }
 
             if (value == "orthographic") {
               camera.remove(directionalLight);

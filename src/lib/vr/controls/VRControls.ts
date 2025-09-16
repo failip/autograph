@@ -220,7 +220,7 @@ export class VRControls {
     // Update dolly position
     this.dolly.position.copy(this.target.position).add(offset);
     this.dolly.lookAt(this.target.position);
-    this.dolly.rotateZ(Math.PI); // Ensure the dolly faces the target
+    this.dolly.rotateY(Math.PI); // Ensure the dolly faces the target
 
     if (this.enableDamping) {
       this.sphericalDelta.theta *= (1 - this.dampingFactor);
