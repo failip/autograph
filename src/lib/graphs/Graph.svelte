@@ -116,7 +116,7 @@ type UndoAction =
   | { type: "filter"; filterId: string }
   | { type: "addLayer"; addedNodes: NodeId[]; addedEdges: [NodeId, NodeId][] }
   | { type: "addInitialNode"; node: NodeId; addedNodes: NodeId[]; addedEdges: [NodeId, NodeId][] };
-
+let undoEnabled = false;
 
 let filters = new Array<Filter>();
 let reactionFilters: Array<(node: Node) => boolean> = [];
@@ -954,6 +954,9 @@ onMount(async () => {
   for (const species of startSpecies) {
     addInitialNode(species);
   }
+
+  //start undo funktionality
+  undoEnabled = true;
 });
 
 function updateMousePosition(event) {
@@ -1261,11 +1264,13 @@ function addLayer() {
     );
   });
 
-  undoStack.push({
-    type: "addLayer",
-    addedNodes,
-    addedEdges,
-  });
+  if (undoEnabled) {
+    undoStack.push({
+      type: "addLayer",
+      addedNodes,
+      addedEdges,
+    });
+  }
 }
 
 function addInitialNode(node: string) {
@@ -1294,12 +1299,14 @@ function addInitialNode(node: string) {
     initialSpecies,
   );
 
-  undoStack.push({
-    type: "addInitialNode",
-    node,
-    addedNodes,
-    addedEdges,
-  });
+  if (undoEnabled) {
+    undoStack.push({
+      type: "addInitialNode",
+      node,
+      addedNodes,
+      addedEdges,
+    });
+  }
 }
 
 let search_results = new Set<string>();
