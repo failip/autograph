@@ -1714,21 +1714,33 @@ function undoLastAction() {
 
   {#if searchVisible}
     <div id="search_overlay">
-      <div id="initial_species_search">
-        <input
-          type="text"
-          bind:value={search_value}
-          on:input={filterToInitialSpecies}
-          placeholder="Search for species"
-        />
-        <div id="search_results">
-          {#each search_results as species}
-            <button
-              class="search_result"
-              on:click={addSpeciesAsInitialSpecies}
-              value={species}>{species}</button
-            >
-          {/each}
+      <div class="search-block">
+        <button
+          class="close-button"
+          on:click={() => {
+            searchVisible = false;
+            pathSearchVisible = false;
+            filterVisible = false;
+            settingsVisible = false;
+            search_value = "";
+          }}>X</button
+        >
+        <div id="initial_species_search">
+          <input
+            type="text"
+            bind:value={search_value}
+            on:input={filterToInitialSpecies}
+            placeholder="Search for species"
+          />
+          <div id="search_results">
+            {#each search_results as species}
+              <button
+                class="search_result"
+                on:click={addSpeciesAsInitialSpecies}
+                value={species}>{species}</button
+              >
+            {/each}
+          </div>
         </div>
       </div>
       <div id="current_initial_species">
@@ -2174,18 +2186,42 @@ function undoLastAction() {
 
 #search_overlay {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   font-family: "Quicksand", sans-serif;
+
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 0.4fr auto 0.1fr;
   grid-template-areas:
     ". . ."
-    ". initial_species_search current_initial_species"
+    ". search_block current_initial_species"
     ". . .";
+}
+
+.search-block {
+  grid-area: search_block;
+  width: 45rem;
+  max-width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+}
+
+.close-button {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  margin-bottom: 0.25rem;
+  user-select: none;
+  color: #000;
 }
 
 .gaussian_blur {
@@ -2193,10 +2229,6 @@ function undoLastAction() {
 }
 
 #initial_species_search {
-  grid-area: initial_species_search;
-  width: 45rem;
-  max-width: 100%;
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2214,11 +2246,8 @@ function undoLastAction() {
   font-family: "Quicksand", sans-serif;
   padding: 0.5rem;
   box-sizing: border-box;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-width: 2px;
-  border-color: #000000;
-  border-style: solid;
+  border-radius: 6px 6px 0 0;
+  border: 2px solid #000;
 }
 
 #search_results {
@@ -2245,13 +2274,12 @@ function undoLastAction() {
 .search_result {
   background-color: lightgray;
   border: none;
-  margin: none;
-  padding: none;
-  min-width: 100%;
+  padding: 0.25rem 0.5rem;
+  width: 100%;
   font-size: 1.5rem;
   font-family: "Quicksand", sans-serif;
   font-weight: 400;
-  color: #000000;
+  color: #000;
   text-align: left;
   text-overflow: ellipsis;
   overflow: hidden;
