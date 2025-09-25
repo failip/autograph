@@ -99,14 +99,34 @@ let moleculeSize = 1.0;
 let reactionSize = 0.35;
 let lineWidth = 0.01;
 
+type NodeType = "species" | "reaction";
+
+interface FilterDefinition {
+  id: string;
+  type: NodeType;
+  fn: (node: Node) => boolean;
+  sentence: string;
+  removedNodes: NodeId[];
+  removedEdges: [NodeId, NodeId][];
+}
+let allFilters: FilterDefinition[] = [];
+
+let undoStack: UndoAction[] = [];
+type UndoAction =
+  | { type: "filter"; filterId: string }
+  | { type: "addLayer"; addedNodes: NodeId[]; addedEdges: [NodeId, NodeId][] }
+  | { type: "addInitialNode"; node: NodeId; addedNodes: NodeId[]; addedEdges: [NodeId, NodeId][] };
+
+
 let filters = new Array<Filter>();
 let reactionFilters: Array<(node: Node) => boolean> = [];
-let filterApplied = false;
 let removedByFilter = new Array<{
   nodes: Set<NodeId>;
   edges: Set<[NodeId, NodeId]>;
 }>();
 let filterSentences = new Array<string>();
+
+let filterApplied = false;
 let seenReactions = new Set<string>();
 
 let most_freqent_species = new Set<string>();
@@ -1019,9 +1039,6 @@ function wClick() {
     return;
   }
   addLayer();
-  console.log("Adding layer");
-  console.log("Nodes: ", renderGraph.getNodesCount());
-  console.log("Links: ", renderGraph.getLinksCount());
 }
 
 function rClick() {
@@ -1037,10 +1054,105 @@ function rClick() {
   shortestPath = [];
 }
 
+
+function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
+  const nodesToRemove = new Set<NodeId>();
+  const edgesToRemove = new Set<[NodeId, NodeId]>();
+  const reactionNodesToRemove = new Set<NodeId>();
+
+  // Aufteilen der Filter nach Typ
+  const speciesFilters = allFilters.filter((f) => f.type === "species");
+  const reactionFilters = allFilters.filter((f) => f.type === "reaction");
+
+  seenReactions.clear(); // clean start
+
+  // Alle vorher gespeicherten Änderungen (für Undo) leeren
+  allFilters.forEach((f) => {
+    f.removedNodes = [];
+    f.removedEdges = [];
+  });
+
+  // Erste Runde: Node-Filter anwenden
+  renderGraph.forEachNode((node: Node) => {
+    if (node.data.type === "reaction") {
+      for (const filter of reactionFilters) {
+        if (filter.fn(node)) {
+          reactionNodesToRemove.add(node.id);
+          filter.removedNodes.push(node.id);
+        }
+      }
+    } else {
+      for (const filter of speciesFilters) {
+        if (filter.fn(node)) {
+          if (!node.links) continue;
+
+          node.links.forEach((link) => {
+            nodesToRemove.add(link.fromId);
+            nodesToRemove.add(link.toId);
+            edgesToRemove.add([link.fromId, link.toId]);
+            filter.removedNodes.push(link.fromId, link.toId);
+            filter.removedEdges.push([link.fromId, link.toId]);
+            renderGraph.removeLink(link);
+          });
+        }
+      }
+    }
+  });
+
+  // Zweite Runde: Kanten von/zu Reaktionsknoten entfernen
+  renderGraph.forEachNode((node: Node) => {
+    if (node.data.type === "reaction") return;
+    if (!node.links) return;
+
+    node.links.forEach((link) => {
+      if (reactionNodesToRemove.has(link.fromId) || reactionNodesToRemove.has(link.toId)) {
+        edgesToRemove.add([link.fromId, link.toId]);
+
+        // Finde passende Filter, um die Entfernung zu registrieren
+        for (const filter of reactionFilters) {
+          if (reactionNodesToRemove.has(link.fromId) || reactionNodesToRemove.has(link.toId)) {
+            filter.removedEdges.push([link.fromId, link.toId]);
+          }
+        }
+
+        renderGraph.removeLink(link);
+      }
+    });
+  });
+
+  // Reaktionsknoten aus der finalen Löschliste übernehmen
+  reactionNodesToRemove.forEach((nodeId) => {
+    nodesToRemove.add(nodeId);
+  });
+
+  // Alle nodesToRemove (außer initialSpecies) löschen
+  nodesToRemove.forEach((nodeId) => {
+    if (initialSpecies.has(nodeId)) return;
+
+    const node = graph.getNode(nodeId);
+    if (!node) return;
+
+    renderGraph.removeNode(nodeId);
+    currentSpecies.delete(nodeId);
+  });
+
+  // Nachträgliches Entfernen isolierter Nodes (außer initialSpecies)
+  renderGraph.forEachNode((node: Node) => {
+    if (node.data.type === "reaction") return;
+    if (initialSpecies.has(node.id)) return;
+    if (!node.links || node.links.size === 0) {
+      nodesToRemove.add(node.id);
+      renderGraph.removeNode(node.id);
+    }
+  });
+
+  return { nodes: nodesToRemove, edges: edgesToRemove };
+}
+
 /**
  * applies filters and returns 
  */
-function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
+function filterGraphOld(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
   const nodesToRemove = new Set<NodeId>();
   const reactionNodesToRemove = new Set<NodeId>();
   const edgesToRemove = new Set<[NodeId, NodeId]>();
@@ -1135,6 +1247,9 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
 }
 
 function addLayer() {
+  const addedNodes: NodeId[] = [];
+  const addedEdges: [NodeId, NodeId][] = [];
+
   const oldSpecies = new Set<string>(currentSpecies);
   currentSpecies.forEach((species) => {
     addAllPossibleReactionsToRendergraph(
@@ -1145,15 +1260,32 @@ function addLayer() {
       oldSpecies,
     );
   });
+
+  undoStack.push({
+    type: "addLayer",
+    addedNodes,
+    addedEdges,
+  });
 }
 
 function addInitialNode(node: string) {
+  const addedNodes: NodeId[] = [];
+  const addedEdges: [NodeId, NodeId][] = [];
+
   initialSpecies.add(node);
   currentSpecies.add(node);
   initialSpecies = initialSpecies;
   currentSpecies = currentSpecies;
 
-  addSpeciesToRendergraph(graph, renderGraph, node, currentSpecies);
+  addSpeciesToRendergraph(
+    graph, 
+    renderGraph, 
+    node, 
+    currentSpecies,
+    addedNodes,
+    addedEdges
+  );
+
   addAllPossibleReactionsToRendergraph(
     graph,
     renderGraph,
@@ -1161,6 +1293,13 @@ function addInitialNode(node: string) {
     currentSpecies,
     initialSpecies,
   );
+
+  undoStack.push({
+    type: "addInitialNode",
+    node,
+    addedNodes,
+    addedEdges,
+  });
 }
 
 let search_results = new Set<string>();
@@ -1188,6 +1327,8 @@ function addSpeciesToRendergraph(
   renderGraph: Graph,
   species: string,
   currentSpecies: Set<string>,
+  addedNodes?: NodeId[], // Optional
+  addedEdges?: [NodeId, NodeId][] // Optional
 ) {
   const alreadyInGraph = renderGraph.hasNode(species);
   if (alreadyInGraph) {
@@ -1213,6 +1354,10 @@ function addSpeciesToRendergraph(
 
   currentSpecies.add(species);
   renderGraph.addNode(node.id, node.data);
+
+  if (addedNodes) {
+    addedNodes.push(node.id);
+  }
 }
 
 function addAllPossibleReactionsToRendergraph(
@@ -1221,6 +1366,8 @@ function addAllPossibleReactionsToRendergraph(
   species: string,
   currentSpecies: Set<string>,
   oldSpecies: Set<string>,
+  addedNodes?: NodeId[],
+  addedEdges?: [NodeId, NodeId][]
 ) {
   const node = graph.getNode(species);
   if (!node) {
@@ -1272,10 +1419,12 @@ function addAllPossibleReactionsToRendergraph(
 
     if (!renderGraph.hasNode(reactionId)) {
       renderGraph.addNode(reactionId, reaction.data);
+      if (addedNodes) addedNodes.push(reactionId);
     }
 
     if (!renderGraph.hasLink(species, reactionId)) {
       renderGraph.addLink(species, reactionId);
+      if (addedEdges) addedEdges.push([species, reactionId]);
     }
 
     inEdges.forEach((edge) => {
@@ -1284,12 +1433,13 @@ function addAllPossibleReactionsToRendergraph(
         renderGraph,
         edge.fromId as string,
         currentSpecies,
+        addedNodes,
+        addedEdges
       );
 
-      const linkAlreadyInGraph = renderGraph.hasLink(edge.fromId, reactionId);
-
-      if (!linkAlreadyInGraph) {
+      if (!renderGraph.hasLink(edge.fromId, reactionId)) {
         renderGraph.addLink(edge.fromId, reactionId);
+        if (addedEdges) addedEdges.push([edge.fromId, reactionId]);
       }
     });
 
@@ -1299,9 +1449,13 @@ function addAllPossibleReactionsToRendergraph(
         renderGraph,
         edge.toId as string,
         currentSpecies,
+        addedNodes,
+        addedEdges
       );
+
       if (!renderGraph.hasLink(reactionId, edge.toId)) {
         renderGraph.addLink(reactionId, edge.toId);
+        if (addedEdges) addedEdges.push([reactionId, edge.toId]);
       }
     });
   });
@@ -1339,6 +1493,7 @@ function resizeMolecules() {
   });
 }
 
+//ToDo remove unused function if no further need
 function canonicalizeReaction(reaction: string): string {
   const [eductStr, productStr] = reaction.split("=>").map(s => s.trim());
 
@@ -1347,6 +1502,89 @@ function canonicalizeReaction(reaction: string): string {
 
   return `${educts.join(" + ")} ⇌ ${products.join(" + ")}`;
 }
+
+function removeFilter(id: string) {
+  const index = allFilters.findIndex(f => f.id === id);
+  if (index === -1) return;
+
+  const removedFilter = allFilters.splice(index, 1)[0];
+
+  // Wiederherstellen der gelöschten Knoten/Edges
+  removedFilter.removedNodes.forEach((nodeId) => {
+    const node = graph.getNode(nodeId);
+    if (!node) return;
+    renderGraph.addNode(nodeId, node.data);
+  });
+
+  removedFilter.removedEdges.forEach(([from, to]) => {
+    const edge = graph.getLink(from, to);
+    if (!edge) return;
+    renderGraph.addLink(from, to, edge.data);
+  });
+
+  allFilters = allFilters;
+}
+
+function undoLastAction() {
+  if (undoStack.length === 0) {
+    console.warn("Nothing to undo");
+    return;
+  }
+
+  const lastAction = undoStack.pop();
+
+  if (lastAction.type === "filter") {
+    const filterIndex = allFilters.findIndex((f) => f.id === lastAction.filterId);
+    if (filterIndex === -1) {
+      console.warn("Filter not found");
+      return;
+    }
+
+    const [removedFilter] = allFilters.splice(filterIndex, 1);
+    allFilters = [...allFilters]; // Reaktivität auslösen
+
+    // Wiederherstellen der entfernten Knoten und Kanten
+    removedFilter.removedNodes?.forEach((nodeId) => {
+      const node = graph.getNode(nodeId);
+      if (node) {
+        renderGraph.addNode(nodeId, node.data);
+        currentSpecies.add(nodeId); // optional, je nach gewünschtem Verhalten
+      }
+    });
+
+    removedFilter.removedEdges?.forEach(([from, to]) => {
+      const edge = graph.getLink(from, to);
+      if (edge) {
+        renderGraph.addLink(from, to, edge.data);
+      }
+    });
+
+  } else if (lastAction.type === "addLayer" || lastAction.type === "addInitialNode") {
+    // Entferne Kanten
+    lastAction.addedEdges.forEach(([from, to]) => {
+      renderGraph.removeLink(from, to);
+    });
+
+    // Entferne Knoten
+    lastAction.addedNodes.forEach((nodeId) => {
+      renderGraph.removeNode(nodeId);
+      currentSpecies.delete(nodeId);
+    });
+
+    // Wenn initial node, auch initialSpecies anpassen
+    if (lastAction.type === "addInitialNode") {
+      initialSpecies.delete(lastAction.node);
+      currentSpecies.delete(lastAction.node);
+      initialSpecies = new Set(initialSpecies);
+      currentSpecies = new Set(currentSpecies);
+    }
+  }
+
+  // Re-Render und ggf. Pfadsuche neu initialisieren
+  filterGraph();
+  pathSearchGraph = new PathSearchGraph(renderGraph);
+}
+
 </script>
 
 <div class="page">
@@ -1362,16 +1600,27 @@ function canonicalizeReaction(reaction: string): string {
     />
   </div>
 
-  <button
-    class="settingsButton"
-    on:click={() => {
-      settingsVisible = !settingsVisible;
-    }}
-  >
-    <picture>
-      <img src="/images/settings.svg" alt="An icon of a settings" />
-    </picture>
-  </button>
+  <div class="top-right-button-group">
+    <button
+      class="settingsButton"
+      on:click={undoLastAction}
+      title="Undo last action"
+    >
+      <picture>
+        <img src="/images/undo.svg" alt="Undo icon" />
+      </picture>
+    </button>
+
+    <button
+      class="settingsButton"
+      on:click={() => settingsVisible = !settingsVisible}
+      title="Settings"
+    >
+      <picture>
+        <img src="/images/settings.svg" alt="Settings icon" />
+      </picture>
+    </button>
+  </div>
 
   <div id="keys_overlay">
     <div class="key_input">
@@ -1690,15 +1939,19 @@ function canonicalizeReaction(reaction: string): string {
                 const operatorKey = document.getElementById("filterElementOperator").value;
                 const operator = COUNT_OPERATORS.get(operatorKey);
                 const count = document.getElementById("filterElementInput").value;
-                filters.push((node) =>
-                  filterByAtomCount(node, element, count, operator),
-                );
-                filters = filters;
+                let filterId = crypto.randomUUID();
 
-                filterSentences.push(
-                  `Remove all molecules where the number of ${element} atoms is ${FILTERWORDS.get(operatorKey)} ${count}`,
-                );
-                filterSentences = filterSentences;
+                allFilters.push({
+                  id: filterId,
+                  type: "species",
+                  fn: (node) => filterByAtomCount(node, element, count, operator),
+                  sentence: `Remove all molecules where the number of ${element} atoms is ${FILTERWORDS.get(operatorKey)} ${count}`,
+                  removedNodes: [],
+                  removedEdges: [],
+                });
+                undoStack.push({ type: "filter", filterId: filterId });
+
+                allFilters = allFilters;
 
                 document.getElementById("filterElement").value = "C";
                 document.getElementById("filterElementOperator").value = "==";
@@ -1724,15 +1977,19 @@ function canonicalizeReaction(reaction: string): string {
                 const chargeOperatorKey = document.getElementById("filterChargeOperator").value;
                 const chargeOperator = COUNT_OPERATORS.get(chargeOperatorKey);
                 const cargeCount = document.getElementById("filterChargeInput").value;
-                filters.push((node) =>
-                  filterChargeCount(node, cargeCount, chargeOperator),
-                );
-                filters = filters;
+                let filterId = crypto.randomUUID();
 
-                filterSentences.push(
-                  `Remove all molecules where the charge is ${FILTERWORDS.get(chargeOperatorKey)} ${cargeCount}`,
-                );
-                filterSentences = filterSentences;
+                allFilters.push({
+                  id: filterId,
+                  type: "species",
+                  fn: (node) => filterChargeCount(node, cargeCount, chargeOperator),
+                  sentence: `Remove all molecules where the charge is ${FILTERWORDS.get(chargeOperatorKey)} ${cargeCount}`,
+                  removedNodes: [],
+                  removedEdges: [],
+                });
+                undoStack.push({ type: "filter", filterId: filterId });
+
+                allFilters = allFilters;
 
                 document.getElementById("filterChargeOperator").value = "==";
                 document.getElementById("filterChargeInput").value = "";
@@ -1757,15 +2014,19 @@ function canonicalizeReaction(reaction: string): string {
                 const multiplicityOperatorKey = document.getElementById("filterMultiplicityOperator").value;
                 const multiplicityOperator = COUNT_OPERATORS.get(multiplicityOperatorKey);
                 const multiplicityCount = document.getElementById("filterMultiplicityInput").value;
-                filters.push((node) =>
-                  filterMultiplicityCount(node, multiplicityCount, multiplicityOperator),
-                );
-                filters = filters;
+                let filterId = crypto.randomUUID();
 
-                filterSentences.push(
-                  `Remove all molecules where the spin-multilpicity is ${FILTERWORDS.get(multiplicityOperatorKey)} ${multiplicityCount}`,
-                );
-                filterSentences = filterSentences;
+                allFilters.push({
+                  id: filterId,
+                  type: "species",
+                  fn: (node) => filterMultiplicityCount(node, multiplicityCount, multiplicityOperator),
+                  sentence: `Remove all molecules where the spin-multilpicity is ${FILTERWORDS.get(multiplicityOperatorKey)} ${multiplicityCount}`,
+                  removedNodes: [],
+                  removedEdges: [],
+                });
+                undoStack.push({ type: "filter", filterId: filterId });
+
+                allFilters = allFilters;
 
                 document.getElementById("filterMultiplicityOperator").value = "==";
                 document.getElementById("filterMultiplicityInput").value = "";
@@ -1780,12 +2041,21 @@ function canonicalizeReaction(reaction: string): string {
           <div style="pointer-events: all;">
             <p>Pruduct Educt double</p>
             <button
-              on:click={() => {   
-                reactionFilters.push(filterDuplicateReactions(seenReactions));
-                reactionFilters = reactionFilters;
+              on:click={() => {  
+                const duplicateReactionFilterFn = filterDuplicateReactions(seenReactions);
+                let filterId = crypto.randomUUID();
+                
+                allFilters.push({
+                  id: filterId,
+                  type: "reaction",
+                  fn: duplicateReactionFilterFn,
+                  sentence: `Remove duplicate reactions based on educt permutation`,
+                  removedNodes: [],
+                  removedEdges: [],
+                });
+                undoStack.push({ type: "filter", filterId: filterId });
 
-                filterSentences.push("Remove duplicate reactions based on educt permutation");
-                filterSentences = filterSentences;
+                allFilters = allFilters;
 
                 filterApplied = true;
                 filterGraph();
@@ -1794,38 +2064,13 @@ function canonicalizeReaction(reaction: string): string {
           >Add</button>
           </div>
         </div>
-        {#each filterSentences.entries() as [index, filter]}
+        {#each allFilters as filter (filter.id)}
           <div style="display: flex; align-items: center">
-            <p>{filter}</p>
+            <p>{filter.sentence}</p>
             <button
               style="margin-left: 0.5rem; height: fit-content"
-              on:click={() => {
-                filters.splice(index, 1);
-                filters = filters;
-                filterSentences.splice(index, 1);
-                filterSentences = filterSentences;
-                reactionFilters.splice(index, 1);
-                reactionFilters = reactionFilters;
-                
-                const removedNodesAndEdges = removedByFilter.splice(index, 1);
-                removedNodesAndEdges.forEach((removed) => {
-                  removed.nodes.forEach((nodeId) => {
-                    const node = graph.getNode(nodeId);
-                    if (!node) {
-                      return;
-                    }
-                    renderGraph.addNode(nodeId, node.data);
-                  });
-                  removed.edges.forEach((edgeNodes) => {
-                    const edge = graph.getLink(edgeNodes[0], edgeNodes[1]);
-                    if (!edge) {
-                      return;
-                    }
-                    renderGraph.addLink(edgeNodes[0], edgeNodes[1], edge.data);
-                  });
-                });
-              }}>Remove</button
-            >
+              on:click={() => removeFilter(filter.id)}
+            >Remove</button>
           </div>
         {/each}
       </div>
@@ -2107,25 +2352,36 @@ function canonicalizeReaction(reaction: string): string {
   pointer-events: none;
 }
 
-.settingsButton {
+.top-right-button-group {
   position: absolute;
-  top: 0px;
-  right: 0px;
+  top: 0;
+  right: 0;
   margin: 15px;
-  padding: 0px;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 100;
   pointer-events: all;
+}
+
+.settingsButton {
   width: 2rem;
   height: 2rem;
+  padding: 0;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 100;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .settingsButton img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
+
 
 @media (max-width: 400px) {
   #keys_overlay {
