@@ -132,6 +132,9 @@ let seenReactions = new Set<string>();
 let most_freqent_species = new Set<string>();
 let species_count = new Map<string, number>();
 
+const selectedSpecies = new Set<string>();
+let inAddLayerContext = false;
+
 let hiddenElements = new Set<string>();
   if (hideCu) {
     hiddenElements.add("Cu");
@@ -779,8 +782,19 @@ onMount(async () => {
   }
 
   function selectMolecule(event: PointerEvent) {
-    console.log("inside selectMolecule");
     if (!hoveredNode) return;
+
+    const nodeId = hoveredNode.userData?.name;
+    if (!nodeId) return;
+
+    // Mehrfachauswahl: Toggle-Verhalten
+    if (selectedSpecies.has(nodeId)) {
+      selectedSpecies.delete(nodeId);
+    } else {
+      selectedSpecies.add(nodeId);
+    }
+
+    console.log("Aktuell ausgewählte Spezies:", Array.from(selectedSpecies));
 
     let parent = hoveredNode.parent;
 
@@ -799,7 +813,6 @@ onMount(async () => {
   }
 
   function selectMoleculeVR() {
-    console.log("inside selectMoleculeVR");
     if (!hoveredNode) return;
 
     let parent = hoveredNode.parent;
@@ -1252,6 +1265,7 @@ function filterGraphOld(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } 
 function addLayer() {
   const addedNodes: NodeId[] = [];
   const addedEdges: [NodeId, NodeId][] = [];
+  inAddLayerContext = true;
 
   const oldSpecies = new Set<string>(currentSpecies);
   currentSpecies.forEach((species) => {
@@ -1261,8 +1275,12 @@ function addLayer() {
       species,
       currentSpecies,
       oldSpecies,
+      addedNodes,
+      addedEdges,
     );
   });
+
+  inAddLayerContext = false;
 
   if (undoEnabled) {
     undoStack.push({
@@ -1297,6 +1315,8 @@ function addInitialNode(node: string) {
     node,
     currentSpecies,
     initialSpecies,
+    addedNodes,
+    addedEdges
   );
 
   if (undoEnabled) {
@@ -1376,6 +1396,11 @@ function addAllPossibleReactionsToRendergraph(
   addedNodes?: NodeId[],
   addedEdges?: [NodeId, NodeId][]
 ) {
+  const isSelectiveAdd = inAddLayerContext && selectedSpecies.size > 0;
+  if (isSelectiveAdd && !selectedSpecies.has(species)) {
+    return;
+  }
+
   const node = graph.getNode(species);
   if (!node) {
     return;
