@@ -132,6 +132,11 @@ let seenReactions = new Set<string>();
 let most_freqent_species = new Set<string>();
 let species_count = new Map<string, number>();
 
+let inAddLayerContext = false;
+const moleculeGroups = new Map<string, Group>();
+const runs = new Map<string, Run>();
+let currentFrameIndex = 0;
+let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
   if (hideCu) {
     hiddenElements.add("Cu");
@@ -779,8 +784,34 @@ onMount(async () => {
   }
 
   function selectMolecule(event: PointerEvent) {
-    console.log("inside selectMolecule");
     if (!hoveredNode) return;
+    const nodeId = hoveredNode.userData?.name;
+    if (!nodeId) return;
+
+    const moleculeGroup = moleculeGroups.get(nodeId);
+    const run = runs.get(nodeId);
+
+    if (!moleculeGroup || !run) {
+      console.warn("Keine Molekülgruppe oder Run für", nodeId);
+      return;
+    }
+
+    // Mehrfachauswahl: Toggle-Verhalten
+    if (selectedSpecies.has(nodeId)) {
+      selectedSpecies.delete(nodeId);
+    } else {
+      selectedSpecies.add(nodeId);
+    }
+ 
+    if (moleculeGroup && run) {
+      moleculeGenerator.updateMolecule(
+        moleculeGroup,
+        run,
+        currentFrameIndex,
+        selectedSpecies,
+        nodeId
+      );
+    }
 
     let parent = hoveredNode.parent;
 
@@ -799,8 +830,35 @@ onMount(async () => {
   }
 
   function selectMoleculeVR() {
-    console.log("inside selectMoleculeVR");
     if (!hoveredNode) return;
+    const nodeId = hoveredNode.userData?.name;
+    if (!nodeId) return;
+
+    const moleculeGroup = moleculeGroups.get(nodeId);
+    const run = runs.get(nodeId);
+
+    if (!moleculeGroup || !run) {
+      console.warn("Keine Molekülgruppe oder Run für", nodeId);
+      return;
+    }
+
+    // Mehrfachauswahl: Toggle-Verhalten
+    if (selectedSpecies.has(nodeId)) {
+      selectedSpecies.delete(nodeId);
+    } else {
+      selectedSpecies.add(nodeId);
+    }
+
+    if (moleculeGroup && run) {
+      moleculeGenerator.updateMolecule(
+        moleculeGroup,
+        run,
+        currentFrameIndex,
+        selectedSpecies,
+        nodeId
+      );
+    }
+    
 
     let parent = hoveredNode.parent;
 
@@ -899,7 +957,17 @@ onMount(async () => {
         data = await response.text();
       }
       const run = parseRun(data);
+
       const molecule = moleculeGenerator.generateMolecule(run, hiddenElements);
+
+      moleculeGroups.set(nodeId, molecule); // molecule ist ein THREE.Group
+      runs.set(nodeId, run);
+
+      molecule.userData.run = run;
+      molecule.scale.set(moleculeSize, moleculeSize, moleculeSize);
+      
+      scene.add(molecule);
+
       if (!molecule) return;
       molecule.traverse((child) => {
         child.userData = node;
@@ -1252,6 +1320,7 @@ function filterGraphOld(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } 
 function addLayer() {
   const addedNodes: NodeId[] = [];
   const addedEdges: [NodeId, NodeId][] = [];
+  inAddLayerContext = true;
 
   const oldSpecies = new Set<string>(currentSpecies);
   currentSpecies.forEach((species) => {
@@ -1261,8 +1330,12 @@ function addLayer() {
       species,
       currentSpecies,
       oldSpecies,
+      addedNodes,
+      addedEdges,
     );
   });
+
+  inAddLayerContext = false;
 
   if (undoEnabled) {
     undoStack.push({
@@ -1297,6 +1370,8 @@ function addInitialNode(node: string) {
     node,
     currentSpecies,
     initialSpecies,
+    addedNodes,
+    addedEdges
   );
 
   if (undoEnabled) {
@@ -1376,6 +1451,11 @@ function addAllPossibleReactionsToRendergraph(
   addedNodes?: NodeId[],
   addedEdges?: [NodeId, NodeId][]
 ) {
+  const isSelectiveAdd = inAddLayerContext && selectedSpecies.size > 0;
+  if (isSelectiveAdd && !selectedSpecies.has(species)) {
+    return;
+  }
+
   const node = graph.getNode(species);
   if (!node) {
     return;
