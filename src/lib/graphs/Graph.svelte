@@ -1,30 +1,38 @@
 <script lang="ts">
-import { PathSearchGraph } from "$lib/graphs/graph";
 import {
   filterByAtomCount,
   filterChargeCount,
+  filterDuplicateReactions,
   filterMultiplicityCount,
   FILTERWORDS,
 } from "$lib/filter/filter";
+import { PathSearchGraph } from "$lib/graphs/graph";
+import KeycapButton from "$lib/ui/KeycapButton.svelte";
+import RoundButton from "$lib/ui/RoundButton.svelte";
+import SideButton from "$lib/ui/SideButton.svelte";
 import Fuse from "fuse.js";
 import createLayout, { type Vector } from "ngraph.forcelayout";
 import createGraph, {
-  type Node,
   type Graph,
   type Link,
+  type Node,
   type NodeId,
 } from "ngraph.graph";
-import KeycapButton from "$lib/ui/KeycapButton.svelte";
 
 import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
 import { MoleculeGenerator } from "$lib/rendering/molecules";
 import { parseRun } from "$lib/rendering/xyz.js";
+import { VRControls } from "$lib/vr/controls/VRControls";
 import { onMount } from "svelte";
 import {
   AmbientLight,
   BoxGeometry,
+  Color,
+  CylinderGeometry,
   DirectionalLight,
+  InstancedMesh,
   LineBasicMaterial,
+  Matrix4,
   Mesh,
   MeshBasicMaterial,
   Object3D,
@@ -33,19 +41,12 @@ import {
   Plane,
   Raycaster,
   Scene,
+  SRGBColorSpace,
   Vector2,
   Vector3,
   WebGLRenderer,
-  Color,
-  Matrix4,
-  InstancedMesh,
-  CylinderGeometry,
-  SRGBColorSpace,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { VRButton } from "three/examples/jsm/webxr/VRButton.js";
-import { XRControllerModelFactory } from "three/examples/jsm/webxr/XRControllerModelFactory.js";
-import { VRControls } from "$lib/vr/controls/VRControls";
 
 export let graph: Graph;
 export let secondaryGraphs: Graph[] = [];
@@ -54,6 +55,7 @@ export let useHash: boolean = false;
 export let xyzFiles: Map<string, File> | null = null;
 export let startSpecies: string[] = [];
 export let webXR: boolean = false;
+export let hideCu: boolean = false;
 
 let pathSearchStart = new Array<string>();
 let pathChanged = false;
@@ -94,6 +96,7 @@ let newCameraTarget = new Vector3();
 let zoomTarget = 10.0;
 let zoomFinished = true;
 let lockedOnMolecule = false;
+let initializeVR: () => void;
 
 let allMoleculesVisible = true;
 
@@ -104,21 +107,188 @@ let moleculeSize = 1.0;
 let reactionSize = 0.35;
 let lineWidth = 0.01;
 
+type NodeType = "species" | "reaction";
+
+interface FilterDefinition {
+  id: string;
+  type: NodeType;
+  fn: (node: Node) => boolean;
+  sentence: string;
+  removedNodes: NodeId[];
+  removedEdges: [NodeId, NodeId][];
+}
+let allFilters: FilterDefinition[] = [];
+
+let undoStack: UndoAction[] = [];
+type UndoAction =
+  | { type: "filter"; filterId: string }
+  | { type: "addLayer"; addedNodes: NodeId[]; addedEdges: [NodeId, NodeId][] }
+  | {
+      type: "addInitialNode";
+      node: NodeId;
+      addedNodes: NodeId[];
+      addedEdges: [NodeId, NodeId][];
+    };
+let undoEnabled = false;
+
 let filters = new Array<Filter>();
-let filterApplied = false;
+let reactionFilters: Array<(node: Node) => boolean> = [];
 let removedByFilter = new Array<{
   nodes: Set<NodeId>;
   edges: Set<[NodeId, NodeId]>;
 }>();
 let filterSentences = new Array<string>();
 
+let filterApplied = false;
+let seenReactions = new Set<string>();
+
 let most_freqent_species = new Set<string>();
 let species_count = new Map<string, number>();
 
+let inAddLayerContext = false;
+const moleculeGroups = new Map<string, Group>();
+const runs = new Map<string, Run>();
+let currentFrameIndex = 0;
+let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
-hiddenElements.add("Cu");
+if (hideCu) {
+  hiddenElements.add("Cu");
+}
 
-let initializeVR = () => {};
+// Begin VR adapdter
+let xrSession: XRSession | null = null;
+let isXrSession = false;
+
+setupXRSession().catch((err) => {
+  console.error("Fehler beim Starten der XR Session:", err);
+});
+
+async function isInlineXrAvailable(): Promise<boolean> {
+  if (!("xr" in navigator)) return false;
+  try {
+    return await navigator.xr.isSessionSupported("inline");
+  } catch {
+    return false;
+  }
+}
+
+async function setupXRSession() {
+  if (!("xr" in navigator)) {
+    console.warn("WebXR wird nicht unterstützt.");
+    return;
+  }
+
+  let supported = false;
+  try {
+    supported = await navigator.xr.isSessionSupported("immersive-vr");
+  } catch (err) {
+    console.error("Fehler beim Prüfen von WebXR-Unterstützung:", err);
+    return;
+  }
+
+  if (!supported) {
+    console.warn("Immersive VR wird nicht unterstützt.");
+    return;
+  }
+
+  console.log("WebXR und immersive-vr werden unterstützt. Setup beginnt...");
+
+  xrSession = await navigator.xr.requestSession("inline");
+  console.log("XR inline Session gestartet");
+
+  xrSession.addEventListener("inputsourceschange", () => {
+    console.log("InputSources aktualisiert:", xrSession!.inputSources);
+  });
+
+  // Startet die kontinuierliche Eingabeschleife
+  xrSession.requestAnimationFrame(onXRFrame);
+  isXrSession = true;
+}
+
+function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+  if (!xrSession) return;
+
+  const inputSources = xrSession.inputSources;
+
+  for (const source of inputSources) {
+    if (source.gamepad) {
+      const buttons = source.gamepad.buttons;
+      const hand = source.handedness;
+
+      handleControllerInput(source, buttons, hand);
+    }
+  }
+
+  // Schleife fortsetzen
+  xrSession.requestAnimationFrame(onXRFrame);
+}
+// End VR Adapter
+
+// Begin VR Input
+function handleControllerInput(
+  source: XRInputSource,
+  buttons: GamepadButton[],
+  hand: XRHandedness,
+) {
+  if (buttons[0]?.pressed) {
+    console.log(`[${hand}] Trigger gedrückt`);
+    onTriggerPress(hand);
+  }
+
+  if (buttons[1]?.pressed) {
+    console.log(`[${hand}] Grip gedrückt`);
+    onGripPress(hand);
+  }
+
+  if (buttons[2]?.pressed) {
+    console.log(`Unterer Tastenknopf [${hand}] gedrückt`);
+    onLowerButtonPress(hand);
+  }
+
+  if (buttons[3]?.pressed) {
+    console.log(`Oberer Tastenknopf [${hand}] gedrückt`);
+    onUpperButtonPress(hand);
+  }
+
+  if (buttons[4]?.pressed) {
+    console.log(`Klick auf den [${hand}]en Stick`);
+    onStickPress(hand);
+  }
+}
+
+function onTriggerPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Trigger (${hand})`);
+}
+
+function onGripPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Grip (${hand})`);
+  if (hand === "left") {
+    rClick();
+  }
+}
+
+function onLowerButtonPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Lower button (${hand})`);
+  if (hand === "left") {
+    pClick();
+  } else {
+    qClick();
+  }
+}
+
+function onUpperButtonPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Upper button (${hand})`);
+  if (hand === "left") {
+    fClick();
+  } else {
+    wClick();
+  }
+}
+
+function onStickPress(hand: XRHandedness) {
+  console.log(`→ Aktion: Stick (${hand})`);
+}
+// Ednd VR Input
 
 const reactionNodes = new Array<Node>();
 graph.forEachNode((node) => {
@@ -667,8 +837,34 @@ onMount(async () => {
   }
 
   function selectMolecule(event: PointerEvent) {
-    console.log("inside selectMolecule");
     if (!hoveredNode) return;
+    const nodeId = hoveredNode.userData?.name;
+    if (!nodeId) return;
+
+    const moleculeGroup = moleculeGroups.get(nodeId);
+    const run = runs.get(nodeId);
+
+    if (!moleculeGroup || !run) {
+      console.warn("Keine Molekülgruppe oder Run für", nodeId);
+      return;
+    }
+
+    // Mehrfachauswahl: Toggle-Verhalten
+    if (selectedSpecies.has(nodeId)) {
+      selectedSpecies.delete(nodeId);
+    } else {
+      selectedSpecies.add(nodeId);
+    }
+
+    if (moleculeGroup && run) {
+      moleculeGenerator.updateMolecule(
+        moleculeGroup,
+        run,
+        currentFrameIndex,
+        selectedSpecies,
+        nodeId,
+      );
+    }
 
     let parent = hoveredNode.parent;
 
@@ -687,8 +883,34 @@ onMount(async () => {
   }
 
   function selectMoleculeVR() {
-    console.log("inside selectMoleculeVR");
     if (!hoveredNode) return;
+    const nodeId = hoveredNode.userData?.name;
+    if (!nodeId) return;
+
+    const moleculeGroup = moleculeGroups.get(nodeId);
+    const run = runs.get(nodeId);
+
+    if (!moleculeGroup || !run) {
+      console.warn("Keine Molekülgruppe oder Run für", nodeId);
+      return;
+    }
+
+    // Mehrfachauswahl: Toggle-Verhalten
+    if (selectedSpecies.has(nodeId)) {
+      selectedSpecies.delete(nodeId);
+    } else {
+      selectedSpecies.add(nodeId);
+    }
+
+    if (moleculeGroup && run) {
+      moleculeGenerator.updateMolecule(
+        moleculeGroup,
+        run,
+        currentFrameIndex,
+        selectedSpecies,
+        nodeId,
+      );
+    }
 
     let parent = hoveredNode.parent;
 
@@ -787,7 +1009,17 @@ onMount(async () => {
         data = await response.text();
       }
       const run = parseRun(data);
+
       const molecule = moleculeGenerator.generateMolecule(run, hiddenElements);
+
+      moleculeGroups.set(nodeId, molecule); // molecule ist ein THREE.Group
+      runs.set(nodeId, run);
+
+      molecule.userData.run = run;
+      molecule.scale.set(moleculeSize, moleculeSize, moleculeSize);
+
+      scene.add(molecule);
+
       if (!molecule) return;
       molecule.traverse((child) => {
         child.userData = node;
@@ -842,6 +1074,9 @@ onMount(async () => {
   for (const species of startSpecies) {
     addInitialNode(species);
   }
+
+  //start undo funktionality
+  undoEnabled = true;
 });
 
 function updateMousePosition(event) {
@@ -880,37 +1115,43 @@ function onKeyDown(event: KeyboardEvent) {
 }
 
 function qClick() {
-  searchVisible = !searchVisible;
-  search_value = "";
+  if (!searchVisible) {
+    searchVisible = !searchVisible;
+    search_value = "";
 
-  if (searchVisible) {
-    search_results.clear();
-    most_freqent_species.forEach((species) => {
-      search_results.add(species);
-    });
-    search_results = search_results;
-    pathSearchVisible = false;
-    filterVisible = false;
-    settingsVisible = false;
+    if (searchVisible) {
+      search_results.clear();
+      most_freqent_species.forEach((species) => {
+        search_results.add(species);
+      });
+      search_results = search_results;
+      pathSearchVisible = false;
+      filterVisible = false;
+      settingsVisible = false;
+    }
   }
 }
 
 function pClick() {
-  pathSearchVisible = !pathSearchVisible;
-  pathSearchStart = [];
-  if (pathSearchVisible) {
-    searchVisible = false;
-    filterVisible = false;
-    settingsVisible = false;
+  if (!pathSearchVisible) {
+    pathSearchVisible = !pathSearchVisible;
+    pathSearchStart = [];
+    if (pathSearchVisible) {
+      searchVisible = false;
+      filterVisible = false;
+      settingsVisible = false;
+    }
   }
 }
 
 function fClick() {
-  filterVisible = !filterVisible;
-  if (filterVisible) {
-    searchVisible = false;
-    pathSearchVisible = false;
-    settingsVisible = false;
+  if (!filterVisible) {
+    filterVisible = !filterVisible;
+    if (filterVisible) {
+      searchVisible = false;
+      pathSearchVisible = false;
+      settingsVisible = false;
+    }
   }
 }
 
@@ -921,9 +1162,6 @@ function wClick() {
     return;
   }
   addLayer();
-  console.log("Adding layer");
-  console.log("Nodes: ", renderGraph.getNodesCount());
-  console.log("Links: ", renderGraph.getLinksCount());
 }
 
 function rClick() {
@@ -942,24 +1180,179 @@ function rClick() {
 function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
   const nodesToRemove = new Set<NodeId>();
   const edgesToRemove = new Set<[NodeId, NodeId]>();
-  console.log("Filtering graph");
+  const reactionNodesToRemove = new Set<NodeId>();
+
+  // Aufteilen der Filter nach Typ
+  const speciesFilters = allFilters.filter((f) => f.type === "species");
+  const reactionFilters = allFilters.filter((f) => f.type === "reaction");
+
+  seenReactions.clear(); // clean start
+
+  // Alle vorher gespeicherten Änderungen (für Undo) leeren
+  allFilters.forEach((f) => {
+    f.removedNodes = [];
+    f.removedEdges = [];
+  });
+
+  // Erste Runde: Node-Filter anwenden
+  renderGraph.forEachNode((node: Node) => {
+    if (node.data.type === "reaction") {
+      for (const filter of reactionFilters) {
+        if (filter.fn(node)) {
+          reactionNodesToRemove.add(node.id);
+          filter.removedNodes.push(node.id);
+        }
+      }
+    } else {
+      for (const filter of speciesFilters) {
+        if (filter.fn(node)) {
+          if (!node.links) continue;
+
+          node.links.forEach((link) => {
+            nodesToRemove.add(link.fromId);
+            nodesToRemove.add(link.toId);
+            edgesToRemove.add([link.fromId, link.toId]);
+            filter.removedNodes.push(link.fromId, link.toId);
+            filter.removedEdges.push([link.fromId, link.toId]);
+            renderGraph.removeLink(link);
+          });
+        }
+      }
+    }
+  });
+
+  // Zweite Runde: Kanten von/zu Reaktionsknoten entfernen
+  renderGraph.forEachNode((node: Node) => {
+    if (node.data.type === "reaction") return;
+    if (!node.links) return;
+
+    node.links.forEach((link) => {
+      if (
+        reactionNodesToRemove.has(link.fromId) ||
+        reactionNodesToRemove.has(link.toId)
+      ) {
+        edgesToRemove.add([link.fromId, link.toId]);
+
+        // Finde passende Filter, um die Entfernung zu registrieren
+        for (const filter of reactionFilters) {
+          if (
+            reactionNodesToRemove.has(link.fromId) ||
+            reactionNodesToRemove.has(link.toId)
+          ) {
+            filter.removedEdges.push([link.fromId, link.toId]);
+          }
+        }
+
+        renderGraph.removeLink(link);
+      }
+    });
+  });
+
+  // Reaktionsknoten aus der finalen Löschliste übernehmen
+  reactionNodesToRemove.forEach((nodeId) => {
+    nodesToRemove.add(nodeId);
+  });
+
+  // Alle nodesToRemove (außer initialSpecies) löschen
+  nodesToRemove.forEach((nodeId) => {
+    if (initialSpecies.has(nodeId)) return;
+
+    const node = graph.getNode(nodeId);
+    if (!node) return;
+
+    renderGraph.removeNode(nodeId);
+    currentSpecies.delete(nodeId);
+  });
+
+  // Nachträgliches Entfernen isolierter Nodes (außer initialSpecies)
+  renderGraph.forEachNode((node: Node) => {
+    if (node.data.type === "reaction") return;
+    if (initialSpecies.has(node.id)) return;
+    if (!node.links || node.links.size === 0) {
+      nodesToRemove.add(node.id);
+      renderGraph.removeNode(node.id);
+    }
+  });
+
+  return { nodes: nodesToRemove, edges: edgesToRemove };
+}
+
+/**
+ * applies filters and returns
+ */
+function filterGraphOld(): {
+  nodes: Set<NodeId>;
+  edges: Set<[NodeId, NodeId]>;
+} {
+  const nodesToRemove = new Set<NodeId>();
+  const reactionNodesToRemove = new Set<NodeId>();
+  const edgesToRemove = new Set<[NodeId, NodeId]>();
+
+  seenReactions.clear(); //clean start
+  console.warn(seenReactions);
+  /**
+   * iterate over all nodes and add their id to sets when a filter aplies to them
+   */
+  renderGraph.forEachNode((node: Node) => {
+    let removeNode = false;
+    let removeReactionNode = false;
+
+    if (node.data.type === "reaction") {
+      removeReactionNode = reactionFilters.some((filter) => filter(node));
+
+      if (removeReactionNode) {
+        if (!node.id) {
+          return;
+        }
+        reactionNodesToRemove.add(node.id);
+      }
+    } else {
+      removeNode = filters.some((filter) => filter(node));
+
+      if (removeNode) {
+        if (!node.links) {
+          return;
+        }
+        node.links.forEach((link) => {
+          nodesToRemove.add(link.fromId);
+          nodesToRemove.add(link.toId);
+          edgesToRemove.add([link.fromId, link.toId]);
+          renderGraph.removeLink(link);
+        });
+      }
+    }
+  });
+  /**
+   * remove Links from or to reactions that will be removed by filters
+   */
   renderGraph.forEachNode((node: Node) => {
     if (node.data.type == "reaction") {
       return;
     }
-    const removeNode = filters.some((filter) => filter(node));
-    if (removeNode) {
-      if (!node.links) {
-        return;
-      }
-      node.links.forEach((link) => {
-        nodesToRemove.add(link.fromId);
-        nodesToRemove.add(link.toId);
-        edgesToRemove.add([link.fromId, link.toId]);
-        renderGraph.removeLink(link);
-      });
+    if (!node.links) {
+      return;
     }
+    node.links.forEach((link) => {
+      if (
+        reactionNodesToRemove.has(link.fromId) ||
+        reactionNodesToRemove.has(link.toId)
+      ) {
+        edgesToRemove.add([link.fromId, link.toId]);
+      }
+    });
   });
+
+  /**
+   * add all chosen reactionNodes to nodesToRemove after deleating all links to them
+   */
+  console.warn(reactionNodesToRemove);
+  reactionNodesToRemove.forEach((nodeId) => {
+    nodesToRemove.add(nodeId);
+  });
+
+  /**
+   * remove all chosen nodes exept nodes of the initial species
+   */
   nodesToRemove.forEach((nodeId) => {
     if (initialSpecies.has(nodeId)) {
       return;
@@ -968,6 +1361,9 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
     currentSpecies.delete(nodeId);
   });
 
+  /**
+   * remove all nodes that are left with no connection to the network exept of the initial species
+   */
   renderGraph.forEachNode((node: Node) => {
     if (node.data.type == "reaction") {
       return;
@@ -985,6 +1381,10 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
 }
 
 function addLayer() {
+  const addedNodes: NodeId[] = [];
+  const addedEdges: [NodeId, NodeId][] = [];
+  inAddLayerContext = true;
+
   const oldSpecies = new Set<string>(currentSpecies);
   currentSpecies.forEach((species) => {
     addAllPossibleReactionsToRendergraph(
@@ -993,24 +1393,58 @@ function addLayer() {
       species,
       currentSpecies,
       oldSpecies,
+      addedNodes,
+      addedEdges,
     );
   });
+
+  inAddLayerContext = false;
+
+  if (undoEnabled) {
+    undoStack.push({
+      type: "addLayer",
+      addedNodes,
+      addedEdges,
+    });
+  }
 }
 
 function addInitialNode(node: string) {
+  const addedNodes: NodeId[] = [];
+  const addedEdges: [NodeId, NodeId][] = [];
+
   initialSpecies.add(node);
   currentSpecies.add(node);
   initialSpecies = initialSpecies;
   currentSpecies = currentSpecies;
 
-  addSpeciesToRendergraph(graph, renderGraph, node, currentSpecies);
+  addSpeciesToRendergraph(
+    graph,
+    renderGraph,
+    node,
+    currentSpecies,
+    addedNodes,
+    addedEdges,
+  );
+
   addAllPossibleReactionsToRendergraph(
     graph,
     renderGraph,
     node,
     currentSpecies,
     initialSpecies,
+    addedNodes,
+    addedEdges,
   );
+
+  if (undoEnabled) {
+    undoStack.push({
+      type: "addInitialNode",
+      node,
+      addedNodes,
+      addedEdges,
+    });
+  }
 }
 
 let search_results = new Set<string>();
@@ -1038,6 +1472,8 @@ function addSpeciesToRendergraph(
   renderGraph: Graph,
   species: string,
   currentSpecies: Set<string>,
+  addedNodes?: NodeId[], // Optional
+  addedEdges?: [NodeId, NodeId][], // Optional
 ) {
   const alreadyInGraph = renderGraph.hasNode(species);
   if (alreadyInGraph) {
@@ -1063,6 +1499,10 @@ function addSpeciesToRendergraph(
 
   currentSpecies.add(species);
   renderGraph.addNode(node.id, node.data);
+
+  if (addedNodes) {
+    addedNodes.push(node.id);
+  }
 }
 
 function addAllPossibleReactionsToRendergraph(
@@ -1071,7 +1511,14 @@ function addAllPossibleReactionsToRendergraph(
   species: string,
   currentSpecies: Set<string>,
   oldSpecies: Set<string>,
+  addedNodes?: NodeId[],
+  addedEdges?: [NodeId, NodeId][],
 ) {
+  const isSelectiveAdd = inAddLayerContext && selectedSpecies.size > 0;
+  if (isSelectiveAdd && !selectedSpecies.has(species)) {
+    return;
+  }
+
   const node = graph.getNode(species);
   if (!node) {
     return;
@@ -1122,10 +1569,12 @@ function addAllPossibleReactionsToRendergraph(
 
     if (!renderGraph.hasNode(reactionId)) {
       renderGraph.addNode(reactionId, reaction.data);
+      if (addedNodes) addedNodes.push(reactionId);
     }
 
     if (!renderGraph.hasLink(species, reactionId)) {
       renderGraph.addLink(species, reactionId);
+      if (addedEdges) addedEdges.push([species, reactionId]);
     }
 
     inEdges.forEach((edge) => {
@@ -1134,12 +1583,13 @@ function addAllPossibleReactionsToRendergraph(
         renderGraph,
         edge.fromId as string,
         currentSpecies,
+        addedNodes,
+        addedEdges,
       );
 
-      const linkAlreadyInGraph = renderGraph.hasLink(edge.fromId, reactionId);
-
-      if (!linkAlreadyInGraph) {
+      if (!renderGraph.hasLink(edge.fromId, reactionId)) {
         renderGraph.addLink(edge.fromId, reactionId);
+        if (addedEdges) addedEdges.push([edge.fromId, reactionId]);
       }
     });
 
@@ -1149,9 +1599,13 @@ function addAllPossibleReactionsToRendergraph(
         renderGraph,
         edge.toId as string,
         currentSpecies,
+        addedNodes,
+        addedEdges,
       );
+
       if (!renderGraph.hasLink(reactionId, edge.toId)) {
         renderGraph.addLink(reactionId, edge.toId);
+        if (addedEdges) addedEdges.push([reactionId, edge.toId]);
       }
     });
   });
@@ -1188,6 +1642,108 @@ function resizeMolecules() {
     }
   });
 }
+
+//ToDo remove unused function if no further need
+function canonicalizeReaction(reaction: string): string {
+  const [eductStr, productStr] = reaction.split("=>").map((s) => s.trim());
+
+  const educts = eductStr
+    .split("+")
+    .map((s) => s.trim())
+    .sort();
+  const products = productStr
+    .split("+")
+    .map((s) => s.trim())
+    .sort();
+
+  return `${educts.join(" + ")} ⇌ ${products.join(" + ")}`;
+}
+
+function removeFilter(id: string) {
+  const index = allFilters.findIndex((f) => f.id === id);
+  if (index === -1) return;
+
+  const removedFilter = allFilters.splice(index, 1)[0];
+
+  // Wiederherstellen der gelöschten Knoten/Edges
+  removedFilter.removedNodes.forEach((nodeId) => {
+    const node = graph.getNode(nodeId);
+    if (!node) return;
+    renderGraph.addNode(nodeId, node.data);
+  });
+
+  removedFilter.removedEdges.forEach(([from, to]) => {
+    const edge = graph.getLink(from, to);
+    if (!edge) return;
+    renderGraph.addLink(from, to, edge.data);
+  });
+
+  allFilters = allFilters;
+}
+
+function undoLastAction() {
+  if (undoStack.length === 0) {
+    console.warn("Nothing to undo");
+    return;
+  }
+
+  const lastAction = undoStack.pop();
+
+  if (lastAction.type === "filter") {
+    const filterIndex = allFilters.findIndex(
+      (f) => f.id === lastAction.filterId,
+    );
+    if (filterIndex === -1) {
+      console.warn("Filter not found");
+      return;
+    }
+
+    const [removedFilter] = allFilters.splice(filterIndex, 1);
+    allFilters = [...allFilters]; // Reaktivität auslösen
+
+    // Wiederherstellen der entfernten Knoten und Kanten
+    removedFilter.removedNodes?.forEach((nodeId) => {
+      const node = graph.getNode(nodeId);
+      if (node) {
+        renderGraph.addNode(nodeId, node.data);
+        currentSpecies.add(nodeId); // optional, je nach gewünschtem Verhalten
+      }
+    });
+
+    removedFilter.removedEdges?.forEach(([from, to]) => {
+      const edge = graph.getLink(from, to);
+      if (edge) {
+        renderGraph.addLink(from, to, edge.data);
+      }
+    });
+  } else if (
+    lastAction.type === "addLayer" ||
+    lastAction.type === "addInitialNode"
+  ) {
+    // Entferne Kanten
+    lastAction.addedEdges.forEach(([from, to]) => {
+      renderGraph.removeLink(from, to);
+    });
+
+    // Entferne Knoten
+    lastAction.addedNodes.forEach((nodeId) => {
+      renderGraph.removeNode(nodeId);
+      currentSpecies.delete(nodeId);
+    });
+
+    // Wenn initial node, auch initialSpecies anpassen
+    if (lastAction.type === "addInitialNode") {
+      initialSpecies.delete(lastAction.node);
+      currentSpecies.delete(lastAction.node);
+      initialSpecies = new Set(initialSpecies);
+      currentSpecies = new Set(currentSpecies);
+    }
+  }
+
+  // Re-Render und ggf. Pfadsuche neu initialisieren
+  filterGraph();
+  pathSearchGraph = new PathSearchGraph(renderGraph);
+}
 </script>
 
 <div class="page">
@@ -1203,23 +1759,38 @@ function resizeMolecules() {
     />
   </div>
 
-  <button
-    class="settingsButton"
-    on:click={() => {
-      settingsVisible = !settingsVisible;
-    }}
-  >
-    <picture>
-      <img src="/images/settings.svg" alt="An icon of a settings" />
-    </picture>
-  </button>
+  <div class="top-right-button-group">
+    <button
+      class="settingsButton"
+      on:click={undoLastAction}
+      title="Undo last action"
+    >
+      <picture>
+        <img src="/images/undo.svg" alt="Undo icon" />
+      </picture>
+    </button>
+
+    <button
+      class="settingsButton"
+      on:click={() => (settingsVisible = !settingsVisible)}
+      title="Settings"
+    >
+      <picture>
+        <img src="/images/settings.svg" alt="Settings icon" />
+      </picture>
+    </button>
+  </div>
 
   <div id="keys_overlay">
     {#if webXR}
       <button on:click={initializeVR} style="color: black">Enter VR</button>
     {/if}
     <div class="key_input">
-      <KeycapButton key="Q"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="A"></RoundButton>
+      {:else}
+        <KeycapButton key="Q"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1232,7 +1803,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="W"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="B"></RoundButton>
+      {:else}
+        <KeycapButton key="W"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1245,7 +1820,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="F"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="Y"></RoundButton>
+      {:else}
+        <KeycapButton key="F"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1258,7 +1837,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="P"></KeycapButton>
+      {#if isXrSession}
+        <RoundButton key="X"></RoundButton>
+      {:else}
+        <KeycapButton key="P"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1271,7 +1854,11 @@ function resizeMolecules() {
     </div>
 
     <div class="key_input">
-      <KeycapButton key="R"></KeycapButton>
+      {#if isXrSession}
+        <SideButton key="LB"></SideButton>
+      {:else}
+        <KeycapButton key="R"></KeycapButton>
+      {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
@@ -1292,21 +1879,33 @@ function resizeMolecules() {
 
   {#if searchVisible}
     <div id="search_overlay">
-      <div id="initial_species_search">
-        <input
-          type="text"
-          bind:value={search_value}
-          on:input={filterToInitialSpecies}
-          placeholder="Search for species"
-        />
-        <div id="search_results">
-          {#each search_results as species}
-            <button
-              class="search_result"
-              on:click={addSpeciesAsInitialSpecies}
-              value={species}>{species}</button
-            >
-          {/each}
+      <div class="search-block">
+        <button
+          class="close-button"
+          on:click={() => {
+            searchVisible = false;
+            pathSearchVisible = false;
+            filterVisible = false;
+            settingsVisible = false;
+            search_value = "";
+          }}>X</button
+        >
+        <div id="initial_species_search">
+          <input
+            type="text"
+            bind:value={search_value}
+            on:input={filterToInitialSpecies}
+            placeholder="Search for species"
+          />
+          <div id="search_results">
+            {#each search_results as species}
+              <button
+                class="search_result"
+                on:click={addSpeciesAsInitialSpecies}
+                value={species}>{species}</button
+              >
+            {/each}
+          </div>
         </div>
       </div>
       <div id="current_initial_species">
@@ -1321,6 +1920,16 @@ function resizeMolecules() {
   {/if}
   {#if pathSearchVisible}
     <div id="pathSearchOverlay">
+      <button
+        style="padding-left: 25%; font-size: 1rem; background-color: transparent; border: none; cursor: pointer"
+        on:click={() => {
+          searchVisible = false;
+          pathSearchVisible = false;
+          filterVisible = false;
+          settingsVisible = false;
+          search_value = "";
+        }}>X</button
+      >
       <div>
         <datalist id="species">
           {#each currentSpecies as species}
@@ -1478,6 +2087,16 @@ function resizeMolecules() {
   {#if filterVisible}
     <div class="overlay" style="backdrop-filter: blur(10px);">
       <div class="filters_overlay">
+        <button
+          style="display: flex; align-self: end; font-size: 1rem; background-color: transparent; border: none; cursor: pointer"
+          on:click={() => {
+            searchVisible = false;
+            pathSearchVisible = false;
+            filterVisible = false;
+            settingsVisible = false;
+            search_value = "";
+          }}>X</button
+        >
         <div class="filter_overlay">
           <div style="pointer-events: all;">
             <p>Elements</p>
@@ -1508,18 +2127,23 @@ function resizeMolecules() {
                 const operator = COUNT_OPERATORS.get(operatorKey);
                 const count =
                   document.getElementById("filterElementInput").value;
-                filters.push((node) =>
-                  filterByAtomCount(node, element, count, operator),
-                );
-                filters = filters;
+                let filterId = crypto.randomUUID();
 
-                filterSentences.push(
-                  `Remove all molecules where the number of ${element} atoms is ${FILTERWORDS.get(operatorKey)} ${count}`,
-                );
-                filterSentences = filterSentences;
+                allFilters.push({
+                  id: filterId,
+                  type: "species",
+                  fn: (node) =>
+                    filterByAtomCount(node, element, count, operator),
+                  sentence: `Remove all molecules where the number of ${element} atoms is ${FILTERWORDS.get(operatorKey)} ${count}`,
+                  removedNodes: [],
+                  removedEdges: [],
+                });
+                undoStack.push({ type: "filter", filterId: filterId });
+
+                allFilters = allFilters;
 
                 document.getElementById("filterElement").value = "C";
-                document.getElementById("filterELementOperator").value = "==";
+                document.getElementById("filterElementOperator").value = "==";
                 document.getElementById("filterElementInput").value = "";
                 filterApplied = true;
                 filterGraph();
@@ -1545,15 +2169,20 @@ function resizeMolecules() {
                 const chargeOperator = COUNT_OPERATORS.get(chargeOperatorKey);
                 const cargeCount =
                   document.getElementById("filterChargeInput").value;
-                filters.push((node) =>
-                  filterChargeCount(node, cargeCount, chargeOperator),
-                );
-                filters = filters;
+                let filterId = crypto.randomUUID();
 
-                filterSentences.push(
-                  `Remove all molecules where the charge is ${FILTERWORDS.get(chargeOperatorKey)} ${cargeCount}`,
-                );
-                filterSentences = filterSentences;
+                allFilters.push({
+                  id: filterId,
+                  type: "species",
+                  fn: (node) =>
+                    filterChargeCount(node, cargeCount, chargeOperator),
+                  sentence: `Remove all molecules where the charge is ${FILTERWORDS.get(chargeOperatorKey)} ${cargeCount}`,
+                  removedNodes: [],
+                  removedEdges: [],
+                });
+                undoStack.push({ type: "filter", filterId: filterId });
+
+                allFilters = allFilters;
 
                 document.getElementById("filterChargeOperator").value = "==";
                 document.getElementById("filterChargeInput").value = "";
@@ -1584,19 +2213,24 @@ function resizeMolecules() {
                 const multiplicityCount = document.getElementById(
                   "filterMultiplicityInput",
                 ).value;
-                filters.push((node) =>
-                  filterMultiplicityCount(
-                    node,
-                    multiplicityCount,
-                    multiplicityOperator,
-                  ),
-                );
-                filters = filters;
+                let filterId = crypto.randomUUID();
 
-                filterSentences.push(
-                  `Remove all molecules where the spin-multilpicity is ${FILTERWORDS.get(multiplicityOperatorKey)} ${multiplicityCount}`,
-                );
-                filterSentences = filterSentences;
+                allFilters.push({
+                  id: filterId,
+                  type: "species",
+                  fn: (node) =>
+                    filterMultiplicityCount(
+                      node,
+                      multiplicityCount,
+                      multiplicityOperator,
+                    ),
+                  sentence: `Remove all molecules where the spin-multilpicity is ${FILTERWORDS.get(multiplicityOperatorKey)} ${multiplicityCount}`,
+                  removedNodes: [],
+                  removedEdges: [],
+                });
+                undoStack.push({ type: "filter", filterId: filterId });
+
+                allFilters = allFilters;
 
                 document.getElementById("filterMultiplicityOperator").value =
                   "==";
@@ -1608,34 +2242,40 @@ function resizeMolecules() {
             >
           </div>
         </div>
-        {#each filterSentences.entries() as [index, filter]}
+        <div class="filter_overlay">
+          <div style="pointer-events: all;">
+            <p>Pruduct Educt double</p>
+            <button
+              on:click={() => {
+                const duplicateReactionFilterFn =
+                  filterDuplicateReactions(seenReactions);
+                let filterId = crypto.randomUUID();
+
+                allFilters.push({
+                  id: filterId,
+                  type: "reaction",
+                  fn: duplicateReactionFilterFn,
+                  sentence: `Remove duplicate reactions based on educt permutation`,
+                  removedNodes: [],
+                  removedEdges: [],
+                });
+                undoStack.push({ type: "filter", filterId: filterId });
+
+                allFilters = allFilters;
+
+                filterApplied = true;
+                filterGraph();
+                pathSearchGraph = new PathSearchGraph(renderGraph);
+              }}>Add</button
+            >
+          </div>
+        </div>
+        {#each allFilters as filter (filter.id)}
           <div style="display: flex; align-items: center">
-            <p>{filter}</p>
+            <p>{filter.sentence}</p>
             <button
               style="margin-left: 0.5rem; height: fit-content"
-              on:click={() => {
-                filters.splice(index, 1);
-                filters = filters;
-                filterSentences.splice(index, 1);
-                filterSentences = filterSentences;
-                const removedNodesAndEdges = removedByFilter.splice(index, 1);
-                removedNodesAndEdges.forEach((removed) => {
-                  removed.nodes.forEach((nodeId) => {
-                    const node = graph.getNode(nodeId);
-                    if (!node) {
-                      return;
-                    }
-                    renderGraph.addNode(nodeId, node.data);
-                  });
-                  removed.edges.forEach((edgeNodes) => {
-                    const edge = graph.getLink(edgeNodes[0], edgeNodes[1]);
-                    if (!edge) {
-                      return;
-                    }
-                    renderGraph.addLink(edgeNodes[0], edgeNodes[1], edge.data);
-                  });
-                });
-              }}>Remove</button
+              on:click={() => removeFilter(filter.id)}>Remove</button
             >
           </div>
         {/each}
@@ -1733,18 +2373,42 @@ function resizeMolecules() {
 
 #search_overlay {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   font-family: "Quicksand", sans-serif;
+
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 0.4fr auto 0.1fr;
   grid-template-areas:
     ". . ."
-    ". initial_species_search current_initial_species"
+    ". search_block current_initial_species"
     ". . .";
+}
+
+.search-block {
+  grid-area: search_block;
+  width: 45rem;
+  max-width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+}
+
+.close-button {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  margin-bottom: 0.25rem;
+  user-select: none;
+  color: #000;
 }
 
 .gaussian_blur {
@@ -1752,10 +2416,6 @@ function resizeMolecules() {
 }
 
 #initial_species_search {
-  grid-area: initial_species_search;
-  width: 45rem;
-  max-width: 100%;
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1773,11 +2433,8 @@ function resizeMolecules() {
   font-family: "Quicksand", sans-serif;
   padding: 0.5rem;
   box-sizing: border-box;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
-  border-width: 2px;
-  border-color: #000000;
-  border-style: solid;
+  border-radius: 6px 6px 0 0;
+  border: 2px solid #000;
 }
 
 #search_results {
@@ -1804,13 +2461,12 @@ function resizeMolecules() {
 .search_result {
   background-color: lightgray;
   border: none;
-  margin: none;
-  padding: none;
-  min-width: 100%;
+  padding: 0.25rem 0.5rem;
+  width: 100%;
   font-size: 1.5rem;
   font-family: "Quicksand", sans-serif;
   font-weight: 400;
-  color: #000000;
+  color: #000;
   text-align: left;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -1918,24 +2574,34 @@ function resizeMolecules() {
   pointer-events: none;
 }
 
-.settingsButton {
+.top-right-button-group {
   position: absolute;
-  top: 0px;
-  right: 0px;
+  top: 0;
+  right: 0;
   margin: 15px;
-  padding: 0px;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 100;
   pointer-events: all;
+}
+
+.settingsButton {
   width: 2rem;
   height: 2rem;
+  padding: 0;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 100;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .settingsButton img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 @media (max-width: 400px) {

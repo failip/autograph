@@ -23,7 +23,7 @@ export let key = "A";
   width: 1.3em;
 }
 
-svg {
+.keyButton svg {
   transform: translate(0, 0em);
   position: absolute;
   top: 0;
