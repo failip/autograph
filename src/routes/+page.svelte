@@ -1,15 +1,15 @@
 <script lang="ts">
-import { Graph } from "ngraph.graph";
+import { chemkinFileToGraph, parseChemkinFile } from "$lib/files/chemkin";
 import GraphElement from "$lib/graphs/Graph.svelte";
 import { createGraphFromString } from "$lib/graphs/graphs";
-import { chemkinFileToGraph, parseChemkinFile } from "$lib/files/chemkin";
-import { onMount } from "svelte";
+import type { Graph } from "ngraph.graph";
 let loadedGraph = false;
 let graph: Graph;
 let xyzPath = "";
 let useHash = false;
 let xyzFiles: Map<string, File> | null = null;
 let startSpecies = new Array<string>();
+let hideCu = false;
 
 const startingSpeciesMap = new Map<string, Array<string>>();
 startingSpeciesMap.set("GKHP", ["gamma-Ketohydroperoxide"]);
@@ -65,7 +65,7 @@ async function loadGraph(graphName: string) {
                 >
                     <option disabled selected value> select an option </option>
                     <option value="GKHP">gamma-ketohydroperoxide</option>
-                    <option value="isooctane">Combustion of Isooctane</option>
+                    <option value="isooctane">Pyrolysis of Isooctane</option>
                     <option value="jam">Oxidation of Hydrogensulfide</option>
                     <option value="aramco">AramcoMech2.0</option>
                     <option value="gri">GRI-Mech 3.0</option>
@@ -122,6 +122,16 @@ async function loadGraph(graphName: string) {
                     }}
                 />
             </div>
+            <div class="center">
+                <label for="elementHider">Don't visualize cu (optional)</label>
+                    <input 
+                        type="checkbox" 
+                        name="elementHider"
+                        on:change={(event) => { 
+                            hideCu = event.target.checked; 
+                        }} 
+                    />
+            </div>
         </div>
         <div>
             <button
@@ -136,7 +146,7 @@ async function loadGraph(graphName: string) {
         </div>
     </div>
 {:else}
-    <GraphElement {graph} {xyzPath} {useHash} {xyzFiles} {startSpecies} />
+    <GraphElement {graph} {xyzPath} {useHash} {xyzFiles} {startSpecies} {hideCu} />
 {/if}
 
 <style>

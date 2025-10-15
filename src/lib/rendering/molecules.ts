@@ -109,7 +109,14 @@ export class MoleculeGenerator {
         return closestPoint;
     }
 
-    public generateMolecule(run: Run, move_to_center: boolean = true, smiles: string | undefined = undefined): Group {
+    public generateMolecule(
+        run: Run,
+        hiddenSymbols: Set<string> = new Set(),
+        move_to_center: boolean = true,
+        smiles: string | undefined = undefined,
+        selectedSpecies: Set<string> = new Set(),
+        nodeId: string = ""
+        ): Group {
         const positions = run.frames[0].positions;
         // move to origin
 
@@ -133,13 +140,31 @@ export class MoleculeGenerator {
         const atomGeometry = new SphereGeometry(1.0, 32, 32);
         const atomMaterial = new MeshPhongMaterial({ color: 0xffffff, transparent: false, opacity: 1.0 });
         const atomInstances = new InstancedMesh(atomGeometry, atomMaterial, number_of_atoms);
-
+        
         for (let i = 0; i < number_of_atoms; i++) {
-            atomInstances.setColorAt(i, new Color(this.colors.get(symbols[i])));
-            const scale = symbols[i] === "H" ? 0.3 : 0.4;
-            const matrix = new Matrix4().makeTranslation(positions[3 * i], positions[3 * i + 1], positions[3 * i + 2]);
-            matrix.scale(new Vector3(scale, scale, scale));
-            atomInstances.setMatrixAt(i, matrix);
+            const isHidden = hiddenSymbols.has(symbols[i]);
+            const elementColor = new Color(this.colors.get(symbols[i]));
+            atomInstances.setColorAt(i, elementColor);
+
+            // Skalierung abhängig von Selektion
+            const baseScale = isHidden ? 0 : (symbols[i] === "H" ? 0.3 : 0.4);
+            let scale = baseScale;
+
+            // Selektionsfarbe & Skalierung
+            const isSelected = selectedSpecies.has(nodeId); // <-- stelle sicher, dass nodeId hier verfügbar ist
+
+            if (isSelected) {
+                scale *= 1.1; // +10%
+                const emissive = new Color(0x00ffff); // Cyan
+                elementColor.add(emissive.multiplyScalar(0.6)); // additive Mischung (limitiert)
+                atomInstances.setColorAt(i, elementColor);
+            }
+
+            // Matrix setzen
+            const matrix = new Matrix4()
+            .makeTranslation(positions[3 * i], positions[3 * i + 1], positions[3 * i + 2])
+            .scale(new Vector3(scale, scale, scale));
+            atomInstances.setMatrixAt(i, matrix)
         }
 
         group.add(atomInstances);
@@ -200,50 +225,102 @@ export class MoleculeGenerator {
 
     }
 
-    public updateMolecule(group: Group, run: Run, frame_index: number): void {
+    public updateMolecule(
+        group: Group,
+        run: Run,
+        frame_index: number,
+        selectedSpecies: Set<string>,
+        nodeId: string,
+        hiddenSymbols: Set<string> = new Set()
+    ): void {
         const positions = run.frames[frame_index].positions;
-
+        const symbols = run.symbols;
         const number_of_atoms = run.number_of_atoms;
+        const atomInstances = group.children[0] as InstancedMesh;
+
+        console.log('updateMolecule', nodeId, selectedSpecies);
+
         for (let i = 0; i < number_of_atoms; i++) {
-            const child = group.children[i];
-            child.position.x = positions[3 * i];
-            child.position.y = positions[3 * i + 1];
-            child.position.z = positions[3 * i + 2];
+            const pos = new Vector3(
+                positions[3 * i],
+                positions[3 * i + 1],
+                positions[3 * i + 2]
+            );
+
+            const isHidden = hiddenSymbols.has(symbols[i]);
+            const baseScale = isHidden ? 0 : (symbols[i] === "H" ? 0.3 : 0.4);
+            const isSelected = selectedSpecies.has(nodeId);
+
+            let scale = baseScale;
+            if (isSelected) scale *= 1.1;
+
+            const elementColor = new Color(this.colors.get(symbols[i]));
+
+            if (isSelected) {
+                const emissive = new Color(0x00ffff);
+                elementColor.add(emissive.multiplyScalar(0.6));
+            }
+
+            atomInstances.setColorAt(i, elementColor);
+
+            const matrix = new Matrix4()
+            .makeTranslation(pos.x, pos.y, pos.z)
+            .scale(new Vector3(scale, scale, scale));
+
+            atomInstances.setMatrixAt(i, matrix);
         }
 
+        atomInstances.instanceMatrix.needsUpdate = true;
+        atomInstances.instanceColor!.needsUpdate = true;
+        
         // Remove bonds
-
-        const bonds = group.children[group.children.length - 1];
-        group.remove(bonds);
+        const oldBonds = group.children[group.children.length - 1];
+        if (oldBonds) {
+            group.remove(oldBonds);
+        }
 
         // Add bonds
+        const newBonds = new Group();
 
-        const new_bonds = new Group();
+        for (let i = 0; i < number_of_atoms; i++) {
+            const posA = new Vector3(
+            positions[3 * i],
+            positions[3 * i + 1],
+            positions[3 * i + 2]
+            );
 
-        group.children.forEach((child) => {
-            group.children.forEach((other_child) => {
-                if (child !== other_child) {
-                    const distance = child.position.distanceTo(other_child.position);
-                    if (distance < 1.5) {
-                        const bond = new Mesh(this.bond_geometry, this.bond_material.clone());
-                        bond.position.set(
-                            (child.position.x + other_child.position.x) / 2.0,
-                            (child.position.y + other_child.position.y) / 2.0,
-                            (child.position.z + other_child.position.z) / 2.0,
-                        );
-                        bond.lookAt(other_child.position);
-                        bond.rotateX(Math.PI / 2.0);
-                        bond.scale.set(1.0, distance, 1.0);
-                        new_bonds.add(bond);
-                    }
-                }
-            });
-        });
-        group.add(new_bonds);
+            for (let j = i + 1; j < number_of_atoms; j++) {
+            const posB = new Vector3(
+                positions[3 * j],
+                positions[3 * j + 1],
+                positions[3 * j + 2]
+            );
+
+            const distance = posA.distanceTo(posB);
+            let max_distance = 1.5;
+
+            const radius_a = this.covalent_radii.get(symbols[i]);
+            const radius_b = this.covalent_radii.get(symbols[j]);
+            if (radius_a && radius_b) {
+                max_distance = (radius_a + radius_b) * 0.8;
+            }
+
+            if (distance < max_distance) {
+                const bond = new Mesh(this.bond_geometry, this.bond_material.clone());
+                bond.position.set(
+                (posA.x + posB.x) / 2.0,
+                (posA.y + posB.y) / 2.0,
+                (posA.z + posB.z) / 2.0
+                );
+                bond.lookAt(posB);
+                bond.rotateX(Math.PI / 2);
+                bond.scale.set(1.0, distance, 1.0);
+                newBonds.add(bond);
+            }
+            }
+        }
+    group.add(newBonds);
     }
-
-
-
 }
 
 export function bondDifferences(
