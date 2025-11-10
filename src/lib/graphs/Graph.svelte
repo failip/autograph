@@ -1672,6 +1672,51 @@ function undoLastAction() {
   pathSearchGraph = new PathSearchGraph(renderGraph);
 }
 
+function handleElementFilterChange(event: Event) {
+  const target = event.target as HTMLSelectElement;
+  const selectedElement = target.value;
+
+  if (hiddenElements.has(selectedElement)) {
+    hiddenElements.delete(selectedElement);
+  } else {
+    hiddenElements.add(selectedElement);
+  }
+
+  rerenderMolecules();
+}
+
+function rerenderMolecules() {
+  renderGraph.forEachNode((node) => {
+    if (node.data.type !== "species") return;
+
+    const oldObject = objects.get(node.id);
+    if (oldObject) {
+      meshes.remove(oldObject);
+    }
+
+    const run = runs.get(node.id);
+    if (!run) return;
+
+    const newMolecule = moleculeGenerator.generateMolecule(
+      run,
+      hiddenElements,
+      true,
+      undefined,
+      selectedSpecies,
+      node.id
+    );
+
+    newMolecule.traverse((child) => {
+      child.userData = node;
+    });
+
+    objects.set(node.id, newMolecule);
+    meshes.add(newMolecule);
+    moleculeGroups.set(node.id, newMolecule);
+  });
+}
+
+
 </script>
 
 <div class="page">
@@ -2138,7 +2183,7 @@ function undoLastAction() {
         </div>
         <div class="filter_overlay">
           <div style="pointer-events: all;">
-            <p>Pruduct Educt double</p>
+            <p>Remove duplicate reactions based on educt permutation</p>
             <button
               on:click={() => {  
                 const duplicateReactionFilterFn = filterDuplicateReactions(seenReactions);
