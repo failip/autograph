@@ -2039,26 +2039,6 @@ function rerenderMolecules() {
             rerenderLines = true;
           }}
         />
-        <p>Elements</p>
-        <select 
-          name="filterElement" 
-          id="filterElement" 
-          on:change={(e) => 
-            handleElementFilterChange(e)
-          }>
-          <option disabled selected>-- choose element --</option>
-          <option value="C">C</option>
-          <option value="H">H</option>
-          <option value="O">O</option>
-          <option value="N">N</option>
-          <option value="F">F</option>
-          <option value="Cl">Cl</option>
-          <option value="Br">Br</option>
-          <option value="I">I</option>
-          <option value="P">P</option>
-          <option value="S">S</option>
-        </select>
-        <p>Currently hidden: {[...hiddenElements].join(", ") || "None"}</p>
       </div>
     </div>
   {/if}
