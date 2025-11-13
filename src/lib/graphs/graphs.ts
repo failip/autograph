@@ -1,5 +1,5 @@
 import fromJson from 'ngraph.fromjson';
-import { Graph } from 'ngraph.graph';
+import type { Graph } from 'ngraph.graph';
 
 type GraphologyNode = {
   key: string;

@@ -1,4 +1,4 @@
-import { Graph, Link, Node, NodeId } from 'ngraph.graph';
+import type { Graph, Link, Node, NodeId } from 'ngraph.graph';
 
 type Reaction = string;
 type Dependency = string[];

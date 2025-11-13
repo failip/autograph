@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Graph } from "ngraph.graph";
+import type { Graph } from "ngraph.graph";
 import GraphElement from "$lib/graphs/Graph.svelte";
 import { createGraphFromString } from "$lib/graphs/graphs";
 import { chemkinFileToGraph, parseChemkinFile } from "$lib/files/chemkin";

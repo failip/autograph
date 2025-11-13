@@ -1,12 +1,18 @@
 <script lang="ts">
+import {
+  filterByAtomCount,
+  filterChargeCount,
+  filterDuplicateReactions,
+  filterMultiplicityCount,
+  FILTERWORDS,
+} from "$lib/filter/filter";
 import { PathSearchGraph } from "$lib/graphs/graph";
-import { filterByAtomCount, filterChargeCount, filterMultiplicityCount, filterDuplicateReactions, FILTERWORDS } from "$lib/filter/filter";
 import Fuse from "fuse.js";
 import createLayout, { type Vector } from "ngraph.forcelayout";
 import createGraph, {
-  type Node,
   type Graph,
   type Link,
+  type Node,
   type NodeId,
 } from "ngraph.graph";
 import KeycapButton from "$lib/ui/KeycapButton.svelte";
@@ -16,12 +22,17 @@ import SideButton from "$lib/ui/SideButton.svelte";
 import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
 import { MoleculeGenerator } from "$lib/rendering/molecules";
 import { parseRun } from "$lib/rendering/xyz.js";
+import { VRControls } from "$lib/vr/controls/VRControls";
 import { onMount } from "svelte";
 import {
   AmbientLight,
   BoxGeometry,
+  Color,
+  CylinderGeometry,
   DirectionalLight,
+  InstancedMesh,
   LineBasicMaterial,
+  Matrix4,
   Mesh,
   MeshBasicMaterial,
   Object3D,
@@ -30,17 +41,12 @@ import {
   Plane,
   Raycaster,
   Scene,
+  SRGBColorSpace,
   Vector2,
   Vector3,
   WebGLRenderer,
-  Color,
-  Matrix4,
-  InstancedMesh,
-  CylinderGeometry,
-  SRGBColorSpace,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-    import { bool, ConstNode } from "three/examples/jsm/nodes/Nodes.js";
 
 export let graph: Graph;
 export let secondaryGraphs: Graph[] = [];
@@ -48,6 +54,7 @@ export let xyzPath: string;
 export let useHash: boolean = false;
 export let xyzFiles: Map<string, File> | null = null;
 export let startSpecies: string[] = [];
+export let webXR: boolean = false;
 export let hideCu: boolean = false;
 
 let pathSearchStart = new Array<string>();
@@ -80,7 +87,7 @@ let rerenderLines = false;
 let perspectiveCamera: PerspectiveCamera;
 let orthographicCamera: OrthographicCamera;
 let camera: PerspectiveCamera | OrthographicCamera;
-let controls: OrbitControls;
+let controls: OrbitControls | VRControls;
 let controllers: [OrbitControls, OrbitControls];
 let directionalLight: DirectionalLight;
 let lineInstances: InstancedMesh;
@@ -89,6 +96,7 @@ let newCameraTarget = new Vector3();
 let zoomTarget = 10.0;
 let zoomFinished = true;
 let lockedOnMolecule = false;
+let initializeVR: () => void;
 
 let allMoleculesVisible = true;
 
@@ -115,7 +123,12 @@ let undoStack: UndoAction[] = [];
 type UndoAction =
   | { type: "filter"; filterId: string }
   | { type: "addLayer"; addedNodes: NodeId[]; addedEdges: [NodeId, NodeId][] }
-  | { type: "addInitialNode"; node: NodeId; addedNodes: NodeId[]; addedEdges: [NodeId, NodeId][] };
+  | {
+      type: "addInitialNode";
+      node: NodeId;
+      addedNodes: NodeId[];
+      addedEdges: [NodeId, NodeId][];
+    };
 let undoEnabled = false;
 
 let filters = new Array<Filter>();
@@ -138,36 +151,36 @@ const runs = new Map<string, Run>();
 let currentFrameIndex = 0;
 let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
-  if (hideCu) {
-    hiddenElements.add("Cu");
-  }
+if (hideCu) {
+  hiddenElements.add("Cu");
+}
 
 // Begin VR adapdter
 let xrSession: XRSession | null = null;
 let isXrSession = false;
 
-setupXRSession().catch(err => {
+setupXRSession().catch((err) => {
   console.error("Fehler beim Starten der XR Session:", err);
 });
 
 async function isInlineXrAvailable(): Promise<boolean> {
-  if (!('xr' in navigator)) return false;
+  if (!("xr" in navigator)) return false;
   try {
-    return await navigator.xr.isSessionSupported('inline');
+    return await navigator.xr.isSessionSupported("inline");
   } catch {
     return false;
   }
 }
 
 async function setupXRSession() {
-  if (!('xr' in navigator)) {
+  if (!("xr" in navigator)) {
     console.warn("WebXR wird nicht unterstützt.");
     return;
   }
 
   let supported = false;
   try {
-    supported = await navigator.xr.isSessionSupported('immersive-vr');
+    supported = await navigator.xr.isSessionSupported("immersive-vr");
   } catch (err) {
     console.error("Fehler beim Prüfen von WebXR-Unterstützung:", err);
     return;
@@ -180,10 +193,10 @@ async function setupXRSession() {
 
   console.log("WebXR und immersive-vr werden unterstützt. Setup beginnt...");
 
-  xrSession = await navigator.xr.requestSession('inline');
+  xrSession = await navigator.xr.requestSession("inline");
   console.log("XR inline Session gestartet");
 
-  xrSession.addEventListener('inputsourceschange', () => {
+  xrSession.addEventListener("inputsourceschange", () => {
     console.log("InputSources aktualisiert:", xrSession!.inputSources);
   });
 
@@ -215,7 +228,7 @@ function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
 function handleControllerInput(
   source: XRInputSource,
   buttons: GamepadButton[],
-  hand: XRHandedness
+  hand: XRHandedness,
 ) {
   if (buttons[0]?.pressed) {
     console.log(`[${hand}] Trigger gedrückt`);
@@ -249,14 +262,14 @@ function onTriggerPress(hand: XRHandedness) {
 
 function onGripPress(hand: XRHandedness) {
   console.log(`→ Aktion: Grip (${hand})`);
-  if (hand === 'left') {
+  if (hand === "left") {
     rClick();
   }
 }
 
 function onLowerButtonPress(hand: XRHandedness) {
   console.log(`→ Aktion: Lower button (${hand})`);
-  if (hand === 'left') {
+  if (hand === "left") {
     pClick();
   } else {
     qClick();
@@ -265,7 +278,7 @@ function onLowerButtonPress(hand: XRHandedness) {
 
 function onUpperButtonPress(hand: XRHandedness) {
   console.log(`→ Aktion: Upper button (${hand})`);
-  if (hand === 'left') {
+  if (hand === "left") {
     fClick();
   } else {
     wClick();
@@ -275,7 +288,7 @@ function onUpperButtonPress(hand: XRHandedness) {
 function onStickPress(hand: XRHandedness) {
   console.log(`→ Aktion: Stick (${hand})`);
 }
-// Ednd VR Input 
+// Ednd VR Input
 
 const reactionNodes = new Array<Node>();
 graph.forEachNode((node) => {
@@ -363,19 +376,21 @@ onMount(async () => {
   if (!(await isInlineXrAvailable())) {
     console.warn("XR nicht verfügbar.");
   } else {
-
-    const supported = await navigator.xr.isSessionSupported('inline');
+    const supported = await navigator.xr.isSessionSupported("inline");
     if (!supported) {
-      console.warn('WebXR inline-Modus nicht unterstützt.');
+      console.warn("WebXR inline-Modus nicht unterstützt.");
       return;
     }
 
-    const session = await navigator.xr.requestSession('inline');
-    console.log('XR inline Session gestartet');
+    const session = await navigator.xr.requestSession("inline");
+    console.log("XR inline Session gestartet");
 
-    session.requestAnimationFrame(function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+    session.requestAnimationFrame(function onXRFrame(
+      time: DOMHighResTimeStamp,
+      frame: XRFrame,
+    ) {
       for (const source of session.inputSources) {
-        if (source.gamepad && source.handedness === 'right') {
+        if (source.gamepad && source.handedness === "right") {
           const buttons = source.gamepad.buttons;
 
           if (buttons[0].pressed) {
@@ -385,8 +400,8 @@ onMount(async () => {
       }
 
       session.requestAnimationFrame(onXRFrame);
-    })
-  } 
+    });
+  }
 
   function getElementAtCenter(): HTMLElement | null {
     const x = window.innerWidth / 2;
@@ -395,7 +410,7 @@ onMount(async () => {
   }
 
   function simulateClick(el: HTMLElement) {
-    const event = new MouseEvent('click', {
+    const event = new MouseEvent("click", {
       bubbles: true,
       cancelable: true,
       view: window,
@@ -429,6 +444,63 @@ onMount(async () => {
     alpha: true,
   });
 
+  initializeVR = () => {
+    renderer.xr.enabled = true;
+    const sessionOptions = {
+      optionalFeatures: ["local-floor", "bounded-floor", "layers"],
+    };
+    navigator.xr
+      .requestSession("immersive-vr", sessionOptions)
+      .then(async (session) => {
+        await renderer.xr.setSession(session);
+        camera = perspectiveCamera;
+        controls.enabled = false;
+        controls = new VRControls(renderer, scene, perspectiveCamera, meshes);
+      });
+  };
+
+  // // VR setup variables
+  // let dolly;
+
+  // // Enable WebXR if the prop is set
+
+  //   // Create dolly for VR movement
+  //   dolly = new Object3D();
+  //   scene.add(dolly);
+
+  //   // Add VR controllers
+  //   const controller1 = renderer.xr.getController(0);
+  //   const controller2 = renderer.xr.getController(1);
+  //   dolly.add(controller1);
+  //   dolly.add(controller2);
+
+  //   // Add controller models
+  //   const controllerModelFactory = new XRControllerModelFactory();
+
+  //   const controllerGrip1 = renderer.xr.getControllerGrip(0);
+  //   controllerGrip1.add(
+  //     controllerModelFactory.createControllerModel(controllerGrip1),
+  //   );
+  //   dolly.add(controllerGrip1);
+
+  //   const controllerGrip2 = renderer.xr.getControllerGrip(1);
+  //   controllerGrip2.add(
+  //     controllerModelFactory.createControllerModel(controllerGrip2),
+  //   );
+  //   dolly.add(controllerGrip2);
+
+  //   // Add controller interaction
+  //   controller1.addEventListener("selectstart", () => {
+  //     console.log("Controller 1 select start");
+  //     selectMoleculeVR();
+  //   });
+
+  //   controller2.addEventListener("selectstart", () => {
+  //     console.log("Controller 2 select start");
+  //     selectMoleculeVR();
+  //   });
+  // }
+
   const raycaster = new Raycaster();
 
   window.onresize = () => {
@@ -457,6 +529,7 @@ onMount(async () => {
   scene.add(perspectiveCamera);
   scene.add(orthographicCamera);
   orthographicCamera.zoom = 10.0;
+
   camera = orthographicCamera;
   controls = controllers[1];
   controls.target = cameraTarget;
@@ -528,6 +601,8 @@ onMount(async () => {
   }
 
   const animate = function () {
+    controls.update();
+
     if (currentLayoutIteration < layoutIterations) {
       layout.step();
       currentLayoutIteration++;
@@ -639,10 +714,18 @@ onMount(async () => {
     }
 
     renderer.render(scene, camera);
-    requestAnimationFrame(animate);
+
+    if (!webXR) {
+      requestAnimationFrame(animate);
+    }
   };
 
-  animate();
+  // Start the animation loop - use setAnimationLoop for WebXR, regular requestAnimationFrame otherwise
+  if (webXR) {
+    renderer.setAnimationLoop(animate);
+  } else {
+    animate();
+  }
 
   renderGraph.on("changed", (changes) => {
     const non_update = changes.filter(
@@ -802,14 +885,14 @@ onMount(async () => {
     } else {
       selectedSpecies.add(nodeId);
     }
- 
+
     if (moleculeGroup && run) {
       moleculeGenerator.updateMolecule(
         moleculeGroup,
         run,
         currentFrameIndex,
         selectedSpecies,
-        nodeId
+        nodeId,
       );
     }
 
@@ -855,10 +938,9 @@ onMount(async () => {
         run,
         currentFrameIndex,
         selectedSpecies,
-        nodeId
+        nodeId,
       );
     }
-    
 
     let parent = hoveredNode.parent;
 
@@ -965,7 +1047,7 @@ onMount(async () => {
 
       molecule.userData.run = run;
       molecule.scale.set(moleculeSize, moleculeSize, moleculeSize);
-      
+
       scene.add(molecule);
 
       if (!molecule) return;
@@ -1125,7 +1207,6 @@ function rClick() {
   shortestPath = [];
 }
 
-
 function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
   const nodesToRemove = new Set<NodeId>();
   const edgesToRemove = new Set<[NodeId, NodeId]>();
@@ -1176,12 +1257,18 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
     if (!node.links) return;
 
     node.links.forEach((link) => {
-      if (reactionNodesToRemove.has(link.fromId) || reactionNodesToRemove.has(link.toId)) {
+      if (
+        reactionNodesToRemove.has(link.fromId) ||
+        reactionNodesToRemove.has(link.toId)
+      ) {
         edgesToRemove.add([link.fromId, link.toId]);
 
         // Finde passende Filter, um die Entfernung zu registrieren
         for (const filter of reactionFilters) {
-          if (reactionNodesToRemove.has(link.fromId) || reactionNodesToRemove.has(link.toId)) {
+          if (
+            reactionNodesToRemove.has(link.fromId) ||
+            reactionNodesToRemove.has(link.toId)
+          ) {
             filter.removedEdges.push([link.fromId, link.toId]);
           }
         }
@@ -1221,9 +1308,12 @@ function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
 }
 
 /**
- * applies filters and returns 
+ * applies filters and returns
  */
-function filterGraphOld(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
+function filterGraphOld(): {
+  nodes: Set<NodeId>;
+  edges: Set<[NodeId, NodeId]>;
+} {
   const nodesToRemove = new Set<NodeId>();
   const reactionNodesToRemove = new Set<NodeId>();
   const edgesToRemove = new Set<[NodeId, NodeId]>();
@@ -1232,7 +1322,7 @@ function filterGraphOld(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } 
   console.warn(seenReactions);
   /**
    * iterate over all nodes and add their id to sets when a filter aplies to them
-  */
+   */
   renderGraph.forEachNode((node: Node) => {
     let removeNode = false;
     let removeReactionNode = false;
@@ -1264,7 +1354,7 @@ function filterGraphOld(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } 
   });
   /**
    * remove Links from or to reactions that will be removed by filters
-  */
+   */
   renderGraph.forEachNode((node: Node) => {
     if (node.data.type == "reaction") {
       return;
@@ -1273,23 +1363,26 @@ function filterGraphOld(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } 
       return;
     }
     node.links.forEach((link) => {
-      if (reactionNodesToRemove.has(link.fromId) || reactionNodesToRemove.has(link.toId)) {
-      edgesToRemove.add([link.fromId, link.toId]);
-    }
+      if (
+        reactionNodesToRemove.has(link.fromId) ||
+        reactionNodesToRemove.has(link.toId)
+      ) {
+        edgesToRemove.add([link.fromId, link.toId]);
+      }
     });
   });
 
   /**
    * add all chosen reactionNodes to nodesToRemove after deleating all links to them
-  */
- console.warn(reactionNodesToRemove);
+   */
+  console.warn(reactionNodesToRemove);
   reactionNodesToRemove.forEach((nodeId) => {
     nodesToRemove.add(nodeId);
-  })
+  });
 
   /**
    * remove all chosen nodes exept nodes of the initial species
-  */
+   */
   nodesToRemove.forEach((nodeId) => {
     if (initialSpecies.has(nodeId)) {
       return;
@@ -1300,7 +1393,7 @@ function filterGraphOld(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } 
 
   /**
    * remove all nodes that are left with no connection to the network exept of the initial species
-  */
+   */
   renderGraph.forEachNode((node: Node) => {
     if (node.data.type == "reaction") {
       return;
@@ -1356,12 +1449,12 @@ function addInitialNode(node: string) {
   currentSpecies = currentSpecies;
 
   addSpeciesToRendergraph(
-    graph, 
-    renderGraph, 
-    node, 
+    graph,
+    renderGraph,
+    node,
     currentSpecies,
     addedNodes,
-    addedEdges
+    addedEdges,
   );
 
   addAllPossibleReactionsToRendergraph(
@@ -1371,7 +1464,7 @@ function addInitialNode(node: string) {
     currentSpecies,
     initialSpecies,
     addedNodes,
-    addedEdges
+    addedEdges,
   );
 
   if (undoEnabled) {
@@ -1410,7 +1503,7 @@ function addSpeciesToRendergraph(
   species: string,
   currentSpecies: Set<string>,
   addedNodes?: NodeId[], // Optional
-  addedEdges?: [NodeId, NodeId][] // Optional
+  addedEdges?: [NodeId, NodeId][], // Optional
 ) {
   const alreadyInGraph = renderGraph.hasNode(species);
   if (alreadyInGraph) {
@@ -1449,7 +1542,7 @@ function addAllPossibleReactionsToRendergraph(
   currentSpecies: Set<string>,
   oldSpecies: Set<string>,
   addedNodes?: NodeId[],
-  addedEdges?: [NodeId, NodeId][]
+  addedEdges?: [NodeId, NodeId][],
 ) {
   const isSelectiveAdd = inAddLayerContext && selectedSpecies.size > 0;
   if (isSelectiveAdd && !selectedSpecies.has(species)) {
@@ -1521,7 +1614,7 @@ function addAllPossibleReactionsToRendergraph(
         edge.fromId as string,
         currentSpecies,
         addedNodes,
-        addedEdges
+        addedEdges,
       );
 
       if (!renderGraph.hasLink(edge.fromId, reactionId)) {
@@ -1537,7 +1630,7 @@ function addAllPossibleReactionsToRendergraph(
         edge.toId as string,
         currentSpecies,
         addedNodes,
-        addedEdges
+        addedEdges,
       );
 
       if (!renderGraph.hasLink(reactionId, edge.toId)) {
@@ -1582,16 +1675,22 @@ function resizeMolecules() {
 
 //ToDo remove unused function if no further need
 function canonicalizeReaction(reaction: string): string {
-  const [eductStr, productStr] = reaction.split("=>").map(s => s.trim());
+  const [eductStr, productStr] = reaction.split("=>").map((s) => s.trim());
 
-  const educts = eductStr.split("+").map(s => s.trim()).sort();
-  const products = productStr.split("+").map(s => s.trim()).sort();
+  const educts = eductStr
+    .split("+")
+    .map((s) => s.trim())
+    .sort();
+  const products = productStr
+    .split("+")
+    .map((s) => s.trim())
+    .sort();
 
   return `${educts.join(" + ")} ⇌ ${products.join(" + ")}`;
 }
 
 function removeFilter(id: string) {
-  const index = allFilters.findIndex(f => f.id === id);
+  const index = allFilters.findIndex((f) => f.id === id);
   if (index === -1) return;
 
   const removedFilter = allFilters.splice(index, 1)[0];
@@ -1621,7 +1720,9 @@ function undoLastAction() {
   const lastAction = undoStack.pop();
 
   if (lastAction.type === "filter") {
-    const filterIndex = allFilters.findIndex((f) => f.id === lastAction.filterId);
+    const filterIndex = allFilters.findIndex(
+      (f) => f.id === lastAction.filterId,
+    );
     if (filterIndex === -1) {
       console.warn("Filter not found");
       return;
@@ -1645,8 +1746,10 @@ function undoLastAction() {
         renderGraph.addLink(from, to, edge.data);
       }
     });
-
-  } else if (lastAction.type === "addLayer" || lastAction.type === "addInitialNode") {
+  } else if (
+    lastAction.type === "addLayer" ||
+    lastAction.type === "addInitialNode"
+  ) {
     // Entferne Kanten
     lastAction.addedEdges.forEach(([from, to]) => {
       renderGraph.removeLink(from, to);
@@ -1703,7 +1806,7 @@ function rerenderMolecules() {
       true,
       undefined,
       selectedSpecies,
-      node.id
+      node.id,
     );
 
     newMolecule.traverse((child) => {
@@ -1715,8 +1818,6 @@ function rerenderMolecules() {
     moleculeGroups.set(node.id, newMolecule);
   });
 }
-
-
 </script>
 
 <div class="page">
@@ -1745,7 +1846,7 @@ function rerenderMolecules() {
 
     <button
       class="settingsButton"
-      on:click={() => settingsVisible = !settingsVisible}
+      on:click={() => (settingsVisible = !settingsVisible)}
       title="Settings"
     >
       <picture>
@@ -1755,6 +1856,9 @@ function rerenderMolecules() {
   </div>
 
   <div id="keys_overlay">
+    {#if webXR}
+      <button on:click={initializeVR} style="color: black">Enter VR</button>
+    {/if}
     <div class="key_input">
       {#if isXrSession}
         <RoundButton key="A"></RoundButton>
@@ -1767,9 +1871,11 @@ function rerenderMolecules() {
         on:click={() => {
           qClick();
         }}
-      >add inital species</p>
+      >
+        add inital species
+      </p>
     </div>
-    
+
     <div class="key_input">
       {#if isXrSession}
         <RoundButton key="B"></RoundButton>
@@ -1777,12 +1883,14 @@ function rerenderMolecules() {
         <KeycapButton key="W"></KeycapButton>
       {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
       <p
         on:click={() => {
           wClick();
         }}
-      >add layer</p>
+      >
+        add layer
+      </p>
     </div>
 
     <div class="key_input">
@@ -1797,7 +1905,9 @@ function rerenderMolecules() {
         on:click={() => {
           fClick();
         }}
-      >filter graph</p>
+      >
+        filter graph
+      </p>
     </div>
 
     <div class="key_input">
@@ -1812,7 +1922,9 @@ function rerenderMolecules() {
         on:click={() => {
           pClick();
         }}
-      >find path</p>
+      >
+        find path
+      </p>
     </div>
 
     <div class="key_input">
@@ -1827,7 +1939,9 @@ function rerenderMolecules() {
         on:click={() => {
           rClick();
         }}
-      >reset graph</p>
+      >
+        reset graph
+      </p>
     </div>
   </div>
 
@@ -1970,6 +2084,7 @@ function rerenderMolecules() {
         <select
           name="camera"
           id="camera"
+          disabled={webXR}
           on:change={(event) => {
             const value = event.target.value;
 
@@ -2080,15 +2195,19 @@ function rerenderMolecules() {
             <button
               on:click={() => {
                 const element = document.getElementById("filterElement").value;
-                const operatorKey = document.getElementById("filterElementOperator").value;
+                const operatorKey = document.getElementById(
+                  "filterElementOperator",
+                ).value;
                 const operator = COUNT_OPERATORS.get(operatorKey);
-                const count = document.getElementById("filterElementInput").value;
+                const count =
+                  document.getElementById("filterElementInput").value;
                 let filterId = crypto.randomUUID();
 
                 allFilters.push({
                   id: filterId,
                   type: "species",
-                  fn: (node) => filterByAtomCount(node, element, count, operator),
+                  fn: (node) =>
+                    filterByAtomCount(node, element, count, operator),
                   sentence: `Remove all molecules where the number of ${element} atoms is ${FILTERWORDS.get(operatorKey)} ${count}`,
                   removedNodes: [],
                   removedEdges: [],
@@ -2118,15 +2237,19 @@ function rerenderMolecules() {
             <input type="number" step="1" id="filterChargeInput" />
             <button
               on:click={() => {
-                const chargeOperatorKey = document.getElementById("filterChargeOperator").value;
+                const chargeOperatorKey = document.getElementById(
+                  "filterChargeOperator",
+                ).value;
                 const chargeOperator = COUNT_OPERATORS.get(chargeOperatorKey);
-                const cargeCount = document.getElementById("filterChargeInput").value;
+                const cargeCount =
+                  document.getElementById("filterChargeInput").value;
                 let filterId = crypto.randomUUID();
 
                 allFilters.push({
                   id: filterId,
                   type: "species",
-                  fn: (node) => filterChargeCount(node, cargeCount, chargeOperator),
+                  fn: (node) =>
+                    filterChargeCount(node, cargeCount, chargeOperator),
                   sentence: `Remove all molecules where the charge is ${FILTERWORDS.get(chargeOperatorKey)} ${cargeCount}`,
                   removedNodes: [],
                   removedEdges: [],
@@ -2155,15 +2278,26 @@ function rerenderMolecules() {
             <input type="number" step="1" id="filterMultiplicityInput" />
             <button
               on:click={() => {
-                const multiplicityOperatorKey = document.getElementById("filterMultiplicityOperator").value;
-                const multiplicityOperator = COUNT_OPERATORS.get(multiplicityOperatorKey);
-                const multiplicityCount = document.getElementById("filterMultiplicityInput").value;
+                const multiplicityOperatorKey = document.getElementById(
+                  "filterMultiplicityOperator",
+                ).value;
+                const multiplicityOperator = COUNT_OPERATORS.get(
+                  multiplicityOperatorKey,
+                );
+                const multiplicityCount = document.getElementById(
+                  "filterMultiplicityInput",
+                ).value;
                 let filterId = crypto.randomUUID();
 
                 allFilters.push({
                   id: filterId,
                   type: "species",
-                  fn: (node) => filterMultiplicityCount(node, multiplicityCount, multiplicityOperator),
+                  fn: (node) =>
+                    filterMultiplicityCount(
+                      node,
+                      multiplicityCount,
+                      multiplicityOperator,
+                    ),
                   sentence: `Remove all molecules where the spin-multilpicity is ${FILTERWORDS.get(multiplicityOperatorKey)} ${multiplicityCount}`,
                   removedNodes: [],
                   removedEdges: [],
@@ -2172,7 +2306,8 @@ function rerenderMolecules() {
 
                 allFilters = allFilters;
 
-                document.getElementById("filterMultiplicityOperator").value = "==";
+                document.getElementById("filterMultiplicityOperator").value =
+                  "==";
                 document.getElementById("filterMultiplicityInput").value = "";
                 filterApplied = true;
                 filterGraph();
@@ -2185,10 +2320,11 @@ function rerenderMolecules() {
           <div style="pointer-events: all;">
             <p>Remove duplicate reactions based on educt permutation</p>
             <button
-              on:click={() => {  
-                const duplicateReactionFilterFn = filterDuplicateReactions(seenReactions);
+              on:click={() => {
+                const duplicateReactionFilterFn =
+                  filterDuplicateReactions(seenReactions);
                 let filterId = crypto.randomUUID();
-                
+
                 allFilters.push({
                   id: filterId,
                   type: "reaction",
@@ -2204,8 +2340,8 @@ function rerenderMolecules() {
                 filterApplied = true;
                 filterGraph();
                 pathSearchGraph = new PathSearchGraph(renderGraph);
-              }}
-          >Add</button>
+              }}>Add</button
+            >
           </div>
         </div>
         {#each allFilters as filter (filter.id)}
@@ -2213,8 +2349,8 @@ function rerenderMolecules() {
             <p>{filter.sentence}</p>
             <button
               style="margin-left: 0.5rem; height: fit-content"
-              on:click={() => removeFilter(filter.id)}
-            >Remove</button>
+              on:click={() => removeFilter(filter.id)}>Remove</button
+            >
           </div>
         {/each}
       </div>
@@ -2541,7 +2677,6 @@ function rerenderMolecules() {
   height: 100%;
   object-fit: contain;
 }
-
 
 @media (max-width: 400px) {
   #keys_overlay {
