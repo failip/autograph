@@ -821,7 +821,7 @@ onMount(async () => {
 
     if (parent) {
       parent.getWorldPosition(newCameraTarget);
-      zoomTarget = 60.0;
+      zoomTarget = camera.zoom; 
       zoomFinished = false;
       targetedNode = parent;
     }
@@ -868,8 +868,8 @@ onMount(async () => {
 
     if (parent) {
       parent.getWorldPosition(newCameraTarget);
-      zoomTarget = 60.0;
-      zoomFinished = false;
+      //zoomTarget = camera.zoom; 
+      //zoomFinished = false;
       targetedNode = parent;
     }
 
@@ -1323,6 +1323,8 @@ function addLayer() {
   inAddLayerContext = true;
 
   const oldSpecies = new Set<string>(currentSpecies);
+  const selectiveMode = selectedSpecies.size > 0;
+
   currentSpecies.forEach((species) => {
     addAllPossibleReactionsToRendergraph(
       graph,
@@ -1332,6 +1334,7 @@ function addLayer() {
       oldSpecies,
       addedNodes,
       addedEdges,
+      selectiveMode
     );
   });
 
@@ -1449,7 +1452,8 @@ function addAllPossibleReactionsToRendergraph(
   currentSpecies: Set<string>,
   oldSpecies: Set<string>,
   addedNodes?: NodeId[],
-  addedEdges?: [NodeId, NodeId][]
+  addedEdges?: [NodeId, NodeId][],
+  selectiveMode: boolean = false
 ) {
   const isSelectiveAdd = inAddLayerContext && selectedSpecies.size > 0;
   if (isSelectiveAdd && !selectedSpecies.has(species)) {
@@ -1471,19 +1475,40 @@ function addAllPossibleReactionsToRendergraph(
     const reactionId = isReactant ? link.toId : link.fromId;
 
     const reaction = graph.getNode(reactionId);
-    if (!reaction) return;
+    if (!reaction) {
+      return;
+    }
 
     const inEdges = getInEdges(reaction);
-    const hasAllReactants = inEdges.every((edge) => {
-      return oldSpecies.has(edge.fromId as string);
-    });
-
     const outEdges = getOutEdges(reaction);
-    const hasAllProducts = outEdges.every((edge) => {
-      return oldSpecies.has(edge.toId as string);
-    });
 
-    if (!(hasAllReactants || hasAllProducts)) return;
+    let reactionRelevant = false;
+
+    if (selectiveMode) {
+      const hasAnyReactant = inEdges.some((edge) => {
+        return oldSpecies.has(edge.fromId as string);
+      });
+
+      const hasAnyProduct = outEdges.some((edge) => {
+        return oldSpecies.has(edge.toId as string);
+      });
+
+      reactionRelevant = hasAnyReactant || hasAnyProduct;
+    } else {
+      const hasAllReactants = inEdges.every((edge) => {
+        return oldSpecies.has(edge.fromId as string);
+      });
+
+      const hasAllProducts = outEdges.every((edge) => {
+        return oldSpecies.has(edge.toId as string);
+      });
+
+      reactionRelevant = hasAllReactants || hasAllProducts;
+    }
+
+    if (!reactionRelevant) {
+      return;
+    }
 
     const filtered = inEdges
       .map((edge) => edge.fromId as string)
@@ -1496,7 +1521,10 @@ function addAllPossibleReactionsToRendergraph(
         return filters.some((filter) => filter(node));
       })
       .some((value) => value);
-    if (filtered) return;
+
+    if (filtered) {
+      return;
+    }
 
     const inSecondaryGraphs = secondaryGraphs
       .map((graph) => graph.hasNode(species))
@@ -1506,12 +1534,16 @@ function addAllPossibleReactionsToRendergraph(
 
     if (!renderGraph.hasNode(reactionId)) {
       renderGraph.addNode(reactionId, reaction.data);
-      if (addedNodes) addedNodes.push(reactionId);
+      if (addedNodes) {
+        addedNodes.push(reactionId);
+      }
     }
 
     if (!renderGraph.hasLink(species, reactionId)) {
       renderGraph.addLink(species, reactionId);
-      if (addedEdges) addedEdges.push([species, reactionId]);
+      if (addedEdges) {
+        addedEdges.push([species, reactionId]);
+      }
     }
 
     inEdges.forEach((edge) => {
@@ -1526,7 +1558,9 @@ function addAllPossibleReactionsToRendergraph(
 
       if (!renderGraph.hasLink(edge.fromId, reactionId)) {
         renderGraph.addLink(edge.fromId, reactionId);
-        if (addedEdges) addedEdges.push([edge.fromId, reactionId]);
+        if (addedEdges) {
+          addedEdges.push([edge.fromId, reactionId]);
+        }
       }
     });
 
@@ -1542,7 +1576,9 @@ function addAllPossibleReactionsToRendergraph(
 
       if (!renderGraph.hasLink(reactionId, edge.toId)) {
         renderGraph.addLink(reactionId, edge.toId);
-        if (addedEdges) addedEdges.push([reactionId, edge.toId]);
+        if (addedEdges) {
+          addedEdges.push([reactionId, edge.toId]);
+        }
       }
     });
   });
