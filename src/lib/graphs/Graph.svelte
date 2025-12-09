@@ -48,7 +48,9 @@ export let xyzPath: string;
 export let useHash: boolean = false;
 export let xyzFiles: Map<string, File> | null = null;
 export let startSpecies: string[] = [];
-export let hideCu: boolean = false;
+
+let scene: THREE.Scene;
+let meshes: Object3D;
 
 let pathSearchStart = new Array<string>();
 let pathChanged = false;
@@ -138,9 +140,6 @@ const runs = new Map<string, Run>();
 let currentFrameIndex = 0;
 let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
-  if (hideCu) {
-    hiddenElements.add("Cu");
-  }
 
 // Begin VR adapdter
 let xrSession: XRSession | null = null;
@@ -403,7 +402,7 @@ onMount(async () => {
     el.dispatchEvent(event);
   }
 
-  const scene = new Scene();
+  scene = new Scene();
 
   perspectiveCamera = new PerspectiveCamera(
     75,
@@ -482,7 +481,7 @@ onMount(async () => {
 
   const geometry = new BoxGeometry(1.0, 1.0, 1.0);
 
-  const meshes = new Object3D();
+  meshes = new Object3D();
   scene.add(meshes);
 
   graphElement.addEventListener("pointerdown", selectMolecule);
@@ -958,6 +957,8 @@ onMount(async () => {
       }
       const run = parseRun(data);
 
+      console.log("in renderMolecules");
+  console.log(hiddenElements);
       const molecule = moleculeGenerator.generateMolecule(run, hiddenElements);
 
       moleculeGroups.set(nodeId, molecule); // molecule ist ein THREE.Group
@@ -1708,50 +1709,60 @@ function undoLastAction() {
   pathSearchGraph = new PathSearchGraph(renderGraph);
 }
 
-function handleElementFilterChange(event: Event) {
-  const target = event.target as HTMLSelectElement;
-  const selectedElement = target.value;
+function updateHiddenElements(newHidden: Set<string>) {
+  hiddenElements = newHidden;
 
-  if (hiddenElements.has(selectedElement)) {
-    hiddenElements.delete(selectedElement);
-  } else {
-    hiddenElements.add(selectedElement);
-  }
-
-  rerenderMolecules();
-}
-
-function rerenderMolecules() {
-  renderGraph.forEachNode((node) => {
-    if (node.data.type !== "species") return;
-
-    const oldObject = objects.get(node.id);
-    if (oldObject) {
-      meshes.remove(oldObject);
-    }
-
-    const run = runs.get(node.id);
+  // Für jedes existierende Molekül neu generieren
+  moleculeGroups.forEach((oldGroup, nodeId) => {
+    const run = runs.get(nodeId);
     if (!run) return;
 
-    const newMolecule = moleculeGenerator.generateMolecule(
+    // neues Molekül erzeugen (generateMolecule unverändert!)
+    const newGroup = moleculeGenerator.generateMolecule(
       run,
       hiddenElements,
       true,
       undefined,
       selectedSpecies,
-      node.id
+      nodeId
     );
 
-    newMolecule.traverse((child) => {
-      child.userData = node;
-    });
+    // gleiche Skalierung wie altes Molekül beibehalten
+    newGroup.scale.copy(oldGroup.scale);
+    newGroup.position.copy(oldGroup.position);
 
-    objects.set(node.id, newMolecule);
-    meshes.add(newMolecule);
-    moleculeGroups.set(node.id, newMolecule);
+    // altes Molekül entfernen
+    scene.remove(oldGroup);
+    meshes.remove(oldGroup);
+
+    // neues hinzufügen
+    scene.add(newGroup);
+    meshes.add(newGroup);
+
+    moleculeGroups.set(nodeId, newGroup);
   });
 }
 
+function getInputElement(): string {
+  const el = document.getElementById("hideInput") as HTMLInputElement;
+  return el?.value?.trim() ?? "";
+}
+
+function addHiddenElement() {
+  const symbol = getInputElement();
+  if (!symbol) return;
+
+  hiddenElements.add(symbol);
+  updateHiddenElements(hiddenElements);
+}
+
+function removeHiddenElement() {
+  const symbol = getInputElement();
+  if (!symbol) return;
+
+  hiddenElements.delete(symbol);
+  updateHiddenElements(hiddenElements);
+}
 
 </script>
 
@@ -2075,6 +2086,18 @@ function rerenderMolecules() {
             rerenderLines = true;
           }}
         />
+        <p>Hide Elements</p>
+        <input
+          id="hideInput"
+          placeholder="z.B. Cu oder O"
+          on:keydown={(e) => {
+            if (e.key === 'Enter') addHiddenElement();
+          }}
+        />
+        <button on:click={addHiddenElement}>Hide</button>
+        <button on:click={removeHiddenElement}>Show</button>
+        <!-- zur Übersicht -->
+        <p>Hidden: {Array.from(hiddenElements).join(", ")}</p>
       </div>
     </div>
   {/if}
