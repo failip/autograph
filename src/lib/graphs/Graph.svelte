@@ -450,7 +450,7 @@ onMount(async () => {
       optionalFeatures: ["local-floor", "bounded-floor", "layers"],
     };
     navigator.xr
-      .requestSession("immersive-vr", sessionOptions)
+      .requestSession("immersive-ar", sessionOptions)
       .then(async (session) => {
         await renderer.xr.setSession(session);
         camera = perspectiveCamera;
@@ -458,48 +458,6 @@ onMount(async () => {
         controls = new VRControls(renderer, scene, perspectiveCamera, meshes);
       });
   };
-
-  // // VR setup variables
-  // let dolly;
-
-  // // Enable WebXR if the prop is set
-
-  //   // Create dolly for VR movement
-  //   dolly = new Object3D();
-  //   scene.add(dolly);
-
-  //   // Add VR controllers
-  //   const controller1 = renderer.xr.getController(0);
-  //   const controller2 = renderer.xr.getController(1);
-  //   dolly.add(controller1);
-  //   dolly.add(controller2);
-
-  //   // Add controller models
-  //   const controllerModelFactory = new XRControllerModelFactory();
-
-  //   const controllerGrip1 = renderer.xr.getControllerGrip(0);
-  //   controllerGrip1.add(
-  //     controllerModelFactory.createControllerModel(controllerGrip1),
-  //   );
-  //   dolly.add(controllerGrip1);
-
-  //   const controllerGrip2 = renderer.xr.getControllerGrip(1);
-  //   controllerGrip2.add(
-  //     controllerModelFactory.createControllerModel(controllerGrip2),
-  //   );
-  //   dolly.add(controllerGrip2);
-
-  //   // Add controller interaction
-  //   controller1.addEventListener("selectstart", () => {
-  //     console.log("Controller 1 select start");
-  //     selectMoleculeVR();
-  //   });
-
-  //   controller2.addEventListener("selectstart", () => {
-  //     console.log("Controller 2 select start");
-  //     selectMoleculeVR();
-  //   });
-  // }
 
   const raycaster = new Raycaster();
 
@@ -871,14 +829,6 @@ onMount(async () => {
     const nodeId = hoveredNode.userData?.name;
     if (!nodeId) return;
 
-    const moleculeGroup = moleculeGroups.get(nodeId);
-    const run = runs.get(nodeId);
-
-    if (!moleculeGroup || !run) {
-      console.warn("Keine Molekülgruppe oder Run für", nodeId);
-      return;
-    }
-
     // Mehrfachauswahl: Toggle-Verhalten
     if (selectedSpecies.has(nodeId)) {
       selectedSpecies.delete(nodeId);
@@ -886,30 +836,22 @@ onMount(async () => {
       selectedSpecies.add(nodeId);
     }
 
-    if (moleculeGroup && run) {
-      moleculeGenerator.updateMolecule(
-        moleculeGroup,
-        run,
-        currentFrameIndex,
-        selectedSpecies,
-        nodeId,
-      );
-    }
+    updateMolecule(nodeId);
 
-    let parent = hoveredNode.parent;
+    // let parent = hoveredNode.parent;
 
-    if (parent?.parent !== meshes) {
-      parent = parent?.parent;
-    }
+    // if (parent?.parent !== meshes) {
+    //   parent = parent?.parent;
+    // }
 
-    if (parent) {
-      parent.getWorldPosition(newCameraTarget);
-      zoomTarget = 60.0;
-      zoomFinished = false;
-      targetedNode = parent;
-    }
+    // if (parent) {
+    //   parent.getWorldPosition(newCameraTarget);
+    //   zoomTarget = 60.0;
+    //   zoomFinished = false;
+    //   targetedNode = parent;
+    // }
 
-    lockedOnMolecule = true;
+    // lockedOnMolecule = false;
   }
 
   function selectMoleculeVR() {
@@ -1109,6 +1051,26 @@ onMount(async () => {
   undoEnabled = true;
 });
 
+function updateMolecule(nodeId: string) {
+  const moleculeGroup = moleculeGroups.get(nodeId);
+  const run = runs.get(nodeId);
+
+  if (!moleculeGroup || !run) {
+    console.warn("Keine Molekülgruppe oder Run für", nodeId);
+    return;
+  }
+
+  if (moleculeGroup && run) {
+    moleculeGenerator.updateMolecule(
+      moleculeGroup,
+      run,
+      currentFrameIndex,
+      selectedSpecies,
+      nodeId,
+    );
+  }
+}
+
 function updateMousePosition(event) {
   mousePosition.x = (event.clientX / graphElement.clientWidth) * 2 - 1;
   mousePosition.y = -(event.clientY / graphElement.clientHeight) * 2 + 1;
@@ -1205,6 +1167,10 @@ function rClick() {
   initialReactions.clear();
   currentSpecies.clear();
   shortestPath = [];
+
+  for (const species of startSpecies) {
+    addInitialNode(species);
+  }
 }
 
 function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
@@ -1437,6 +1403,14 @@ function addLayer() {
       addedEdges,
     });
   }
+
+  const nodesToReset = Array.from(selectedSpecies);
+  selectedSpecies.clear();
+
+  for (const nodeId of nodesToReset) {
+    console.log("Updating molecule after layer addition:", nodeId);
+    updateMolecule(nodeId);
+  }
 }
 
 function addInitialNode(node: string) {
@@ -1549,6 +1523,10 @@ function addAllPossibleReactionsToRendergraph(
     return;
   }
 
+  if (!isSelectiveAdd) {
+    return;
+  }
+
   const node = graph.getNode(species);
   if (!node) {
     return;
@@ -1567,16 +1545,43 @@ function addAllPossibleReactionsToRendergraph(
     if (!reaction) return;
 
     const inEdges = getInEdges(reaction);
+
+    const numberOfUniqueReactants = new Set(
+      inEdges.map((edge) => edge.fromId as string),
+    ).size;
+    console.log(numberOfUniqueReactants);
     const hasAllReactants = inEdges.every((edge) => {
-      return oldSpecies.has(edge.fromId as string);
+      return isSelectiveAdd
+        ? selectedSpecies.has(edge.fromId as string) &&
+            numberOfUniqueReactants == selectedSpecies.size
+        : oldSpecies.has(edge.fromId as string);
     });
 
+    const numberOfUniqueProducts = new Set(
+      getOutEdges(reaction).map((edge) => edge.toId as string),
+    ).size;
     const outEdges = getOutEdges(reaction);
     const hasAllProducts = outEdges.every((edge) => {
-      return oldSpecies.has(edge.toId as string);
+      return isSelectiveAdd
+        ? selectedSpecies.has(edge.toId as string) &&
+            numberOfUniqueProducts == selectedSpecies.size
+        : oldSpecies.has(edge.toId as string);
     });
 
     if (!(hasAllReactants || hasAllProducts)) return;
+
+    const reverseReaction = (reactionSmile: string) => {
+      const [eductStr, productStr] = reactionSmile
+        .split("=>")
+        .map((s) => s.trim());
+      return `${productStr} => ${eductStr}`;
+    };
+
+    const reversedReactionAlreadyInGraph = renderGraph.hasNode(
+      reverseReaction(reactionId),
+    );
+
+    if (reversedReactionAlreadyInGraph) return;
 
     const filtered = inEdges
       .map((edge) => edge.fromId as string)

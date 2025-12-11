@@ -36,6 +36,11 @@ export class VRControls {
   public enableDamping = true;
   public dampingFactor = 0.05;
 
+  public onAPressed: (() => void) | null = null;
+  public onBPressed: (() => void) | null = null;
+  public onXPressed: (() => void) | null = null;
+  public onYPressed: (() => void) | null = null;
+
   constructor(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera, target: Object3D) {
 
     const xrSession = renderer.xr.getSession();
