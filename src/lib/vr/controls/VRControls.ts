@@ -1,4 +1,4 @@
-import { Object3D, PerspectiveCamera, Scene, Vector3, Vector2, WebGLRenderer, type WebXRArrayCamera, Spherical, Quaternion } from "three";
+import { Object3D, PerspectiveCamera, Scene, Vector3, Vector2, WebGLRenderer, type WebXRArrayCamera, Spherical, Quaternion, Matrix4, Raycaster, CylinderGeometry, MeshBasicMaterial, Mesh } from "three";
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
 export class VRControls {
@@ -9,11 +9,20 @@ export class VRControls {
   public enabled = true;
   private xrSession: XRSession;
 
+  private raycaster: Raycaster;
+  private tempMatrix: Matrix4;
+
+  public controller1: Object3D;
+  public controller2: Object3D;
+
   private perspectiveCamera: PerspectiveCamera;
 
   dolly: Object3D;
   controllers: Gamepad[] = [];
   handedness: XRHandedness[] = [];
+
+  private scene: Scene;
+  private raycastGroup: Object3D | undefined;
 
   // Orbit controls properties
   private spherical: Spherical;
@@ -40,8 +49,15 @@ export class VRControls {
   public onBPressed: (() => void) | null = null;
   public onXPressed: (() => void) | null = null;
   public onYPressed: (() => void) | null = null;
+  public onSelect: (() => void) | null = null;
+  public onHover: ((object: Object3D | null) => void) | null = null;
 
-  constructor(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera, target: Object3D) {
+  private hoveredObject: Object3D | null = null;
+  private prevTriggerState: boolean[] = [false, false];
+  private prevButton4State: boolean[] = [false, false];
+  private prevButton5State: boolean[] = [false, false];
+
+  constructor(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera, target: Object3D, raycastGroup?: Object3D) {
 
     const xrSession = renderer.xr.getSession();
 
@@ -51,11 +67,15 @@ export class VRControls {
 
     this.xrSession = xrSession;
 
-
-
     this.xrSession.addEventListener('inputsourceschange', (event) => {
       this.controllers = [];
       this.handedness = [];
+
+      // Reset states
+      this.prevTriggerState = [false, false];
+      this.prevButton4State = [false, false];
+      this.prevButton5State = [false, false];
+
       this.xrSession.inputSources.forEach((source) => {
         if (source.gamepad) {
           this.controllers.push(source.gamepad);
@@ -64,14 +84,34 @@ export class VRControls {
       });
     });
 
+    this.raycaster = new Raycaster();
+    this.tempMatrix = new Matrix4();
+
     this.dolly = new Object3D();
     this.dolly.name = "VR Dolly";
 
     scene.add(this.dolly);
-    const controller1 = renderer.xr.getController(0);
-    const controller2 = renderer.xr.getController(1);
-    this.dolly.add(controller1);
-    this.dolly.add(controller2);
+    this.controller1 = renderer.xr.getController(0);
+    this.controller2 = renderer.xr.getController(1);
+
+    const geometry = new CylinderGeometry(0.002, 0.002, 5, 32);
+    geometry.rotateX(-Math.PI / 2);
+    geometry.translate(0, 0, -2.5);
+
+    const material = new MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.5
+    });
+
+    const line = new Mesh(geometry, material);
+    line.name = 'line';
+
+    this.controller1.add(line.clone());
+    this.controller2.add(line.clone());
+
+    this.dolly.add(this.controller1);
+    this.dolly.add(this.controller2);
     const controllerModelFactory = new XRControllerModelFactory();
     const controllerGrip1 = renderer.xr.getControllerGrip(0);
     controllerGrip1.add(
@@ -108,6 +148,9 @@ export class VRControls {
 
     // Initialize dolly position based on target and distance
     this.initializeDollyPosition();
+
+    this.scene = scene;
+    this.raycastGroup = raycastGroup;
   }
 
   private initializeDollyPosition(): void {
@@ -180,22 +223,93 @@ export class VRControls {
         this.rotateUp(thumbstickY * this.rotationSpeed * 0.02);
       }
 
-      // Handle trigger for zoom (dolly)
+      // Handle trigger for selection
       const trigger = controller.buttons[0] ? controller.buttons[0].value : 0;
       const squeeze = controller.buttons[1] ? controller.buttons[1].value : 0;
 
-      if (trigger > 0.1) {
-        this.dollyIn(1 + trigger * 0.02);
+      if (trigger > 0.5 && !this.prevTriggerState[index]) {
+        console.log("Trigger pressed on controller", trigger);
+        if (this.onSelect) {
+          this.onSelect();
+        }
+        this.prevTriggerState[index] = true;
+      } else if (trigger < 0.5) {
+        this.prevTriggerState[index] = false;
       }
 
       if (squeeze > 0.1) {
         this.dollyOut(1 + squeeze * 0.02);
       }
+
+      const handedness = this.handedness[index];
+
+      // Handle A/X buttons (Button 4)
+      const button4 = controller.buttons[4]?.pressed || false;
+      if (button4 && !this.prevButton4State[index]) {
+        if (handedness === 'right' && this.onAPressed) this.onAPressed();
+        if (handedness === 'left' && this.onXPressed) this.onXPressed();
+        this.prevButton4State[index] = true;
+      } else if (!button4) {
+        this.prevButton4State[index] = false;
+      }
+
+      // Handle B/Y buttons (Button 5)
+      const button5 = controller.buttons[5]?.pressed || false;
+      if (button5 && !this.prevButton5State[index]) {
+        if (handedness === 'right' && this.onBPressed) this.onBPressed();
+        if (handedness === 'left' && this.onYPressed) this.onYPressed();
+        this.prevButton5State[index] = true;
+      } else if (!button5) {
+        this.prevButton5State[index] = false;
+      }
     });
+  }
+
+  private updateRaycaster(): void {
+    let foundIntersection = false;
+
+    const controllers = [this.controller1, this.controller2];
+
+    for (const controller of controllers) {
+      this.tempMatrix.identity().extractRotation(controller.matrixWorld);
+      this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+      this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(this.tempMatrix);
+      if (!this.raycastGroup) continue;
+      const intersects = this.raycaster.intersectObjects(this.raycastGroup.children);
+      if (intersects.length > 0) {
+        console.log('intersected', intersects[0].object);
+        const object = intersects[0].object;
+        if (this.hoveredObject !== object) {
+          this.hoveredObject = object;
+          if (this.onHover) this.onHover(this.hoveredObject);
+        }
+        foundIntersection = true;
+
+        // Adjust pointer length
+        const line = controller.getObjectByName('line');
+        if (line) {
+          line.scale.z = intersects[0].distance / 5;
+        }
+        break;
+      } else {
+        // Reset pointer length
+        const line = controller.getObjectByName('line');
+        if (line) {
+          line.scale.z = 1;
+        }
+      }
+    }
+
+    if (!foundIntersection && this.hoveredObject) {
+      this.hoveredObject = null;
+      if (this.onHover) this.onHover(null);
+    }
   }
 
   public update(delta: number = 0.0001): void {
     if (!this.enabled) return;
+
+    this.updateRaycaster();
 
     // Handle VR controller input
     this.handleControllerInput();

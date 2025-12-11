@@ -389,16 +389,6 @@ onMount(async () => {
       time: DOMHighResTimeStamp,
       frame: XRFrame,
     ) {
-      for (const source of session.inputSources) {
-        if (source.gamepad && source.handedness === "right") {
-          const buttons = source.gamepad.buttons;
-
-          if (buttons[0].pressed) {
-            selectMoleculeVR();
-          }
-        }
-      }
-
       session.requestAnimationFrame(onXRFrame);
     });
   }
@@ -455,7 +445,22 @@ onMount(async () => {
         await renderer.xr.setSession(session);
         camera = perspectiveCamera;
         controls.enabled = false;
-        controls = new VRControls(renderer, scene, perspectiveCamera, meshes);
+        controls = new VRControls(
+          renderer,
+          scene,
+          perspectiveCamera,
+          new Object3D(),
+          meshes,
+        );
+        controls.onHover = (object) => {
+          hoveredNode = object ?? undefined;
+        };
+        controls.onSelect = () => {
+          selectMolecule();
+        };
+        controls.onBPressed = () => {
+          wClick();
+        };
       });
   };
 
@@ -545,6 +550,7 @@ onMount(async () => {
   scene.add(lineInstances);
 
   function hover() {
+    if (controls instanceof VRControls) return;
     raycaster.setFromCamera(mousePosition, camera);
     const intersects = raycaster.intersectObjects(meshes.children);
     if (intersects.length > 0) {
@@ -824,7 +830,7 @@ onMount(async () => {
     });
   }
 
-  function selectMolecule(event: PointerEvent) {
+  function selectMolecule() {
     if (!hoveredNode) return;
     const nodeId = hoveredNode.userData?.name;
     if (!nodeId) return;
