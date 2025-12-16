@@ -226,6 +226,7 @@ export class VRControls {
       // Handle trigger for selection
       const trigger = controller.buttons[0] ? controller.buttons[0].value : 0;
       const squeeze = controller.buttons[1] ? controller.buttons[1].value : 0;
+      const handedness = this.handedness[index];
 
       if (trigger > 0.5 && !this.prevTriggerState[index]) {
         console.log("Trigger pressed on controller", trigger);
@@ -238,10 +239,12 @@ export class VRControls {
       }
 
       if (squeeze > 0.1) {
-        this.dollyOut(1 + squeeze * 0.02);
+        if (handedness === "left") {
+          this.dollyIn(1 + squeeze * 0.02);
+        } else {
+          this.dollyOut(1 + squeeze * 0.02);
+        }
       }
-
-      const handedness = this.handedness[index];
 
       // Handle A/X buttons (Button 4)
       const button4 = controller.buttons[4]?.pressed || false;

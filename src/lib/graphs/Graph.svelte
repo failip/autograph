@@ -26,10 +26,13 @@ import { VRControls } from "$lib/vr/controls/VRControls";
 import { onMount } from "svelte";
 import {
   AmbientLight,
+  Box3,
   BoxGeometry,
+  CanvasTexture,
   Color,
   CylinderGeometry,
   DirectionalLight,
+  DoubleSide,
   InstancedMesh,
   LineBasicMaterial,
   Matrix4,
@@ -39,8 +42,11 @@ import {
   OrthographicCamera,
   PerspectiveCamera,
   Plane,
+  PlaneGeometry,
   Raycaster,
   Scene,
+  Sprite,
+  SpriteMaterial,
   SRGBColorSpace,
   Vector2,
   Vector3,
@@ -180,7 +186,7 @@ async function setupXRSession() {
 
   let supported = false;
   try {
-    supported = await navigator.xr.isSessionSupported("immersive-vr");
+    supported = await navigator.xr.isSessionSupported("immersive-ar");
   } catch (err) {
     console.error("Fehler beim Prüfen von WebXR-Unterstützung:", err);
     return;
@@ -372,6 +378,24 @@ const layout = createLayout(renderGraph, {
 
 const objects = new Map<string, Object3D>();
 
+function createGradientTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const context = canvas.getContext("2d");
+  if (!context) return new CanvasTexture(canvas);
+
+  const gradient = context.createRadialGradient(256, 256, 0, 256, 256, 256);
+  gradient.addColorStop(0, "rgba(0, 255, 255, 1)");
+  gradient.addColorStop(1, "rgba(0, 255, 255, 0)");
+
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, 512, 512);
+
+  const texture = new CanvasTexture(canvas);
+  return texture;
+}
+
 onMount(async () => {
   if (!(await isInlineXrAvailable())) {
     console.warn("XR nicht verfügbar.");
@@ -409,6 +433,17 @@ onMount(async () => {
   }
 
   const scene = new Scene();
+
+  const gradientTexture = createGradientTexture();
+  const bgGeometry = new PlaneGeometry(1, 1);
+  const bgMaterial = new MeshBasicMaterial({
+    map: gradientTexture,
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.8,
+    depthWrite: false,
+    side: DoubleSide,
+  });
 
   perspectiveCamera = new PerspectiveCamera(
     75,
@@ -564,6 +599,11 @@ onMount(async () => {
     }
   }
 
+  const box = new Box3();
+  const center = new Vector3();
+  const dir = new Vector3();
+  const size = new Vector3();
+
   const animate = function () {
     controls.update();
 
@@ -613,9 +653,18 @@ onMount(async () => {
     hover();
 
     if (currentLayoutIteration < layoutIterations) {
+      let maxDistSq = 0;
       renderGraph.forEachNode((node) => {
         const position = layout.getNodePosition(node.id);
         const cube = objects.get(node.id as string);
+
+        const distSq =
+          position.x * position.x +
+          position.y * position.y +
+          (position.z || 0) * (position.z || 0);
+        if (distSq > maxDistSq) {
+          maxDistSq = distSq;
+        }
 
         if (cube === undefined) {
           return;
@@ -628,6 +677,10 @@ onMount(async () => {
           cube?.position.copy(position);
         }
       });
+
+      const maxDist = Math.sqrt(maxDistSq);
+      // const scale = maxDist * 2.5;
+      // backgroundSprite.scale.set(scale, scale, 1);
 
       renderGraph.forEachLink((link) => {
         updateLink(link);

@@ -8,7 +8,7 @@ let graphLoaded = false;
 
 onMount(async () => {
   try {
-    const response = await fetch("/graphs/jam/graph.json");
+    const response = await fetch("/graphs/pentane/graph.json");
     const text = await response.text();
     graph = createGraphFromString(text);
     graphLoaded = true;
@@ -22,8 +22,8 @@ onMount(async () => {
   <Graph
     {graph}
     webXR={true}
-    xyzPath="/graphs/jam/"
-    startSpecies={["[H][S][H]{0,1}", "[H][O]{0,2}"]}
+    xyzPath="/graphs/pentane/"
+    startSpecies={["CCCCC", "[O][O]"]}
   />
 {:else}
   <div class="loading">
