@@ -141,6 +141,218 @@ let currentFrameIndex = 0;
 let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
 
+let energyMap: Map<string, number> | null = null;
+let energyViewEnabled = false;
+let energyZScale: number = 0.05;
+const DISPLAY_SCALE = 1 / 1000;
+const HARTREE_TO_KJMOL = 2625.4995;
+
+// Begin energiedata addition
+
+function parseEnergyTSV(text: string): Map<number, number> {
+  const map = new Map<number, number>();
+  const lines = text.split("\n");
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const [folderStr, energyStr] = line.split("\t");
+    const folder = Number(folderStr);
+
+    if (energyStr === "NO FILE") {
+      continue;
+    }
+
+    const energy = Number(energyStr);
+    if (!Number.isNaN(folder) && !Number.isNaN(energy)) {
+      map.set(folder, energy);
+    }
+  }
+
+  return map;
+}
+
+function parseRenameMapTSV(text: string): Map<number, string> {
+  const map = new Map<number, string>();
+  const lines = text.split("\n");
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const [oldName, newName] = line.split("\t");
+
+    // "1.xyz" → 1
+    const folder = Number(oldName.replace(".xyz", ""));
+    if (Number.isNaN(folder)) continue;
+
+    // "[H][S][H]{0,1}.xyz" → "[H][S][H]{0,1}"
+    const nodeId = newName.replace(/\.xyz$/, "");
+
+    map.set(folder, nodeId);
+  }
+
+  return map;
+}
+
+function buildNodeEnergyMap(
+  energyByFolder: Map<number, number>,
+  nodeByFolder: Map<number, string>
+): Map<string, number> {
+  const result = new Map<string, number>();
+
+  for (const [folder, energy] of energyByFolder) {
+    const nodeId = nodeByFolder.get(folder);
+    if (!nodeId) continue;
+
+    result.set(nodeId, energy);
+  }
+
+  return result;
+}
+
+async function loadEnergyData(basePath: string): Promise<Map<string, number>> {
+  const [energyText, renameText] = await Promise.all([
+    fetch(`${basePath}/final_energies.tsv`).then(r => r.text()),
+    fetch(`${basePath}/rename_map.tsv`).then(r => r.text())
+  ]);
+
+  const energyByFolder = parseEnergyTSV(energyText);
+  const nodeByFolder = parseRenameMapTSV(renameText);
+
+  return buildNodeEnergyMap(energyByFolder, nodeByFolder);
+}
+
+function countElement(
+  id: string,
+  element: "H" | "O" | "S"
+): number {
+  const regex = new RegExp(`\\[${element}\\]`, "g");
+  return (id.match(regex) || []).length;
+}
+
+function computeWeightedEnergy(
+  nodeId: string,
+  energyMap: Map<string, number>,
+  refs: { O2: number; SO2: number; H2O: number }
+): number | null {
+  const E = energyMap.get(nodeId);
+  if (E === undefined) return null;
+
+  const y = countElement(nodeId, "S");
+  const z = Math.floor(countElement(nodeId, "H") / 2);
+  const x = Math.max(0, countElement(nodeId, "O") - 2 * y - z);
+
+  return (
+    E
+    - y * refs.SO2
+    - z * refs.H2O
+    + x * refs.O2
+  );
+}
+
+function computeMinWeightedEnergy(
+  nodes: Iterable<string>,
+  energyMap: Map<string, number>,
+  refs: { O2: number; SO2: number; H2O: number }
+): number {
+  let min = Infinity;
+
+  for (const id of nodes) {
+    const E = computeWeightedEnergy(id, energyMap, refs);
+    if (E !== null) {
+      min = Math.min(min, E);
+    }
+  }
+
+  return min;
+}
+
+function validateEnergyMap(graph: Graph, energies: Map<string, number>) {
+  graph.forEachNode(node => {
+    if (!energies.has(String(node.id))) {
+      console.warn(`Node without energy: ${node.id}`);
+    }
+  });
+}
+
+function findLowestEnergy(
+  predicate: (id: string) => boolean
+): number | null {
+  let min = Infinity;
+
+  for (const [id, E] of energyMap!) {
+    if (predicate(id)) {
+      if (E < min) min = E;
+    }
+  }
+
+  return min === Infinity ? null : min;
+}
+// End engergiedata addition
+
+// Begin Layout switch logic
+let nodeEnergyZ = new Map<string, number>();
+
+function computeEnergyZ() {
+  if (!energyMap) return;
+
+  nodeEnergyZ.clear();
+
+  const refs = {
+    O2: findLowestEnergy(
+      id => countElement(id, "O") === 2 &&
+            countElement(id, "H") === 0 &&
+            countElement(id, "S") === 0
+    ),
+    H2O: findLowestEnergy(
+      id => countElement(id, "H") === 2 &&
+            countElement(id, "O") === 1 &&
+            countElement(id, "S") === 0
+    ),
+    SO2: findLowestEnergy(
+      id => countElement(id, "S") === 1 &&
+            countElement(id, "O") === 2 &&
+            countElement(id, "H") === 0
+    ),
+  };
+
+  if (Object.values(refs).some(v => v === null)) {
+    console.error("Referenzenergien unvollständig", refs);
+    return;
+  }
+
+  const minE = computeMinWeightedEnergy(
+    [...objects.keys()],
+    energyMap,
+    refs
+  );
+
+  if (!Number.isFinite(minE)) {
+    console.error("minE ist ungültig:", minE);
+    return;
+  }
+
+  renderGraph.forEachNode(node => {
+    const E = computeWeightedEnergy(
+      node.id as string,
+      energyMap!,
+      refs
+    );
+
+    if (!Number.isFinite(E)) return;
+
+    const scaled =
+      (E - minE) * HARTREE_TO_KJMOL * DISPLAY_SCALE;
+
+    if (!Number.isFinite(scaled)) return;
+
+    nodeEnergyZ.set(node.id as string, scaled);
+  });
+}
+// End  layout switch logic
+
 // Begin VR adapdter
 let xrSession: XRSession | null = null;
 let isXrSession = false;
@@ -349,12 +561,25 @@ const renderGraph = createGraph();
 let currentSpecies = new Set<string>();
 const initialReactions = new Set<string>();
 
-const dimensions = 3;
-const layout = createLayout(renderGraph, {
+type ViewMode = "force3d" | "energy2d";
+let viewMode: ViewMode = "force3d";
+
+let layout = createLayout(renderGraph, {
   timeStep: 0.5,
-  dimensions: dimensions,
+  dimensions: 3,
   theta: 0.5,
 });
+
+function rebuildLayout(dimensions: 2 | 3) {
+  layout.dispose?.();
+  layout = createLayout(renderGraph, {
+    timeStep: 0.5,
+    dimensions,
+    theta: 0.5,
+  });
+  currentLayoutIteration = 0;
+  console.log("currentLayoutIteration: " + currentLayoutIteration + " ; current Layout: " + dimensions);
+}
 
 const objects = new Map<string, Object3D>();
 
@@ -386,6 +611,47 @@ onMount(async () => {
       session.requestAnimationFrame(onXRFrame);
     })
   } 
+
+  energyMap = await loadEnergyData("/energies/jam");
+  console.log("Energy map loaded", energyMap);
+  console.log("viewMode: " + viewMode);
+
+  if (viewMode === "energy2d") {
+  computeEnergyZ();
+  console.log(
+    "Energy Z range:",
+    Math.min(...nodeEnergyZ.values()),
+    Math.max(...nodeEnergyZ.values())
+  );
+  }
+
+  const E_O2 = findLowestEnergy(
+    id =>
+      countElement(id, "O") === 2 &&
+      countElement(id, "H") === 0 &&
+      countElement(id, "S") === 0
+  );
+
+  const E_H2O = findLowestEnergy(
+    id =>
+      countElement(id, "H") === 2 &&
+      countElement(id, "O") === 1 &&
+      countElement(id, "S") === 0
+  );
+
+  const E_SO2 = findLowestEnergy(
+    id =>
+      countElement(id, "S") === 1 &&
+      countElement(id, "O") === 2 &&
+      countElement(id, "H") === 0
+  );
+
+  if (E_O2 === null || E_H2O === null || E_SO2 === null) {
+    console.error("Referenzenergien nicht eindeutig bestimmbar", {
+      E_O2, E_H2O, E_SO2
+    });
+    return;
+  }
 
   function getElementAtCenter(): HTMLElement | null {
     const x = window.innerWidth / 2;
@@ -581,11 +847,15 @@ onMount(async () => {
           return;
         }
 
-        if (dimensions == 2) {
+        if (viewMode === "energy2d") {
+          const z = nodeEnergyZ.get(node.id as string);
           cube.position.x = position.x;
           cube.position.y = position.y;
+          cube.position.z = Number.isFinite(z) ? z * energyZScale : 0;
+          //console.log(node.id)
+          //console.log(cube.position.z);
         } else {
-          cube?.position.copy(position);
+          cube.position.copy(position);
         }
       });
 
@@ -956,9 +1226,6 @@ onMount(async () => {
         data = await response.text();
       }
       const run = parseRun(data);
-
-      console.log("in renderMolecules");
-  console.log(hiddenElements);
       const molecule = moleculeGenerator.generateMolecule(run, hiddenElements);
 
       moleculeGroups.set(nodeId, molecule); // molecule ist ein THREE.Group
@@ -2098,6 +2365,26 @@ function removeHiddenElement() {
         <button on:click={removeHiddenElement}>Show</button>
         <!-- zur Übersicht -->
         <p>Hidden: {Array.from(hiddenElements).join(", ")}</p>
+        <h3>Layout</h3>
+        <select
+          on:change={(e) => {
+            const value = e.target.value;
+
+            if (value === "force3d") {
+              viewMode = "force3d";
+              rebuildLayout(3);
+            } else {
+              viewMode = "energy2d";
+              rebuildLayout(2);
+              computeEnergyZ();
+              console.log("after computeEnergyZ in UI");
+            }
+          }}
+          value={viewMode}
+        >
+          <option value="force3d">3D Force Layout</option>
+          <option value="energy2d">2D Energy Plane</option>
+        </select>
       </div>
     </div>
   {/if}
