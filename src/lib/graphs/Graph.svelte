@@ -141,11 +141,14 @@ let currentFrameIndex = 0;
 let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
 
-let energyMap: Map<string, number> | null = null;
+let speciesEnergyMap: Map<string, number> | null = null;
+let reactionEnergyMap: Map<string, number> | null = null;
 let energyViewEnabled = false;
 let energyZScale: number = 0.05;
-const DISPLAY_SCALE = 1 / 1000;
+const DISPLAY_SCALE = 0.066;
 const HARTREE_TO_KJMOL = 2625.4995;
+const KJTOKCAL = 4.184;
+let energyDirty = true;
 
 // Begin energiedata addition
 
@@ -170,6 +173,70 @@ function parseEnergyTSV(text: string): Map<number, number> {
     }
   }
 
+  return map;
+}
+
+/**function parseReactionEnergyTSV(text: string): Map<string, number> {
+  const map = new Map<string, number>();
+  const lines = text.split("\n");
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const [label, barrierStr] = line.split("\t");
+    if (!label || !barrierStr) continue;
+
+    const barrier = Number(barrierStr);
+    if (Number.isNaN(barrier)) continue;
+
+    map.set(label.trim(), barrier);
+  }
+
+  return map;
+}**/
+
+function normalizeReactionLabel(label: string): string {
+  let [reactants, products] = label.split("=>").map(s => s.trim());
+
+  if (!reactants || !products) {
+    console.warn("Ungültiges Reaktionslabel:", label);
+    return label.trim();
+  }
+
+  const reactantParts = reactants.split(/\s*\+\s*/).map(s => s.trim()).sort();
+  const productParts = products.split(/\s*\+\s*/).map(s => s.trim()).sort();
+
+  return reactantParts.join("+") + "=>" + productParts.join("+");
+}
+
+// Liest TSV aus einem String und erstellt Map
+function loadReactionEnergyMapFromString(tsvContent: string): Map<string, number> {
+  const map = new Map<string, number>();
+
+  const lines = tsvContent.split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("#"));
+
+  lines.forEach(line => {
+    const [rawLabel, rawBarrier] = line.split("\t").map(s => s.trim());
+
+    if (!rawLabel || !rawBarrier) return;
+
+    const key = normalizeReactionLabel(rawLabel);
+    const barrier = parseFloat(rawBarrier);
+
+    if (!Number.isFinite(barrier)) {
+      console.warn("Ungültige Barriere für Label:", rawLabel);
+      return;
+    }
+
+    if (map.has(key)) {
+      console.warn("Doppelte Reaktion gefunden, überschreibe:", key, "mit Barriere:", barrier);
+    }
+
+    map.set(key, barrier);
+  });
+
+  console.log("Reaktionen geladen:", map.size);
   return map;
 }
 
@@ -212,16 +279,26 @@ function buildNodeEnergyMap(
   return result;
 }
 
-async function loadEnergyData(basePath: string): Promise<Map<string, number>> {
-  const [energyText, renameText] = await Promise.all([
+async function loadEnergyData(basePath: string): Promise<{
+  species: Map<string, number>;
+  reactions: Map<string, number>;
+}> {
+  const [energyText, renameText, reactionEnergyText] = await Promise.all([
     fetch(`${basePath}/final_energies.tsv`).then(r => r.text()),
-    fetch(`${basePath}/rename_map.tsv`).then(r => r.text())
+    fetch(`${basePath}/rename_map.tsv`).then(r => r.text()),
+    fetch(`${basePath}/final_reactionenergies.tsv`).then(r => r.text())
   ]);
 
   const energyByFolder = parseEnergyTSV(energyText);
   const nodeByFolder = parseRenameMapTSV(renameText);
 
-  return buildNodeEnergyMap(energyByFolder, nodeByFolder);
+  const speciesMap = buildNodeEnergyMap(energyByFolder, nodeByFolder);
+  const reactionMap = loadReactionEnergyMapFromString(reactionEnergyText);
+
+  return {
+    species: speciesMap,
+    reactions: reactionMap
+  };
 }
 
 function countElement(
@@ -234,33 +311,36 @@ function countElement(
 
 function computeWeightedEnergy(
   nodeId: string,
-  energyMap: Map<string, number>,
+  speciesEnergyMap: Map<string, number>,
   refs: { O2: number; SO2: number; H2O: number }
 ): number | null {
-  const E = energyMap.get(nodeId);
+
+  const E = speciesEnergyMap.get(nodeId);
   if (E === undefined) return null;
 
-  const y = countElement(nodeId, "S");
-  const z = Math.floor(countElement(nodeId, "H") / 2);
-  const x = Math.max(0, countElement(nodeId, "O") - 2 * y - z);
+  const nS = countElement(nodeId, "S");
+  const nH = countElement(nodeId, "H");
+  const nO = countElement(nodeId, "O");
 
-  return (
-    E
+  const y = nS;
+  const z = nH / 2;
+  const x = (nO - 2 * y - z) / 2;
+
+  return E
     - y * refs.SO2
     - z * refs.H2O
-    + x * refs.O2
-  );
+    + x * refs.O2;
 }
 
 function computeMinWeightedEnergy(
   nodes: Iterable<string>,
-  energyMap: Map<string, number>,
+  speciesEnergyMap: Map<string, number>,
   refs: { O2: number; SO2: number; H2O: number }
 ): number {
   let min = Infinity;
 
   for (const id of nodes) {
-    const E = computeWeightedEnergy(id, energyMap, refs);
+    const E = computeWeightedEnergy(id, speciesEnergyMap, refs);
     if (E !== null) {
       min = Math.min(min, E);
     }
@@ -269,20 +349,12 @@ function computeMinWeightedEnergy(
   return min;
 }
 
-function validateEnergyMap(graph: Graph, energies: Map<string, number>) {
-  graph.forEachNode(node => {
-    if (!energies.has(String(node.id))) {
-      console.warn(`Node without energy: ${node.id}`);
-    }
-  });
-}
-
 function findLowestEnergy(
   predicate: (id: string) => boolean
 ): number | null {
   let min = Infinity;
 
-  for (const [id, E] of energyMap!) {
+  for (const [id, E] of speciesEnergyMap!) {
     if (predicate(id)) {
       if (E < min) min = E;
     }
@@ -296,10 +368,17 @@ function findLowestEnergy(
 let nodeEnergyZ = new Map<string, number>();
 
 function computeEnergyZ() {
-  if (!energyMap) return;
+  if (!speciesEnergyMap || !reactionEnergyMap) {
+    console.warn("Energy maps not loaded yet");
+    return;
+  }
+
+  const speciesMap = speciesEnergyMap;
+  const reactionMap = reactionEnergyMap;
 
   nodeEnergyZ.clear();
 
+  // Referenzenergien bestimmen
   const refs = {
     O2: findLowestEnergy(
       id => countElement(id, "O") === 2 &&
@@ -323,33 +402,52 @@ function computeEnergyZ() {
     return;
   }
 
-  const minE = computeMinWeightedEnergy(
-    [...objects.keys()],
-    energyMap,
-    refs
-  );
+  // Berechne gewichtete Energien für alle Spezies
+  const weightedMap = new Map<string, number>();
+  speciesEnergyMap.forEach((E_abs, id) => {
+    const y = countElement(id, "S");
+    const z = Math.floor(countElement(id, "H") / 2);
+    const x = Math.max(0, countElement(id, "O") - 2 * y - z);
 
-  if (!Number.isFinite(minE)) {
-    console.error("minE ist ungültig:", minE);
-    return;
-  }
-
-  renderGraph.forEachNode(node => {
-    const E = computeWeightedEnergy(
-      node.id as string,
-      energyMap!,
-      refs
-    );
-
-    if (!Number.isFinite(E)) return;
-
-    const scaled =
-      (E - minE) * HARTREE_TO_KJMOL * DISPLAY_SCALE;
-
-    if (!Number.isFinite(scaled)) return;
-
-    nodeEnergyZ.set(node.id as string, scaled);
+    const E_weighted = E_abs - y * refs.SO2 - z * refs.H2O + x * refs.O2;
+    weightedMap.set(id, E_weighted);
   });
+
+  // Globales Minimum der gewichteten Energien
+  const minE = Math.min(...Array.from(weightedMap.values()));
+
+  // Spezies auf Z-Achse setzen (relativ zum Minimum, optional skaliert)
+  weightedMap.forEach((E_weighted, id) => {
+    const Z = (E_weighted - minE) * DISPLAY_SCALE;
+    nodeEnergyZ.set(id, Z);
+  });
+
+  // Reaktionsbarrieren auf Z-Achse setzen
+  renderGraph.forEachNode(node => {
+    if (node.data.type === "reaction") {
+      const id = node.id as string;
+      const normalizedID = normalizeReactionLabel(id);
+      const barrier = reactionEnergyMap.get(normalizedID);
+      if (!Number.isFinite(barrier)) return;
+
+      // Skalieren damit alles zur Spezies-Z-Achse passt
+      const Z = barrier;
+      nodeEnergyZ.set(id, Z);
+    }
+  });
+
+  // Ausgabe zur Kontrolle
+  console.log("---- Z-Werte Übersicht ----");
+  renderGraph.forEachNode(node => {
+    const id = node.id as string;
+    const z = nodeEnergyZ.get(id);
+    if (!Number.isFinite(z)) {
+      console.warn(`Missing Z for node ${id}, type: ${node.data.type}`);
+    } else {
+      console.log(`${id} | ${node.data.type} | Z = ${z.toFixed(5)}`);
+    }
+  });
+  console.log("---------------------------");
 }
 // End  layout switch logic
 
@@ -612,17 +710,12 @@ onMount(async () => {
     })
   } 
 
-  energyMap = await loadEnergyData("/energies/jam");
-  console.log("Energy map loaded", energyMap);
-  console.log("viewMode: " + viewMode);
+  const energyData = await loadEnergyData("/energies/jam");
+  speciesEnergyMap = energyData.species;
+  reactionEnergyMap = energyData.reactions;
 
   if (viewMode === "energy2d") {
   computeEnergyZ();
-  console.log(
-    "Energy Z range:",
-    Math.min(...nodeEnergyZ.values()),
-    Math.max(...nodeEnergyZ.values())
-  );
   }
 
   const E_O2 = findLowestEnergy(
@@ -838,7 +931,16 @@ onMount(async () => {
     queuedLinkEvents.length = 0;
     hover();
 
+    if (viewMode === "energy2d" && energyDirty) {
+      computeEnergyZ();
+      energyDirty = false;
+    }
+
     if (currentLayoutIteration < layoutIterations) {
+      renderGraph.forEachNode((node) => {
+        computeEnergyZ(node);  // sorgt dafür, dass nodeEnergyZ für species & reaction gesetzt wird
+      });
+
       renderGraph.forEachNode((node) => {
         const position = layout.getNodePosition(node.id);
         const cube = objects.get(node.id as string);
@@ -852,8 +954,6 @@ onMount(async () => {
           cube.position.x = position.x;
           cube.position.y = position.y;
           cube.position.z = Number.isFinite(z) ? z * energyZScale : 0;
-          //console.log(node.id)
-          //console.log(cube.position.z);
         } else {
           cube.position.copy(position);
         }
@@ -927,6 +1027,10 @@ onMount(async () => {
 
     queuedNodeEvents.push(...nodeChanges);
     queuedLinkEvents.push(...linkChanges);
+
+    if (viewMode === "energy2d") {
+      energyDirty = true;
+    }
   });
 
   const _helperMatrix1 = new Matrix4();
@@ -2377,7 +2481,6 @@ function removeHiddenElement() {
               viewMode = "energy2d";
               rebuildLayout(2);
               computeEnergyZ();
-              console.log("after computeEnergyZ in UI");
             }
           }}
           value={viewMode}
