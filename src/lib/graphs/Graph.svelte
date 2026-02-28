@@ -145,7 +145,7 @@ let speciesEnergyMap: Map<string, number> | null = null;
 let reactionEnergyMap: Map<string, number> | null = null;
 let energyViewEnabled = false;
 let energyZScale: number = 0.05;
-const DISPLAY_SCALE = 0.066;
+const DISPLAY_SCALE = 0.5;
 const HARTREE_TO_KJMOL = 2625.4995;
 const KJTOKCAL = 4.184;
 let energyDirty = true;
@@ -175,26 +175,6 @@ function parseEnergyTSV(text: string): Map<number, number> {
 
   return map;
 }
-
-/**function parseReactionEnergyTSV(text: string): Map<string, number> {
-  const map = new Map<string, number>();
-  const lines = text.split("\n");
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-
-    const [label, barrierStr] = line.split("\t");
-    if (!label || !barrierStr) continue;
-
-    const barrier = Number(barrierStr);
-    if (Number.isNaN(barrier)) continue;
-
-    map.set(label.trim(), barrier);
-  }
-
-  return map;
-}**/
 
 function normalizeReactionLabel(label: string): string {
   let [reactants, products] = label.split("=>").map(s => s.trim());
@@ -401,15 +381,18 @@ function computeEnergyZ() {
     console.error("Referenzenergien unvollständig", refs);
     return;
   }
+  console.log(refs);
 
   // Berechne gewichtete Energien für alle Spezies
   const weightedMap = new Map<string, number>();
   speciesEnergyMap.forEach((E_abs, id) => {
-    const y = countElement(id, "S");
-    const z = Math.floor(countElement(id, "H") / 2);
-    const x = Math.max(0, countElement(id, "O") - 2 * y - z);
+    const y = countElement(id, "S");//Anzahl S ==> 1
+    const z = countElement(id, "H") / 2;//Anzahl H2
+    const x = (countElement(id, "O") - 2 * y - z) /2;// Anzahl O2
 
-    const E_weighted = E_abs - y * refs.SO2 - z * refs.H2O + x * refs.O2;
+    const E_weighted = E_abs - y * refs.SO2 - z * refs.H2O - x * refs.O2;
+    
+    //console.log("abs: "+E_abs+" ; id: "+id+" ; Anzahl S: "+y+" ; Anzahl H2: "+z+" ; Anzahl O2: "+x+" ;e_weighted: "+E_weighted);
     weightedMap.set(id, E_weighted);
   });
 
@@ -418,7 +401,7 @@ function computeEnergyZ() {
 
   // Spezies auf Z-Achse setzen (relativ zum Minimum, optional skaliert)
   weightedMap.forEach((E_weighted, id) => {
-    const Z = (E_weighted - minE) * DISPLAY_SCALE;
+    const Z = (E_weighted - minE) * HARTREE_TO_KJMOL * DISPLAY_SCALE;
     nodeEnergyZ.set(id, Z);
   });
 
@@ -430,14 +413,33 @@ function computeEnergyZ() {
       const barrier = reactionEnergyMap.get(normalizedID);
       if (!Number.isFinite(barrier)) return;
 
+      //get E_weighted for every getInEdges(node)fromID, that is an educt
+      const inEdges = getInEdges(node);
+      let reactantEnergySum = 0;
+      const [leftSide] = id.split("=>");
+      const leftSpecies = leftSide
+        .split("+")
+        .map(s => s.trim());
+
+      for (const edge of inEdges) {
+        const reactantId = edge.fromId;
+        if (leftSpecies.includes(reactantId)) {
+          const temp_E_weighted = weightedMap.get(reactantId);
+          if (Number.isFinite(temp_E_weighted)) {
+            reactantEnergySum += ((temp_E_weighted - minE) * HARTREE_TO_KJMOL)!;
+          }
+        }
+      }
+
+      //console.log("barrier: "+barrier+" ;reactantEnergySum: "+reactantEnergySum)
       // Skalieren damit alles zur Spezies-Z-Achse passt
-      const Z = barrier;
+      const Z = barrier + reactantEnergySum * DISPLAY_SCALE;
       nodeEnergyZ.set(id, Z);
     }
   });
 
   // Ausgabe zur Kontrolle
-  console.log("---- Z-Werte Übersicht ----");
+  /**console.log("---- Z-Werte Übersicht ----");
   renderGraph.forEachNode(node => {
     const id = node.id as string;
     const z = nodeEnergyZ.get(id);
@@ -447,7 +449,7 @@ function computeEnergyZ() {
       console.log(`${id} | ${node.data.type} | Z = ${z.toFixed(5)}`);
     }
   });
-  console.log("---------------------------");
+  console.log("---------------------------");**/
 }
 // End  layout switch logic
 
