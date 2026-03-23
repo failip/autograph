@@ -18,6 +18,7 @@ import { MoleculeGenerator } from "$lib/rendering/molecules";
 import { parseRun } from "$lib/rendering/xyz.js";
 import { onMount } from "svelte";
 import {
+  Group,
   AmbientLight,
   BoxGeometry,
   DirectionalLight,
@@ -35,12 +36,14 @@ import {
   WebGLRenderer,
   Color,
   Matrix4,
+  Quaternion,
   InstancedMesh,
   CylinderGeometry,
   SRGBColorSpace,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
     import { bool, ConstNode } from "three/examples/jsm/nodes/Nodes.js";
+    import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 
 export let graph: Graph;
 export let secondaryGraphs: Graph[] = [];
@@ -150,8 +153,189 @@ const HARTREE_TO_KJMOL = 2625.4995;
 const KJTOKCAL = 4.184;
 let energyDirty = true;
 
-// Begin energiedata addition
+// Begin Graph Export
+function collectMeshesRecursive(obj, parentMatrix = new Matrix4()) {
+  const collected = [];
 
+  const worldMatrix = new Matrix4();
+  worldMatrix.multiplyMatrices(parentMatrix, obj.matrix);
+
+  if (obj.isCamera || obj.isLight) {
+    return [];
+  }
+
+  if (obj.isMesh) {
+    const meshClone = obj.clone();
+    // Absolute Transformation anwenden
+    meshClone.applyMatrix4(worldMatrix);
+    meshClone.updateMatrixWorld(true);
+    collected.push(meshClone);
+  }
+
+  if (obj.isInstancedMesh) {
+    const tempMatrix = new Matrix4();
+    const tempPos = new Vector3();
+    const tempQuat = new Quaternion();
+    const tempScale = new Vector3();
+
+    for (let i = 0; i < obj.count; i++) {
+      obj.getMatrixAt(i, tempMatrix);
+
+      const pos = new Vector3().setFromMatrixPosition(tempMatrix);
+
+      if (pos.lengthSq() === 0) continue;
+
+      const instanceMatrixWorld = new Matrix4();
+      instanceMatrixWorld.multiplyMatrices(worldMatrix, tempMatrix);
+
+      const color = new Color();
+      let material = obj.material;
+
+      if (obj.instanceColor) {
+        obj.getColorAt(i, color);
+        material = material.clone();
+
+        if (material.color) {
+          material.color.copy(color);
+        }
+      } else {
+        material = material.clone();
+      }
+
+      const mesh = new Mesh(obj.geometry, material);
+      mesh.applyMatrix4(instanceMatrixWorld);
+      mesh.updateMatrixWorld(true);
+
+      collected.push(mesh);
+    }
+  }
+
+  if (obj.children?.length) {
+    for (const child of obj.children) {
+      collected.push(...collectMeshesRecursive(child, worldMatrix));
+    }
+  }
+
+  return collected;
+}
+
+function exportGraphAsGLTF(rootObject) {
+  if (!rootObject) return console.warn("Kein Root-Objekt zum Exportieren gefunden!");
+
+  const exportRoot = new Group();
+
+  const graph = rootObject.children[3];
+  const edges = rootObject.children[4];
+
+  const nodes = collectNodes(graph);
+  const edgeMeshes = collectEdges(edges);
+
+  nodes.forEach(n => exportRoot.add(n));
+  edgeMeshes.forEach(e => exportRoot.add(e));
+
+  const exporter = new GLTFExporter();
+  exporter.parse(
+    exportRoot,
+    (gltf) => {
+      const blob = new Blob([JSON.stringify(gltf)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "graph.gltf";
+      link.click();
+      console.log("[Export] GLTF erfolgreich erstellt! Total Meshes:", allMeshes.length);
+    },
+    { binary: false }
+  );
+}
+
+function collectEdges(obj) {
+  const collected = [];
+
+  if (!obj) return collected;
+
+  if (obj.isInstancedMesh) {
+    const tempMatrix = new Matrix4();
+
+    for (let i = 0; i < obj.count; i++) {
+      obj.getMatrixAt(i, tempMatrix);
+
+      const pos = new Vector3().setFromMatrixPosition(tempMatrix);
+
+      // ❗ Zentrum-Zylinder raus
+      if (pos.lengthSq() < 1e-6) continue;
+
+      const instanceMatrixWorld = new Matrix4();
+      instanceMatrixWorld.multiplyMatrices(obj.matrixWorld, tempMatrix);
+
+      const mesh = new Mesh(obj.geometry, obj.material.clone());
+      mesh.applyMatrix4(instanceMatrixWorld);
+
+      collected.push(mesh);
+    }
+  }
+
+  return collected;
+}
+
+function collectNodes(obj, parentMatrix = new Matrix4()) {
+  const collected = [];
+
+  if (!obj) return collected;
+
+  // lokale Matrix korrekt kombinieren
+  const worldMatrix = new Matrix4();
+  worldMatrix.multiplyMatrices(parentMatrix, obj.matrix);
+
+  // InstancedMesh (Moleküle!)
+  if (obj.isInstancedMesh) {
+    const tempMatrix = new Matrix4();
+
+    for (let i = 0; i < obj.count; i++) {
+      obj.getMatrixAt(i, tempMatrix);
+
+      const instanceMatrixWorld = new Matrix4();
+      instanceMatrixWorld.multiplyMatrices(worldMatrix, tempMatrix);
+
+      let material = obj.material.clone();
+
+      // Farben fixen
+      if (obj.instanceColor) {
+        const color = new Color();
+        obj.getColorAt(i, color);
+        if (material.color) material.color.copy(color);
+      }
+
+      const mesh = new Mesh(obj.geometry, material);
+      mesh.applyMatrix4(instanceMatrixWorld);
+
+      collected.push(mesh);
+    }
+
+    return collected;
+  }
+
+  // normale Meshes (Node-Sphären etc.)
+  if (obj.isMesh) {
+    const mesh = new Mesh(
+      obj.geometry,
+      obj.material.clone()
+    );
+
+    mesh.applyMatrix4(worldMatrix);
+    collected.push(mesh);
+  }
+
+  // weiter traversieren
+  if (obj.children?.length) {
+    for (const child of obj.children) {
+      collected.push(...collectNodes(child, worldMatrix));
+    }
+  }
+
+  return collected;
+}
+
+// Begin energiedata addition
 function parseEnergyTSV(text: string): Map<number, number> {
   const map = new Map<number, number>();
   const lines = text.split("\n");
@@ -184,10 +368,20 @@ function normalizeReactionLabel(label: string): string {
     return label.trim();
   }
 
-  const reactantParts = reactants.split(/\s*\+\s*/).map(s => s.trim()).sort();
-  const productParts = products.split(/\s*\+\s*/).map(s => s.trim()).sort();
+  const reactantParts = reactants
+    .split(/\s*\+\s*/)
+    .map(s => s.trim())
+    .sort();
 
-  return reactantParts.join("+") + "=>" + productParts.join("+");
+  const productParts = products
+    .split(/\s*\+\s*/)
+    .map(s => s.trim())
+    .sort();
+
+  const forward = reactantParts.join("+") + "=>" + productParts.join("+");
+  const backward = productParts.join("+") + "=>" + reactantParts.join("+");
+
+  return forward < backward ? forward : backward;
 }
 
 // Liest TSV aus einem String und erstellt Map
@@ -381,7 +575,7 @@ function computeEnergyZ() {
     console.error("Referenzenergien unvollständig", refs);
     return;
   }
-  console.log(refs);
+  //console.log(refs);
 
   // Berechne gewichtete Energien für alle Spezies
   const weightedMap = new Map<string, number>();
@@ -439,7 +633,7 @@ function computeEnergyZ() {
   });
 
   // Ausgabe zur Kontrolle
-  /**console.log("---- Z-Werte Übersicht ----");
+  /** console.log("---- Z-Werte Übersicht ----");
   renderGraph.forEachNode(node => {
     const id = node.id as string;
     const z = nodeEnergyZ.get(id);
@@ -450,6 +644,20 @@ function computeEnergyZ() {
     }
   });
   console.log("---------------------------");**/
+
+  /**
+   * [H][S][H]{0,1} | species | Z = 287.08152
+   * [H][O]{0,2} | species | Z = 159.57644
+   * [H][O][H]{0,1} + [H][S]{0,2} => [H][O]{0,2} + [H][S][H]{0,1} | reaction | Z = 391.58142
+   * [H][O][H]{0,1} | species | Z = 75.36272
+   * [H][S]{0,2} | species | Z = 312.55870
+   * ---- Missing Z for node [H][O]{0,2} + [H][S][H]{0,1} => [H][O][H]{0,1} + [H][S]{0,2}, type: reaction
+   * [H][O][H]{0,1} + [H][O][S][H]{0,1} => [H][O]{0,2} + [H][O]{0,2} + [H][S][H]{0,1} | reaction | Z = 341.24528
+   * [H][O][S][H]{0,1} | species | Z = 247.54256
+   * ---- Missing Z for node [H][O]{0,2} + [H][O]{0,2} + [H][S][H]{0,1} => [H][O][H]{0,1} + [H][O][S][H]{0,1}, type: reaction
+   * [H][O]{0,2} + [O][S]([H])[H]{0,2} => [H][O][S][H]{0,1} + [H][O]{0,2} | reaction | Z = 198.96644
+   * ---- Missing Z for node [H][O][S][H]{0,1} + [H][O]{0,2} => [H][O]{0,2} + [O][S]([H])[H]{0,2}, type: reaction
+   * **/
 }
 // End  layout switch logic
 
@@ -2490,6 +2698,10 @@ function removeHiddenElement() {
           <option value="force3d">3D Force Layout</option>
           <option value="energy2d">2D Energy Plane</option>
         </select>
+        <h3>Export Graph to 3D Object</h3>
+        <button on:click={() => exportGraphAsGLTF(scene, "myGraph.gltf")}>
+          Export Graph
+        </button>
       </div>
     </div>
   {/if}
