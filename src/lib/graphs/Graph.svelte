@@ -153,6 +153,12 @@ const HARTREE_TO_KJMOL = 2625.4995;
 const KJTOKCAL = 4.184;
 let energyDirty = true;
 
+let isMac = false;
+
+onMount(() => {
+  isMac = navigator.platform.toUpperCase().includes("MAC");
+});
+
 // Begin Graph Export
 function collectMeshesRecursive(obj, parentMatrix = new Matrix4()) {
   const collected = [];
@@ -631,33 +637,6 @@ function computeEnergyZ() {
       nodeEnergyZ.set(id, Z);
     }
   });
-
-  // Ausgabe zur Kontrolle
-  /** console.log("---- Z-Werte Übersicht ----");
-  renderGraph.forEachNode(node => {
-    const id = node.id as string;
-    const z = nodeEnergyZ.get(id);
-    if (!Number.isFinite(z)) {
-      console.warn(`Missing Z for node ${id}, type: ${node.data.type}`);
-    } else {
-      console.log(`${id} | ${node.data.type} | Z = ${z.toFixed(5)}`);
-    }
-  });
-  console.log("---------------------------");**/
-
-  /**
-   * [H][S][H]{0,1} | species | Z = 287.08152
-   * [H][O]{0,2} | species | Z = 159.57644
-   * [H][O][H]{0,1} + [H][S]{0,2} => [H][O]{0,2} + [H][S][H]{0,1} | reaction | Z = 391.58142
-   * [H][O][H]{0,1} | species | Z = 75.36272
-   * [H][S]{0,2} | species | Z = 312.55870
-   * ---- Missing Z for node [H][O]{0,2} + [H][S][H]{0,1} => [H][O][H]{0,1} + [H][S]{0,2}, type: reaction
-   * [H][O][H]{0,1} + [H][O][S][H]{0,1} => [H][O]{0,2} + [H][O]{0,2} + [H][S][H]{0,1} | reaction | Z = 341.24528
-   * [H][O][S][H]{0,1} | species | Z = 247.54256
-   * ---- Missing Z for node [H][O]{0,2} + [H][O]{0,2} + [H][S][H]{0,1} => [H][O][H]{0,1} + [H][O][S][H]{0,1}, type: reaction
-   * [H][O]{0,2} + [O][S]([H])[H]{0,2} => [H][O][S][H]{0,1} + [H][O]{0,2} | reaction | Z = 198.96644
-   * ---- Missing Z for node [H][O][S][H]{0,1} + [H][O]{0,2} => [H][O]{0,2} + [O][S]([H])[H]{0,2}, type: reaction
-   * **/
 }
 // End  layout switch logic
 
@@ -1622,6 +1601,7 @@ function onKeyDown(event: KeyboardEvent) {
     settingsVisible = false;
     search_value = "";
   }
+  const isMod = event.ctrlKey || event.metaKey;
 
   if (event.key == "q") {
     qClick();
@@ -1641,6 +1621,17 @@ function onKeyDown(event: KeyboardEvent) {
 
   if (event.key == "r") {
     rClick();
+  }
+  // Undo (Crtl/Cmd + Z)
+  if (isMod && event.key === "z") {
+    event.preventDefault();
+    undoLastAction();
+  }
+
+  // Export (Ctrl/Cmd + E)
+  if (isMod && event.key === "e") {
+    event.preventDefault();
+    exportGraphAsGLTF(scene, "myGraph.gltf");
   }
 }
 
@@ -2362,9 +2353,19 @@ function removeHiddenElement() {
 
   <div class="top-right-button-group">
     <button
-      class="settingsButton"
+      class="settingsButton exportButton"
+      on:click={() => exportGraphAsGLTF(scene, "myGraph.gltf")}
+      title={isMac ? "⌘ + E" : "Ctrl + E"}
+    >
+      <picture>
+        <img src="/images/download-box.svg" alt="Download icon" />
+      </picture>
+    </button>
+
+    <button
+      class="settingsButton undoButton"
       on:click={undoLastAction}
-      title="Undo last action"
+      title={isMac ? "⌘ + Z" : "Ctrl + Z"}
     >
       <picture>
         <img src="/images/undo.svg" alt="Undo icon" />
@@ -2679,7 +2680,7 @@ function removeHiddenElement() {
         <button on:click={removeHiddenElement}>Show</button>
         <!-- zur Übersicht -->
         <p>Hidden: {Array.from(hiddenElements).join(", ")}</p>
-        <h3>Layout</h3>
+        <!-- <h3>Layout</h3>
         <select
           on:change={(e) => {
             const value = e.target.value;
@@ -2697,11 +2698,7 @@ function removeHiddenElement() {
         >
           <option value="force3d">3D Force Layout</option>
           <option value="energy2d">2D Energy Plane</option>
-        </select>
-        <h3>Export Graph to 3D Object</h3>
-        <button on:click={() => exportGraphAsGLTF(scene, "myGraph.gltf")}>
-          Export Graph
-        </button>
+        </select> -->
       </div>
     </div>
   {/if}
