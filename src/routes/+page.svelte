@@ -15,9 +15,10 @@ const startingSpeciesMap = new Map<string, Array<string>>();
 startingSpeciesMap.set("GKHP", ["gamma-Ketohydroperoxide"]);
 startingSpeciesMap.set("isooctane", ["CC(C)CC(C)(C)C"]);
 startingSpeciesMap.set("jam", ["[H][S][H]{0,1}", "[H][O]{0,2}"]);
+startingSpeciesMap.set("pentane", ["CCCCC", "[O][O]"]);
 
 async function loadGraph(graphName: string) {
-    const jsongraphs = ["GKHP", "isooctane", "jam"];
+    const jsongraphs = ["GKHP", "isooctane", "jam", "pentane"];
     if (jsongraphs.includes(graphName)) {
         await fetch(`/graphs/${graphName}/graph.json`)
             .then((response) => response.text())
@@ -69,6 +70,7 @@ async function loadGraph(graphName: string) {
                     <option value="jam">Oxidation of Hydrogensulfide</option>
                     <option value="aramco">AramcoMech2.0</option>
                     <option value="gri">GRI-Mech 3.0</option>
+                    <option value="pentane">Pentane by Bugler et al.</option>
                 </select>
             </div>
         </div>
