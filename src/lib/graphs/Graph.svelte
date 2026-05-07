@@ -978,6 +978,13 @@ onMount(async () => {
 
   const raycaster = new Raycaster();
 
+  const ambientLight = new AmbientLight(0xffffff, 0.35);
+  scene.add(ambientLight);
+
+  const directionalLight = new DirectionalLight(0xffffff, 1.0);
+  directionalLight.position.set(10, 20, 10);
+  scene.add(directionalLight);
+
   window.onresize = () => {
     const width = canvasWrapper.clientWidth;
     const height = canvasWrapper.clientHeight;
@@ -1913,7 +1920,12 @@ function addLayer() {
 
   inAddLayerContext = false;
 
-  if (undoEnabled) {
+  if (addedNodes.length === 0) {
+    console.log("No new reactions can be added with the currently selected species");
+  }
+
+  // Undo nur speichern, wenn es wirklich Änderungen gab
+  if (undoEnabled && (addedNodes.length > 0 || addedEdges.length > 0)) {
     undoStack.push({
       type: "addLayer",
       addedNodes,
@@ -2058,15 +2070,14 @@ function addAllPossibleReactionsToRendergraph(
     let reactionRelevant = false;
 
     if (selectiveMode) {
-      const hasAnyReactant = inEdges.some((edge) => {
-        return oldSpecies.has(edge.fromId as string);
-      });
+      const hasSelectedReactant = inEdges.some((edge) => selectedSpecies.has(edge.fromId as string));
+      reactionRelevant = hasSelectedReactant;
 
-      const hasAnyProduct = outEdges.some((edge) => {
-        return oldSpecies.has(edge.toId as string);
-      });
-
-      reactionRelevant = hasAnyReactant || hasAnyProduct;
+      if (reactionRelevant) {
+        //console.log(`[AddLayer] Reaction selected due to selected reactant:`, reaction.data.name);
+        const products = outEdges.map((edge) => edge.toId);
+        //console.log(`[AddLayer] Products of this reaction:`, products);
+      }
     } else {
       const hasAllReactants = inEdges.every((edge) => {
         return oldSpecies.has(edge.fromId as string);
