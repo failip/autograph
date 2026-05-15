@@ -22,6 +22,7 @@ import {
   AmbientLight,
   BoxGeometry,
   DirectionalLight,
+  MeshPhongMaterial,
   LineBasicMaterial,
   Mesh,
   MeshBasicMaterial,
@@ -77,6 +78,7 @@ let layoutIterations = 1000;
 let currentLayoutIteration = 0;
 let hoveredNode: Object3D | undefined;
 let targetedNode: Object3D | undefined;
+let hoveredSpeciesId: string | undefined;
 let searchVisible = false;
 let pathSearchVisible = false;
 let settingsVisible = false;
@@ -978,6 +980,22 @@ onMount(async () => {
 
   const raycaster = new Raycaster();
 
+  //const ambientLight = new AmbientLight(0xffffff, 0.65);
+  const ambientLight = new AmbientLight(0xbfc7d5, 0.45);
+  scene.add(ambientLight);
+
+  /**const directionalLight = new DirectionalLight(0xffffff, 1.5);
+  directionalLight.position.set(10, 20, 10);
+  scene.add(directionalLight);**/
+
+  const keyLight = new DirectionalLight(0xfff2d6, 1.8);
+  keyLight.position.set(10, 20, 10);
+  scene.add(keyLight);
+
+  const fillLight = new DirectionalLight(0x4455aa, 0.35);
+  fillLight.position.set(-10, -5, -10);
+  scene.add(fillLight);
+
   window.onresize = () => {
     const width = canvasWrapper.clientWidth;
     const height = canvasWrapper.clientHeight;
@@ -1012,8 +1030,8 @@ onMount(async () => {
   renderer.setSize(graphElement.clientWidth, graphElement.clientHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
 
-  const light = new AmbientLight(0x404040, 10.0);
-  scene.add(light);
+  //const light = new AmbientLight(0x404040, 10.0);
+  //scene.add(light);
 
   graphElement.addEventListener(
     "wheel",
@@ -1023,9 +1041,9 @@ onMount(async () => {
     { passive: true },
   );
 
-  directionalLight = new DirectionalLight(0xffffff, 5.0);
-  directionalLight.position.set(0, 1, 1);
-  camera.add(directionalLight);
+  //directionalLight = new DirectionalLight(0xffffff, 5.0);
+  //directionalLight.position.set(0, 1, 1);
+  //camera.add(directionalLight);
 
   const geometry = new BoxGeometry(1.0, 1.0, 1.0);
 
@@ -1041,18 +1059,27 @@ onMount(async () => {
     pointerIsDown = false;
   });
 
-  const lineOutMaterial = new LineBasicMaterial({
+  /**const lineOutMaterial = new LineBasicMaterial({
     color: 0xffffff,
     opacity: 0.5,
     transparent: true,
     linewidth: 3,
+  });**/
+
+  const edgeGeometry = new CylinderGeometry(1.5, 1.5, 1.0, 16);
+  const edgeMaterial = new MeshPhongMaterial({
+    color: 0x444444,
+    transparent: true,
+    opacity: 0.9,
+    shininess: 80,
+    emissive: new Color(0x111111)
   });
 
   let maxLineCount = 1024;
   lineInstances = new InstancedMesh(
-    new CylinderGeometry(1.0, 1.0, 1.0, 32),
-    lineOutMaterial,
-    maxLineCount,
+    edgeGeometry,
+    edgeMaterial,
+    maxLineCount
   );
   lineInstances.frustumCulled = false;
 
@@ -1062,16 +1089,109 @@ onMount(async () => {
 
   function hover() {
     raycaster.setFromCamera(mousePosition, camera);
+
     const intersects = raycaster.intersectObjects(meshes.children);
+
     if (intersects.length > 0) {
       hoveredNode = intersects[0].object;
+
       graphElement.style.cursor = "pointer";
+
       cursorInfo.style.left = `${(mousePosition.x + 1.0) * 50}%`;
       cursorInfo.style.bottom = `${(mousePosition.y + 1.0) * 50}%`;
+
+      const newHoveredId =
+          hoveredNode.userData?.name;
+
+      if (newHoveredId !== hoveredSpeciesId) {
+
+          console.log(
+            "[HOVER CHANGE]",
+            "old:",
+            hoveredSpeciesId,
+            "new:",
+            newHoveredId
+          );
+
+          hoveredSpeciesId = newHoveredId;
+
+          onHoveredSpeciesChanged();
+      }
     } else {
       hoveredNode = undefined;
+
+      if (hoveredSpeciesId !== undefined) {
+          hoveredSpeciesId = undefined;
+
+          onHoveredSpeciesChanged();
+      }
+
       graphElement.style.cursor = "default";
     }
+  }
+
+  function onHoveredSpeciesChanged() {
+    // Kein Hover-Ziel
+    if (!hoveredSpeciesId) {
+      shortestPath = [];
+      pathChanged = true;
+      rerenderLines = true;
+      return;
+    }
+
+    // Keine Selection vorhanden
+    if (selectedSpecies.size === 0) {
+      shortestPath = [];
+      pathChanged = true;
+      rerenderLines = true;
+      return;
+    }
+
+    // Hover auf bereits selektiertes Element ignorieren
+    if (selectedSpecies.has(hoveredSpeciesId)) {
+      shortestPath = [];
+      pathChanged = true;
+      rerenderLines = true;
+      return;
+    }
+
+    // Alle selektierten Nodes als mögliche Startpunkte
+    const from = [...selectedSpecies];
+
+    // Aktuell gehoverte Node als Ziel
+    const to = hoveredSpeciesId;
+
+    // Kürzesten Pfad suchen
+    const result = pathSearchGraph.shortestPath(from, to);
+
+    // Kein Pfad gefunden
+    if (!result || !result.shortestPath) {
+      shortestPath = [];
+
+      pathChanged = true;
+      rerenderLines = true;
+
+      return;
+    }
+
+    // Optional:
+    // Verhindert unnötige Re-Renders bei identischem Pfad
+    const newPath = result.shortestPath;
+
+    const pathUnchanged =
+      shortestPath.length === newPath.length &&
+      shortestPath.every((node, i) => node === newPath[i]);
+
+    if (pathUnchanged) {
+      return;
+    }
+
+    // Pfad übernehmen
+    shortestPath = newPath;
+
+    // Render-Flags setzen
+    pathChanged = true;
+    rerenderLines = true;
   }
 
   const animate = function () {
@@ -1913,7 +2033,12 @@ function addLayer() {
 
   inAddLayerContext = false;
 
-  if (undoEnabled) {
+  if (addedNodes.length === 0) {
+    console.log("No new reactions can be added with the currently selected species");
+  }
+
+  // Undo nur speichern, wenn es wirklich Änderungen gab
+  if (undoEnabled && (addedNodes.length > 0 || addedEdges.length > 0)) {
     undoStack.push({
       type: "addLayer",
       addedNodes,
@@ -2058,15 +2183,14 @@ function addAllPossibleReactionsToRendergraph(
     let reactionRelevant = false;
 
     if (selectiveMode) {
-      const hasAnyReactant = inEdges.some((edge) => {
-        return oldSpecies.has(edge.fromId as string);
-      });
+      const hasSelectedReactant = inEdges.some((edge) => selectedSpecies.has(edge.fromId as string));
+      reactionRelevant = hasSelectedReactant;
 
-      const hasAnyProduct = outEdges.some((edge) => {
-        return oldSpecies.has(edge.toId as string);
-      });
-
-      reactionRelevant = hasAnyReactant || hasAnyProduct;
+      if (reactionRelevant) {
+        //console.log(`[AddLayer] Reaction selected due to selected reactant:`, reaction.data.name);
+        const products = outEdges.map((edge) => edge.toId);
+        //console.log(`[AddLayer] Products of this reaction:`, products);
+      }
     } else {
       const hasAllReactants = inEdges.every((edge) => {
         return oldSpecies.has(edge.fromId as string);

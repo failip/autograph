@@ -2,11 +2,63 @@ import { MeshPhongMaterial, SphereGeometry, Material, Group, Mesh, CylinderGeome
 import type { Run } from "./xyz";
 import * as symbol_to_color from "./symbol_to_color.json"
 import * as covalent_radii from "./covalent_radii.json"
+import * as symbol_to_material from "./symbol_to_material.json"
+
+const MATERIAL_PRESETS = {
+
+    nonmetal: {
+        shininess: 30,
+        transparent: false,
+        opacity: 1.0
+    },
+
+    metalloid: {
+        shininess: 60,
+        transparent: false,
+        opacity: 1.0
+    },
+
+    metal: {
+        shininess: 140,
+        specular: 0xffffff
+    },
+
+    gas: {
+        transparent: true,
+        opacity: 0.35,
+        shininess: 10
+    },
+
+    toxic: {
+        shininess: 5,
+        transparent: false,
+        opacity: 1.0
+    },
+
+    carbon: {
+        shininess: 90,
+        transparent: false,
+        opacity: 1.0
+    },
+
+    radioactive: {
+        shininess: 80,
+        transparent: true,
+        opacity: 0.9
+    },
+
+    light: {
+        transparent: true,
+        opacity: 0.6,
+        shininess: 120
+    }
+};
 
 export class MoleculeGenerator {
 
     colors: Map<string, number>;
     covalent_radii: Map<string, number>;
+    material_types: Map<string, string>;
     materials: Map<string, Material>;
     scaling: Map<string, number>;
     geometries: Map<string, SphereGeometry>;
@@ -19,6 +71,7 @@ export class MoleculeGenerator {
 
         this.colors = new Map<string, number>(Object.entries(symbol_to_color));
         this.covalent_radii = new Map<string, number>(Object.entries(covalent_radii));
+        this.material_types = new Map<string, string>(Object.entries(symbol_to_material));
 
         this.materials = new Map<string, Material>();
 
@@ -65,7 +118,7 @@ export class MoleculeGenerator {
         return geometry;
     }
 
-    private get_material(symbol: string): Material {
+    /*private get_material(symbol: string): Material {
         const cached_material = this.materials.get(symbol);
         if (cached_material) {
             return cached_material;
@@ -74,6 +127,62 @@ export class MoleculeGenerator {
         const material = new MeshPhongMaterial({ color: color, transparent: false, opacity: 1.0 });
 
         this.materials.set(symbol, material);
+        return material;
+    }*/
+
+    private get_material(symbol: string): Material {
+
+        const cached_material = this.materials.get(symbol);
+
+        if (cached_material) {
+            return cached_material;
+        }
+
+        const colorHex = this.colors.get(symbol) ?? "#ff00ff";
+        const color = new Color(colorHex);
+        const materialType =
+            this.material_types.get(symbol) ?? "nonmetal";
+        const preset =
+            MATERIAL_PRESETS[materialType] ?? {};
+        const material = new MeshPhongMaterial({
+
+            color: color,
+
+            ...preset
+        });
+
+        /*
+        * Spezialeffekte
+        */
+
+        if (materialType === "radioactive") {
+            material.emissive =
+                new Color("#00ff66");
+
+            material.emissiveIntensity = 0.45;
+        }
+
+        if (materialType === "light") {
+            material.emissive =
+                color.clone();
+
+            material.emissiveIntensity = 0.35;
+        }
+
+        if (materialType === "toxic") {
+            material.emissive =
+                new Color("#44ff44");
+
+            material.emissiveIntensity = 0.08;
+        }
+
+        if (materialType === "carbon") {
+            material.emissive =
+                color.clone().multiplyScalar(0.03);
+        }
+
+        this.materials.set(symbol, material);
+
         return material;
     }
 
