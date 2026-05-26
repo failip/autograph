@@ -7,50 +7,49 @@ import * as symbol_to_material from "./symbol_to_material.json"
 const MATERIAL_PRESETS = {
 
     nonmetal: {
-        shininess: 30,
-        transparent: false,
-        opacity: 1.0
+        shininess: 40,
+        specular: 0x444444,
     },
 
     metalloid: {
-        shininess: 60,
-        transparent: false,
-        opacity: 1.0
+        shininess: 120,
+        specular: 0x888888,
     },
 
     metal: {
-        shininess: 140,
-        specular: 0xffffff
+        shininess: 260,
+        specular: 0xffffff,
     },
 
     gas: {
         transparent: true,
         opacity: 0.35,
-        shininess: 10
+        shininess: 80,
+        specular: 0xffffff,
     },
 
     toxic: {
-        shininess: 5,
-        transparent: false,
-        opacity: 1.0
+        shininess: 50,
+        specular: 0x66ff66,
     },
 
     carbon: {
-        shininess: 90,
-        transparent: false,
-        opacity: 1.0
+        shininess: 180,
+        specular: 0xffffff,
     },
 
     radioactive: {
-        shininess: 80,
         transparent: true,
-        opacity: 0.9
+        opacity: 0.92,
+        shininess: 220,
+        specular: 0xffffff,
     },
 
     light: {
         transparent: true,
-        opacity: 0.6,
-        shininess: 120
+        opacity: 0.72,
+        shininess: 300,
+        specular: 0xffffff,
     }
 };
 
@@ -130,7 +129,7 @@ export class MoleculeGenerator {
         return material;
     }*/
 
-    private get_material(symbol: string): Material {
+    /*private get_material(symbol: string): Material {
 
         const cached_material = this.materials.get(symbol);
 
@@ -151,9 +150,7 @@ export class MoleculeGenerator {
             ...preset
         });
 
-        /*
-        * Spezialeffekte
-        */
+        //pezialeffekte
 
         if (materialType === "radioactive") {
             material.emissive =
@@ -179,6 +176,68 @@ export class MoleculeGenerator {
         if (materialType === "carbon") {
             material.emissive =
                 color.clone().multiplyScalar(0.03);
+        }
+
+        this.materials.set(symbol, material);
+
+        return material;
+    }*/
+
+    private get_material(symbol: string): MeshPhongMaterial {
+
+        const cached = this.materials.get(symbol);
+
+        if (cached) {
+            return cached as MeshPhongMaterial;
+        }
+
+        const colorHex = this.colors.get(symbol) ?? 0xff00ff;
+
+        const materialType =
+            this.material_types.get(symbol) ?? "nonmetal";
+
+        const preset =
+            MATERIAL_PRESETS[materialType] ?? {};
+
+        const material = new MeshPhongMaterial({
+
+            color: colorHex,
+
+            ...preset
+        });
+
+        /*
+        * Spezialeffekte
+        */
+
+        if (materialType === "radioactive") {
+
+            material.emissive =
+                new Color(0x00ff66);
+
+            material.emissiveIntensity = 0.55;
+        }
+
+        if (materialType === "light") {
+
+            material.emissive =
+                new Color(colorHex);
+
+            material.emissiveIntensity = 0.4;
+        }
+
+        if (materialType === "toxic") {
+
+            material.emissive =
+                new Color(0x44ff44);
+
+            material.emissiveIntensity = 0.15;
+        }
+
+        if (materialType === "carbon") {
+
+            material.emissive =
+                new Color(colorHex).multiplyScalar(0.04);
         }
 
         this.materials.set(symbol, material);
@@ -218,7 +277,7 @@ export class MoleculeGenerator {
         return closestPoint;
     }
 
-    public generateMolecule(
+    /*public generateMolecule(
         run: Run,
         hiddenSymbols: Set<string> = new Set(),
         move_to_center: boolean = true,
@@ -332,6 +391,296 @@ export class MoleculeGenerator {
         // group.scale.set(3.0, 3.0, 3.0);
         return group;
 
+    }*/
+
+    public generateMolecule(
+        run: Run,
+        hiddenSymbols: Set<string> = new Set(),
+        move_to_center: boolean = true,
+    ): Group {
+
+        const positions = run.frames[0].positions;
+
+        /*
+        * Move molecule to center
+        */
+
+        if (move_to_center) {
+
+            const center =
+                this.findCentralPointFromArray(positions);
+
+            run.frames.forEach((frame) => {
+
+                const positions = frame.positions;
+
+                for (let i = 0; i < positions.length; i += 3) {
+
+                    positions[i] -= center[0];
+                    positions[i + 1] -= center[1];
+                    positions[i + 2] -= center[2];
+                }
+            });
+        }
+
+        const symbols = run.symbols;
+        const number_of_atoms = run.number_of_atoms;
+
+        const group = new Group();
+
+        /*
+        =========================================================
+        ATOMS
+        =========================================================
+        */
+
+        /*
+        * Gruppiere Atome nach Materialtyp
+        */
+
+        const groupedAtoms = new Map<string, number[]>();
+
+        for (let i = 0; i < number_of_atoms; i++) {
+
+            const symbol = symbols[i];
+
+            const materialType =
+                this.material_types.get(symbol) ?? "nonmetal";
+
+            if (!groupedAtoms.has(materialType)) {
+                groupedAtoms.set(materialType, []);
+            }
+
+            groupedAtoms.get(materialType)!.push(i);
+        }
+
+        /*
+        * Ein InstancedMesh pro Materialtyp
+        */
+
+        groupedAtoms.forEach((indices, materialType) => {
+
+            const representativeSymbol =
+                symbols[indices[0]];
+
+            const material =
+                this.get_material(representativeSymbol);
+
+            const geometry =
+                new SphereGeometry(1.0, 48, 48);
+
+            const atomInstances = new InstancedMesh(
+                geometry,
+                material,
+                indices.length
+            );
+
+            indices.forEach((atomIndex, instanceIndex) => {
+
+                const symbol = symbols[atomIndex];
+
+                const isHidden =
+                    hiddenSymbols.has(symbol);
+
+                const elementColor =
+                    new Color(
+                        this.colors.get(symbol)
+                    );
+
+                atomInstances.setColorAt(
+                    instanceIndex,
+                    elementColor
+                );
+
+                const scale =
+                    isHidden
+                        ? 0
+                        : (symbol === "H" ? 0.3 : 0.4);
+
+                const matrix = new Matrix4()
+                    .makeTranslation(
+                        positions[3 * atomIndex],
+                        positions[3 * atomIndex + 1],
+                        positions[3 * atomIndex + 2]
+                    )
+                    .scale(
+                        new Vector3(
+                            scale,
+                            scale,
+                            scale
+                        )
+                    );
+
+                atomInstances.setMatrixAt(
+                    instanceIndex,
+                    matrix
+                );
+            });
+
+            atomInstances.instanceMatrix.needsUpdate = true;
+
+            if (atomInstances.instanceColor) {
+                atomInstances.instanceColor.needsUpdate = true;
+            }
+
+            group.add(atomInstances);
+        });
+
+        /*
+        =========================================================
+        BONDS
+        =========================================================
+        */
+
+        const bondMaterial = new MeshPhongMaterial({
+
+            color: 0x111111,
+
+            shininess: 80,
+
+            specular: 0x666666,
+        });
+
+        const bondGeometry =
+            new CylinderGeometry(
+                0.085,
+                0.085,
+                1.0,
+                16
+            );
+
+        const bondMatrices: Matrix4[] = [];
+
+        const _matrix = new Matrix4();
+
+        for (let i = 0; i < number_of_atoms; i++) {
+
+            for (let j = i + 1; j < number_of_atoms; j++) {
+
+                const posA = new Vector3(
+                    positions[3 * i],
+                    positions[3 * i + 1],
+                    positions[3 * i + 2]
+                );
+
+                const posB = new Vector3(
+                    positions[3 * j],
+                    positions[3 * j + 1],
+                    positions[3 * j + 2]
+                );
+
+                const distance =
+                    posA.distanceTo(posB);
+
+                let max_distance = 1.5;
+
+                const radius_a =
+                    this.covalent_radii.get(symbols[i]);
+
+                const radius_b =
+                    this.covalent_radii.get(symbols[j]);
+
+                if (radius_a && radius_b) {
+
+                    max_distance =
+                        (radius_a + radius_b) * 0.8;
+                }
+
+                /*
+                * Bond detected
+                */
+
+                if (distance < max_distance) {
+
+                    const matrix = new Matrix4();
+
+                    /*
+                    * Position
+                    */
+
+                    matrix.makeTranslation(
+
+                        (posA.x + posB.x) / 2.0,
+
+                        (posA.y + posB.y) / 2.0,
+
+                        (posA.z + posB.z) / 2.0
+                    );
+
+                    /*
+                    * Rotation
+                    */
+
+                    matrix.lookAt(
+                        posB,
+                        posA,
+                        new Vector3(0, 1, 0)
+                    );
+
+                    matrix.multiply(
+                        _matrix.makeRotationX(
+                            Math.PI / 2.0
+                        )
+                    );
+
+                    /*
+                    * Bond length correction
+                    */
+
+                    let number_of_hydrogen =
+                        symbols[i] === "H" ? 1 : 0;
+
+                    number_of_hydrogen +=
+                        symbols[j] === "H" ? 1 : 0;
+
+                    const bond_length =
+                        distance
+                        - 0.72
+                        + number_of_hydrogen * 0.2;
+
+                    /*
+                    * Scale
+                    */
+
+                    matrix.scale(
+                        new Vector3(
+                            1.0,
+                            bond_length,
+                            1.0
+                        )
+                    );
+
+                    bondMatrices.push(matrix);
+                }
+            }
+        }
+
+        /*
+        * Bond Instancing
+        */
+
+        const bondInstances = new InstancedMesh(
+
+            bondGeometry,
+
+            bondMaterial,
+
+            bondMatrices.length
+        );
+
+        bondMatrices.forEach((matrix, index) => {
+
+            bondInstances.setMatrixAt(
+                index,
+                matrix
+            );
+        });
+
+        bondInstances.instanceMatrix.needsUpdate = true;
+
+        group.add(bondInstances);
+
+        return group;
     }
 
     public updateMolecule(
