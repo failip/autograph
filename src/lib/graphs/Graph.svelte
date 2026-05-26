@@ -981,7 +981,7 @@ onMount(async () => {
   const raycaster = new Raycaster();
 
   //const ambientLight = new AmbientLight(0xffffff, 0.65);
-  const ambientLight = new AmbientLight(0xbfc7d5, 0.45);
+  const ambientLight = new AmbientLight(0xbfc7d5, 0.15);
   scene.add(ambientLight);
 
   /**const directionalLight = new DirectionalLight(0xffffff, 1.5);
