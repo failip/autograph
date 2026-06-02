@@ -23,6 +23,8 @@ export class VRControls {
 
   private scene: Scene;
   private raycastGroup: Object3D | undefined;
+  private controlMode: "camera" | "object";
+  private controlledObject: Object3D | undefined;
 
   // Orbit controls properties
   private spherical: Spherical;
@@ -57,7 +59,16 @@ export class VRControls {
   private prevButton4State: boolean[] = [false, false];
   private prevButton5State: boolean[] = [false, false];
 
-  constructor(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera, target: Object3D, raycastGroup?: Object3D) {
+  constructor(
+    renderer: WebGLRenderer,
+    scene: Scene,
+    camera: PerspectiveCamera,
+    target: Object3D,
+    raycastGroup?: Object3D,
+    distanceFromFocus: number = 50.0,
+    controlMode: "camera" | "object" = "camera",
+    controlledObject?: Object3D,
+  ) {
 
     const xrSession = renderer.xr.getSession();
 
@@ -125,13 +136,19 @@ export class VRControls {
     this.dolly.add(controllerGrip2);
 
     this.target = target;
+    this.distanceFromFocus = distanceFromFocus;
+    this.controlMode = controlMode;
+    this.controlledObject = controlledObject;
     this.camera = renderer.xr.getCamera() as WebXRArrayCamera;
     this.perspectiveCamera = camera;
-    this.perspectiveCamera.zoom = 1.0;
-    this.perspectiveCamera.position.set(0.0, 0.0, 0.0);
-    this.perspectiveCamera.rotation.set(0.0, 0.0, 0.0);
-    this.perspectiveCamera.updateProjectionMatrix();
-    this.dolly.add(this.perspectiveCamera);
+
+    if (this.controlMode === "camera") {
+      this.perspectiveCamera.zoom = 1.0;
+      this.perspectiveCamera.position.set(0.0, 0.0, 0.0);
+      this.perspectiveCamera.rotation.set(0.0, 0.0, 0.0);
+      this.perspectiveCamera.updateProjectionMatrix();
+      this.dolly.add(this.perspectiveCamera);
+    }
 
     // Initialize orbit controls properties
     this.spherical = new Spherical();
@@ -195,6 +212,14 @@ export class VRControls {
     this.scale *= dollyScale;
   }
 
+  private moveControlledObject(deltaDistance: number): void {
+    if (!this.controlledObject) return;
+
+    const currentDistance = Math.abs(this.controlledObject.position.z);
+    const nextDistance = this.clampDistance(currentDistance + deltaDistance);
+    this.controlledObject.position.z = -nextDistance;
+  }
+
   private clampDistance(dist: number): number {
     return Math.max(this.minDistance, Math.min(this.maxDistance, dist));
   }
@@ -215,12 +240,22 @@ export class VRControls {
       const thumbstickX = controller.axes[2] || 0; // Right thumbstick X
       const thumbstickY = controller.axes[3] || 0; // Right thumbstick Y
 
-      if (Math.abs(thumbstickX) > 0.1) {
-        this.rotateLeft(thumbstickX * this.rotationSpeed * 0.02);
-      }
+      if (this.controlMode === "object" && this.controlledObject) {
+        if (Math.abs(thumbstickX) > 0.1) {
+          this.controlledObject.rotation.y -= thumbstickX * this.rotationSpeed * 0.025;
+        }
 
-      if (Math.abs(thumbstickY) > 0.1) {
-        this.rotateUp(thumbstickY * this.rotationSpeed * 0.02);
+        if (Math.abs(thumbstickY) > 0.1) {
+          this.controlledObject.rotation.x -= thumbstickY * this.rotationSpeed * 0.025;
+        }
+      } else {
+        if (Math.abs(thumbstickX) > 0.1) {
+          this.rotateLeft(thumbstickX * this.rotationSpeed * 0.02);
+        }
+
+        if (Math.abs(thumbstickY) > 0.1) {
+          this.rotateUp(thumbstickY * this.rotationSpeed * 0.02);
+        }
       }
 
       // Handle trigger for selection
@@ -238,7 +273,10 @@ export class VRControls {
         this.prevTriggerState[index] = false;
       }
 
-      if (squeeze > 0.1) {
+      if (squeeze > 0.1 && this.controlMode === "object") {
+        const direction = handedness === "left" ? -1 : 1;
+        this.moveControlledObject(direction * squeeze * this.distanceFromFocus * 0.015);
+      } else if (squeeze > 0.1) {
         if (handedness === "left") {
           this.dollyIn(1 + squeeze * 0.02);
         } else {
@@ -316,6 +354,8 @@ export class VRControls {
 
     // Handle VR controller input
     this.handleControllerInput();
+
+    if (this.controlMode === "object") return;
 
     // Apply damping and delta changes to spherical coordinates
     if (this.enableDamping) {

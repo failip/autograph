@@ -238,8 +238,6 @@ export class MoleculeGenerator {
         const number_of_atoms = run.number_of_atoms;
         const atomInstances = group.children[0] as InstancedMesh;
 
-        console.log('updateMolecule', nodeId, selectedSpecies);
-
         for (let i = 0; i < number_of_atoms; i++) {
             const pos = new Vector3(
                 positions[3 * i],
@@ -276,11 +274,26 @@ export class MoleculeGenerator {
         // Remove bonds
         const oldBonds = group.children[group.children.length - 1];
         if (oldBonds) {
+            oldBonds.traverse((child) => {
+                if (child instanceof Mesh) {
+                    if (child.geometry !== this.bond_geometry) {
+                        child.geometry.dispose();
+                    }
+                    const materials = Array.isArray(child.material) ? child.material : [child.material];
+                    materials.forEach((material) => {
+                        if (material !== this.bond_material) {
+                            material.dispose();
+                        }
+                    });
+                }
+            });
             group.remove(oldBonds);
         }
 
         // Add bonds
         const newBonds = new Group();
+        const bondMatrices = new Array<Matrix4>();
+        const _matrix = new Matrix4();
 
         for (let i = 0; i < number_of_atoms; i++) {
             const posA = new Vector3(
@@ -306,18 +319,33 @@ export class MoleculeGenerator {
             }
 
             if (distance < max_distance) {
-                const bond = new Mesh(this.bond_geometry, this.bond_material.clone());
-                bond.position.set(
+                const matrix = new Matrix4();
+                matrix.makeTranslation(
                 (posA.x + posB.x) / 2.0,
                 (posA.y + posB.y) / 2.0,
                 (posA.z + posB.z) / 2.0
                 );
-                bond.lookAt(posB);
-                bond.rotateX(Math.PI / 2);
-                bond.scale.set(1.0, distance, 1.0);
-                newBonds.add(bond);
+
+                matrix.lookAt(posB, posA, new Vector3(0, 1, 0));
+                matrix.multiply(_matrix.makeRotationX(Math.PI / 2.0));
+
+                let number_of_hydrogen = symbols[i] === "H" ? 1 : 0;
+                number_of_hydrogen += symbols[j] === "H" ? 1 : 0;
+
+                const bond_length = Math.max(0.001, distance - 0.72 + number_of_hydrogen * 0.2);
+
+                matrix.scale(new Vector3(1.0, bond_length, 1.0));
+                bondMatrices.push(matrix);
             }
             }
+        }
+        if (bondMatrices.length > 0) {
+            const bondInstances = new InstancedMesh(this.bond_geometry, this.bond_material, bondMatrices.length);
+            bondMatrices.forEach((matrix, index) => {
+                bondInstances.setMatrixAt(index, matrix);
+            });
+            bondInstances.instanceMatrix.needsUpdate = true;
+            newBonds.add(bondInstances);
         }
     group.add(newBonds);
     }
