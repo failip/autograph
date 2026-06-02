@@ -7,6 +7,6 @@ export default defineConfig({
 		watch: {
 			ignored: ["**/static/**", "build/**"],
 		},
-		allowedHosts: ['preview.failip.live']
+		allowedHosts: ['preview.failip.live', 'tunnel.kuboth.dev']
 	},
 });
