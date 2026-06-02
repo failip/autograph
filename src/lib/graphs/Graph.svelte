@@ -104,6 +104,7 @@ let allMoleculesVisible = true;
 
 let cursorInfo: HTMLDivElement;
 let pointerIsDown = false;
+let xrError = "";
 
 let moleculeSize = 1.0;
 let reactionSize = 0.35;
@@ -454,44 +455,66 @@ onMount(async () => {
     graphRoot.scale.setScalar(1);
   }
 
-  initializeVR = () => {
+  initializeVR = async () => {
+    if (!navigator.xr) {
+      xrError = "VR is not available in this browser.";
+      return;
+    }
+
     renderer.xr.enabled = true;
-    const xrMode: XRSessionMode = "immersive-ar";
+    const xrMode: XRSessionMode = "immersive-vr";
     const sessionOptions = {
       optionalFeatures: ["local-floor", "bounded-floor", "layers"],
     };
-    navigator.xr
-      .requestSession(xrMode, sessionOptions)
-      .then(async (session) => {
-        resetGraphRootForXr();
-        sceneBackground.setTransparentBackground(xrMode === "immersive-ar");
-        session.addEventListener("end", () => {
-          resetGraphRootForDesktop();
-          sceneBackground.setTransparentBackground(false);
-        });
-        await renderer.xr.setSession(session);
-        camera = perspectiveCamera;
-        controls.enabled = false;
-        controls = new VRControls(
-          renderer,
-          scene,
-          perspectiveCamera,
-          new Object3D(),
-          meshes,
-          50,
-          "object",
-          graphRoot,
-        );
-        controls.onHover = (object) => {
-          hoveredNode = object ?? undefined;
-        };
-        controls.onSelect = () => {
-          selectMolecule();
-        };
-        controls.onBPressed = () => {
-          wClick();
-        };
+
+    xrError = "";
+
+    try {
+      const supported = await navigator.xr.isSessionSupported(xrMode);
+      if (!supported) {
+        xrError = "VR is not available on this device.";
+        return;
+      }
+
+      const session = await navigator.xr.requestSession(xrMode, sessionOptions);
+      resetGraphRootForXr();
+      sceneBackground.setTransparentBackground(false);
+      isXrSession = true;
+
+      session.addEventListener("end", () => {
+        resetGraphRootForDesktop();
+        sceneBackground.setTransparentBackground(false);
+        isXrSession = false;
       });
+
+      await renderer.xr.setSession(session);
+      camera = perspectiveCamera;
+      controls.enabled = false;
+      controls = new VRControls(
+        renderer,
+        scene,
+        perspectiveCamera,
+        new Object3D(),
+        meshes,
+        50,
+        "object",
+        graphRoot,
+      );
+      controls.onHover = (object) => {
+        hoveredNode = object ?? undefined;
+      };
+      controls.onSelect = () => {
+        selectMoleculeVR();
+      };
+      controls.onBPressed = () => {
+        wClick();
+      };
+    } catch (error) {
+      resetGraphRootForDesktop();
+      sceneBackground.setTransparentBackground(false);
+      isXrSession = false;
+      xrError = error instanceof Error ? error.message : "Unable to start VR.";
+    }
   };
 
   const raycaster = new Raycaster();
@@ -1916,7 +1939,21 @@ function rerenderMolecules() {
 
   <div id="keys_overlay">
     {#if webXR}
-      <button on:click={initializeVR} style="color: black">Enter VR</button>
+      <div class="graph-xr-toolbar">
+        <div class="graph-xr-controls">
+          <button
+            class="graph-xr-button"
+            type="button"
+            on:pointerdown={(event) => event.stopPropagation()}
+            on:click={initializeVR}
+          >
+            Enter VR
+          </button>
+          {#if xrError}
+            <span class="xr-error">{xrError}</span>
+          {/if}
+        </div>
+      </div>
     {/if}
     <div class="key_input">
       {#if isXrSession}
@@ -2644,6 +2681,7 @@ function rerenderMolecules() {
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  pointer-events: all;
 }
 
 .key_input > p {
@@ -2665,8 +2703,9 @@ function rerenderMolecules() {
   font-family: "Quicksand", sans-serif;
   display: flex;
   flex-direction: column;
-  gap: 0.1em;
+  gap: 0.5rem;
   align-items: flex-start;
+  pointer-events: none;
 }
 
 #canvas_wrapper {
@@ -2718,6 +2757,37 @@ function rerenderMolecules() {
   pointer-events: all;
 }
 
+.graph-xr-toolbar {
+  border: 1px solid #d7d7d7;
+  border-radius: 1rem;
+  padding: 12px;
+  background: #ffffff;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  color: #000000;
+  pointer-events: all;
+}
+
+.graph-xr-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.graph-xr-button {
+  border: 1px solid #000000;
+  border-radius: 0.4rem;
+  background: #ffffff;
+  color: #000000;
+  padding: 0.45rem 0.7rem;
+  cursor: pointer;
+  font-family: "Quicksand", sans-serif;
+  font-size: 1rem;
+}
+
+.graph-xr-button:hover {
+  background: #f0f0f0;
+}
+
 .settingsButton {
   width: 2rem;
   height: 2rem;
@@ -2735,6 +2805,12 @@ function rerenderMolecules() {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.xr-error {
+  max-width: 18rem;
+  color: #7f1d1d;
+  font-size: 0.95rem;
 }
 
 @media (max-width: 400px) {

@@ -78,22 +78,14 @@ export class VRControls {
 
     this.xrSession = xrSession;
 
-    this.xrSession.addEventListener('inputsourceschange', (event) => {
-      this.controllers = [];
-      this.handedness = [];
-
+    this.xrSession.addEventListener('inputsourceschange', () => {
       // Reset states
       this.prevTriggerState = [false, false];
       this.prevButton4State = [false, false];
       this.prevButton5State = [false, false];
-
-      this.xrSession.inputSources.forEach((source) => {
-        if (source.gamepad) {
-          this.controllers.push(source.gamepad);
-          this.handedness.push(source.handedness);
-        }
-      });
+      this.syncInputSources();
     });
+    this.syncInputSources();
 
     this.raycaster = new Raycaster();
     this.tempMatrix = new Matrix4();
@@ -110,9 +102,10 @@ export class VRControls {
     geometry.translate(0, 0, -2.5);
 
     const material = new MeshBasicMaterial({
-      color: 0xffffff,
+      color: 0x111111,
       transparent: true,
-      opacity: 0.5
+      opacity: 0.7,
+      depthTest: false,
     });
 
     const line = new Mesh(geometry, material);
@@ -170,7 +163,27 @@ export class VRControls {
     this.raycastGroup = raycastGroup;
   }
 
+  private syncInputSources(): void {
+    this.controllers = [];
+    this.handedness = [];
+
+    this.xrSession.inputSources.forEach((source) => {
+      if (source.gamepad) {
+        this.controllers.push(source.gamepad);
+        this.handedness.push(source.handedness);
+      }
+    });
+  }
+
   private initializeDollyPosition(): void {
+    if (this.controlMode === "object") {
+      this.dolly.position.set(0, 0, 0);
+      this.dolly.rotation.set(0, 0, 0);
+      this.dolly.scale.set(1, 1, 1);
+      this.dolly.updateMatrixWorld(true);
+      return;
+    }
+
     // Initialize spherical coordinates with proper values
     this.spherical.radius = this.distanceFromFocus;
     this.spherical.phi = Math.PI / 2; // Start at horizontal level
@@ -230,6 +243,10 @@ export class VRControls {
   }
 
   private handleControllerInput(): void {
+    if (this.controllers.length === 0) {
+      this.syncInputSources();
+    }
+
     if (!this.controllers || this.controllers.length === 0) return;
 
     // Handle input from VR controllers
@@ -310,13 +327,17 @@ export class VRControls {
     let foundIntersection = false;
 
     const controllers = [this.controller1, this.controller2];
+    const defaultPointerScale = Math.max(this.distanceFromFocus, 5) / 5;
 
     for (const controller of controllers) {
       this.tempMatrix.identity().extractRotation(controller.matrixWorld);
       this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
       this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(this.tempMatrix);
       if (!this.raycastGroup) continue;
-      const intersects = this.raycaster.intersectObjects(this.raycastGroup.children);
+      const intersects = this.raycaster.intersectObjects(
+        this.raycastGroup.children,
+        true,
+      );
       if (intersects.length > 0) {
         console.log('intersected', intersects[0].object);
         const object = intersects[0].object;
@@ -336,7 +357,7 @@ export class VRControls {
         // Reset pointer length
         const line = controller.getObjectByName('line');
         if (line) {
-          line.scale.z = 1;
+          line.scale.z = defaultPointerScale;
         }
       }
     }

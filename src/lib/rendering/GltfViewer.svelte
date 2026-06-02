@@ -7,14 +7,15 @@ import {
   DirectionalLight,
   Group,
   Mesh,
+  Object3D,
   PerspectiveCamera,
   Scene,
   SRGBColorSpace,
   Vector3,
   WebGLRenderer,
-  type Object3D,
 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { VRControls } from "$lib/vr/controls/VRControls";
 import { HdrSceneBackground } from "./background";
 import { ObjectOrbitControls } from "./ObjectOrbitControls";
 
@@ -30,6 +31,8 @@ let scene: Scene | null = null;
 let renderer: WebGLRenderer | null = null;
 let camera: PerspectiveCamera | null = null;
 let controls: ObjectOrbitControls | null = null;
+let xrControls: VRControls | null = null;
+let currentSession: XRSession | null = null;
 let sceneBackground: HdrSceneBackground | null = null;
 let resizeObserver: ResizeObserver | null = null;
 let modelRoot: Group | null = null;
@@ -41,7 +44,10 @@ let loadToken = 0;
 let loadedPath = "";
 let modelRadius = 3;
 let isLoading = true;
+let isImmersive = false;
 let errorMessage = "";
+let xrError = "";
+let lastAnimationTime = 0;
 
 $: if (mounted && modelPath !== loadedPath) {
   loadModel(modelPath);
@@ -70,11 +76,33 @@ function getCameraDistance(): number {
   return Math.max(7, modelRadius * 2.35);
 }
 
+function getXrObjectDistance(): number {
+  return Math.max(2.5, Math.min(8, modelRadius * 1.25));
+}
+
+function resetModelRootForDesktop(): void {
+  if (!modelRoot) return;
+  modelRoot.position.set(0, 0, 0);
+  modelRoot.rotation.set(0, 0, 0);
+  modelRoot.scale.setScalar(1);
+}
+
+function resetModelRootForXr(): void {
+  if (!modelRoot) return;
+  modelRoot.position.set(0, 0, -getXrObjectDistance());
+  modelRoot.rotation.set(0, 0, 0);
+  modelRoot.scale.setScalar(1);
+}
+
 function resetView(): void {
   if (!camera || !controls || !modelRoot) return;
 
-  modelRoot.position.set(0, 0, 0);
-  modelRoot.rotation.set(0, 0, 0);
+  if (isImmersive) {
+    resetModelRootForXr();
+    return;
+  }
+
+  resetModelRootForDesktop();
   camera.position.set(0, 0, getCameraDistance());
   camera.lookAt(origin);
   camera.near = 0.01;
@@ -116,6 +144,7 @@ function loadModel(path: string): void {
   loadedPath = path;
   isLoading = true;
   errorMessage = "";
+  xrError = "";
   clearModel();
 
   new GLTFLoader().load(
@@ -154,10 +183,96 @@ function updateSize(): void {
   camera.updateProjectionMatrix();
 }
 
-function animate(): void {
+function handleXrEnded(): void {
+  if (currentSession) {
+    currentSession.removeEventListener("end", handleXrEnded);
+  }
+
+  if (xrControls && scene) {
+    scene.remove(xrControls.dolly);
+  }
+
+  xrControls = null;
+  currentSession = null;
+  isImmersive = false;
+  lastAnimationTime = 0;
+
+  if (controls) {
+    controls.enabled = true;
+  }
+
+  resetView();
+}
+
+async function startVr(): Promise<void> {
+  const xr = navigator.xr;
+  if (!renderer || !scene || !camera || !modelRoot) return;
+
+  xrError = "";
+
+  if (!xr) {
+    xrError = "VR is not available in this browser.";
+    return;
+  }
+
+  try {
+    const supported = await xr.isSessionSupported("immersive-vr");
+    if (!supported) {
+      xrError = "VR is not available on this device.";
+      return;
+    }
+
+    const session = await xr.requestSession("immersive-vr", {
+      optionalFeatures: ["local-floor", "bounded-floor"],
+    });
+
+    currentSession = session;
+    isImmersive = true;
+    renderer.xr.enabled = true;
+    resetModelRootForXr();
+
+    await renderer.xr.setSession(session);
+
+    if (controls) {
+      controls.enabled = false;
+    }
+
+    const target = new Object3D();
+    target.position.copy(origin);
+    xrControls = new VRControls(
+      renderer,
+      scene,
+      camera,
+      target,
+      undefined,
+      getXrObjectDistance(),
+      "object",
+      modelRoot,
+    );
+    xrControls.minDistance = 1.2;
+    xrControls.maxDistance = 20;
+    xrControls.rotationSpeed = 1.25;
+
+    session.addEventListener("end", handleXrEnded);
+  } catch (error) {
+    handleXrEnded();
+    xrError = error instanceof Error ? error.message : "Unable to start VR.";
+  }
+}
+
+function animate(time = 0): void {
   if (!renderer || !scene || !camera) return;
 
-  controls?.update();
+  const deltaSeconds =
+    lastAnimationTime === 0 ? 0 : (time - lastAnimationTime) / 1000;
+  lastAnimationTime = time;
+
+  if (xrControls) {
+    xrControls.update(deltaSeconds);
+  } else {
+    controls?.update();
+  }
+
   renderer.render(scene, camera);
 }
 
@@ -186,6 +301,7 @@ onMount(() => {
   });
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.setClearColor(new Color(0xf0f0f0), 1);
+  renderer.xr.enabled = true;
 
   sceneBackground = new HdrSceneBackground(scene, renderer);
   sceneBackground.load();
@@ -212,6 +328,13 @@ onDestroy(() => {
   renderer?.setAnimationLoop(null);
   resizeObserver?.disconnect();
   controls?.dispose();
+  if (currentSession) {
+    currentSession.removeEventListener("end", handleXrEnded);
+    currentSession.end().catch(() => {});
+  }
+  if (xrControls && scene) {
+    scene.remove(xrControls.dolly);
+  }
   clearModel();
   sceneBackground?.dispose();
   renderer?.dispose();
@@ -221,10 +344,21 @@ onDestroy(() => {
 <main class="viewer" bind:this={wrapper}>
   <canvas bind:this={canvas} aria-label={modelName}></canvas>
 
+  <button
+    class="vr-button"
+    type="button"
+    on:click={startVr}
+    disabled={isImmersive || isLoading || Boolean(errorMessage)}
+  >
+    {isImmersive ? "In VR" : "Enter VR"}
+  </button>
+
   {#if isLoading}
     <div class="status">Loading {modelName}</div>
   {:else if errorMessage}
     <div class="status error">{errorMessage}</div>
+  {:else if xrError}
+    <div class="status error">{xrError}</div>
   {/if}
 </main>
 
@@ -246,6 +380,31 @@ canvas {
   width: 100%;
   height: 100%;
   touch-action: none;
+}
+
+.vr-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 6px;
+  padding: 9px 12px;
+  background: rgba(17, 18, 20, 0.74);
+  color: #ffffff;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.vr-button:hover:not(:disabled),
+.vr-button:focus-visible {
+  background: rgba(17, 18, 20, 0.9);
+}
+
+.vr-button:disabled {
+  cursor: default;
+  opacity: 0.55;
 }
 
 .status {
