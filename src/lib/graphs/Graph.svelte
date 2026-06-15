@@ -107,6 +107,8 @@ let reactionSize = 0.35;
 let lineWidth = 0.01;
 
 type NodeType = "species" | "reaction";
+let selectedNodeId: string | null = null;
+let hoveredNodeId: string | null = null;
 
 interface FilterDefinition {
   id: string;
@@ -1114,6 +1116,7 @@ onMount(async () => {
           );
 
           hoveredSpeciesId = newHoveredId;
+          hoveredNodeId = newHoveredId;
 
           onHoveredSpeciesChanged();
       }
@@ -1122,6 +1125,8 @@ onMount(async () => {
 
       if (hoveredSpeciesId !== undefined) {
           hoveredSpeciesId = undefined;
+
+          hoveredNodeId = null;
 
           onHoveredSpeciesChanged();
       }
@@ -1473,17 +1478,20 @@ onMount(async () => {
     const moleculeGroup = moleculeGroups.get(nodeId);
     const run = runs.get(nodeId);
 
+    const next = new Set(selectedSpecies);
+
     if (!moleculeGroup || !run) {
       console.warn("Keine Molekülgruppe oder Run für", nodeId);
       return;
     }
 
     // Mehrfachauswahl: Toggle-Verhalten
-    if (selectedSpecies.has(nodeId)) {
-      selectedSpecies.delete(nodeId);
+    if (next.has(nodeId)) {
+      next.delete(nodeId);
     } else {
-      selectedSpecies.add(nodeId);
+      next.add(nodeId);
     }
+    selectedSpecies = next; //Toggled reaktivitär
  
     if (moleculeGroup && run) {
       moleculeGenerator.updateMolecule(
@@ -2460,6 +2468,32 @@ function removeHiddenElement() {
   updateHiddenElements(hiddenElements);
 }
 
+function removeSelected(nodeId: string) {
+  const next = new Set(selectedSpecies);
+  next.delete(nodeId);
+  selectedSpecies = next;
+}
+
+function focusObject(object: THREE.Object3D) {
+  object.getWorldPosition(newCameraTarget);
+
+  zoomTarget = camera.zoom;
+  zoomFinished = false;
+
+  targetedNode = object;
+  lockedOnMolecule = true;
+}
+
+function focusNode(nodeId: string) {
+  const mesh = meshes.children.find(
+    (obj) => obj.userData?.name === nodeId
+  );
+
+  if (!mesh) return;
+
+  focusObject(mesh);
+}
+
 </script>
 
 <div class="page">
@@ -3004,6 +3038,50 @@ function removeHiddenElement() {
       </div>
     </div>
   {/if}
+  <div class="node-info-container">
+    {#if selectedSpecies.size > 0}
+      <div class="node-info-panel">
+        <h3>Selected Molecules</h3>
+
+        {#each [...selectedSpecies] as species}
+          <div class="selected-entry">
+            <span>{species}</span>
+            <div class="actions">
+              <button
+                class="icon-btn"
+                on:click={() => focusNode(species)}
+                title="Focus node"
+              >
+                <picture>
+                  <img src="/images/eye.svg" alt="Zoom icon" />
+                </picture>
+              </button>
+
+              <button
+                class="remove-btn"
+                on:click={() => removeSelected(species)}
+                title="Remove"
+              >
+                <picture>
+                  <img src="/images/delete-left.svg" alt="Delete icon" />
+                </picture>
+              </button>
+            </div>
+          </div>
+        {/each}
+      </div>
+    {/if}
+
+    {#if hoveredNodeId}
+      <div class="node-info-panel">
+        <h3>Hovered</h3>
+
+        <div class="node-entry">
+          {hoveredNodeId}
+        </div>
+      </div>
+    {/if}
+  </div>
 </div>
 
 <svelte:window on:keydown={onKeyDown} />
@@ -3326,6 +3404,96 @@ function removeHiddenElement() {
   object-fit: contain;
 }
 
+.node-info-container {
+  pointer-events: none;
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+
+  display: flex;
+  gap: 16px;
+
+  z-index: 1000;
+
+  pointer-events: none;
+}
+
+.node-info-panel {
+  pointer-events: auto;
+
+  min-width: 250px;
+  max-width: 400px;
+
+  max-height: 300px;
+  overflow-y: auto;
+
+  padding: 12px;
+
+  background: #f0f0f0;
+  color: black;
+
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.node-entry {
+  margin-top: 6px;
+
+  word-break: break-word;
+
+  font-family: monospace;
+}
+
+.selected-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 4px 0;
+  gap: 8px;
+
+  font-family: monospace;
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #ff6666;
+
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+
+  opacity: 0.7;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: #ff6666;
+
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+
+  opacity: 0.7;
+}
+
+.remove-btn img {
+  width: 2em;
+  height: 2em;
+  object-fit: contain;
+}
+
+.icon-btn img {
+  width: 2em;
+  height: 2 em;
+  object-fit: contain;
+}
+
+.remove-btn:hover {
+  opacity: 1;
+}
 
 @media (max-width: 400px) {
   #keys_overlay {
