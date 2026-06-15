@@ -15,7 +15,7 @@
   "Al": "metal",
   "Si": "metalloid",
   "P": "nonmetal",
-  "S": "metalloid",
+  "S": "nonmetal",
   "Cl": "toxic",
   "Ar": "gas",
 
