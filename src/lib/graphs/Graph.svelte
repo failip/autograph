@@ -2025,6 +2025,7 @@ function addLayer() {
 
   const oldSpecies = new Set<string>(currentSpecies);
   const selectiveMode = selectedSpecies.size > 0;
+  const exploreMode = false; //reserved for future function, letting users explore possible reactions in a more loose manner
 
   currentSpecies.forEach((species) => {
     addAllPossibleReactionsToRendergraph(
@@ -2035,7 +2036,8 @@ function addLayer() {
       oldSpecies,
       addedNodes,
       addedEdges,
-      selectiveMode
+      selectiveMode,
+      exploreMode
     );
   });
 
@@ -2159,7 +2161,8 @@ function addAllPossibleReactionsToRendergraph(
   oldSpecies: Set<string>,
   addedNodes?: NodeId[],
   addedEdges?: [NodeId, NodeId][],
-  selectiveMode: boolean = false
+  selectiveMode: boolean = false,
+  exploreMode: boolean = false
 ) {
   const isSelectiveAdd = inAddLayerContext && selectedSpecies.size > 0;
   if (isSelectiveAdd && !selectedSpecies.has(species)) {
@@ -2190,16 +2193,7 @@ function addAllPossibleReactionsToRendergraph(
 
     let reactionRelevant = false;
 
-    if (selectiveMode) {
-      const hasSelectedReactant = inEdges.some((edge) => selectedSpecies.has(edge.fromId as string));
-      reactionRelevant = hasSelectedReactant;
-
-      if (reactionRelevant) {
-        //console.log(`[AddLayer] Reaction selected due to selected reactant:`, reaction.data.name);
-        const products = outEdges.map((edge) => edge.toId);
-        //console.log(`[AddLayer] Products of this reaction:`, products);
-      }
-    } else {
+    if (!selectiveMode) {
       const hasAllReactants = inEdges.every((edge) => {
         return oldSpecies.has(edge.fromId as string);
       });
@@ -2209,6 +2203,32 @@ function addAllPossibleReactionsToRendergraph(
       });
 
       reactionRelevant = hasAllReactants || hasAllProducts;
+    } else if (exploreMode) {
+      const hasSelectedReactant = inEdges.some((edge) => selectedSpecies.has(edge.fromId as string));
+      reactionRelevant = hasSelectedReactant;
+
+      if (reactionRelevant) {
+        //console.log(`[AddLayer] Reaction selected due to selected reactant:`, reaction.data.name);
+        const products = outEdges.map((edge) => edge.toId);
+        //console.log(`[AddLayer] Products of this reaction:`, products);
+      }
+    } else {
+      const hasSelectedReactant = inEdges.some((edge) => selectedSpecies.has(edge.fromId as string));
+      const allReactantsKnown = inEdges.every((edge) => { 
+        const reactant = edge.fromId as string;
+        return (
+          selectedSpecies.has(reactant) ||
+          oldSpecies.has(reactant)
+        );
+      });
+
+      reactionRelevant = hasSelectedReactant && allReactantsKnown;
+
+      if (reactionRelevant) {
+        //console.log(`[AddLayer] Reaction selected due to selected reactant:`, reaction.data.name);
+        const products = outEdges.map((edge) => edge.toId);
+        //console.log(`[AddLayer] Products of this reaction:`, products);
+      }
     }
 
     if (!reactionRelevant) {
