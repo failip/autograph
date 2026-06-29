@@ -23,7 +23,12 @@ import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
 import { HdrSceneBackground } from "$lib/rendering/background";
 import { MoleculeGenerator } from "$lib/rendering/molecules";
 import { ObjectOrbitControls } from "$lib/rendering/ObjectOrbitControls";
-import { TrajectoryPlaybackObject } from "$lib/rendering/TrajectoryViewer.js";
+import {
+  getTrajectoryCameraDistance,
+  getTrajectoryXrObjectDistance,
+  TRAJECTORY_CAMERA_FOV,
+  TrajectoryPlaybackObject,
+} from "$lib/rendering/TrajectoryViewer.js";
 import { parseRun, type Run } from "$lib/rendering/xyz.js";
 import { VRControls } from "$lib/vr/controls/VRControls";
 import { onMount } from "svelte";
@@ -44,6 +49,7 @@ import {
   OrthographicCamera,
   PerspectiveCamera,
   Plane,
+  Quaternion,
   Raycaster,
   Scene,
   SRGBColorSpace,
@@ -227,7 +233,9 @@ function enqueueReactionTrajectoryIfAvailable(reactionId: string): void {
     .then(async () => {
       try {
         const xyzText = await fetchXyzTextByName(reactionId);
-        if (!xyzText) return;
+        if (!xyzText) {
+          console.log(`No xyz for ${reactionId}`);
+        }
 
         reactionTrajectoryQueue.push({ reactionId, xyzText });
         void processReactionTrajectoryQueue();
@@ -544,11 +552,30 @@ onMount(async () => {
     transparent: boolean;
   };
 
+  type TrajectoryCameraSnapshot = {
+    activeCamera: PerspectiveCamera | OrthographicCamera;
+    activeControls: ObjectOrbitControls | VRControls;
+    controlsTarget: Vector3 | null;
+    cameraTarget: Vector3;
+    newCameraTarget: Vector3;
+    zoomTarget: number;
+    zoomFinished: boolean;
+    perspectivePosition: Vector3;
+    perspectiveQuaternion: Quaternion;
+    perspectiveFov: number;
+    perspectiveAspect: number;
+    perspectiveZoom: number;
+    perspectiveNear: number;
+    perspectiveFar: number;
+  };
+
   let reactionPlaybackPhase: ReactionPlaybackPhase = "idle";
   let reactionPhaseElapsed = 0;
   let reactionPlaybackObject: TrajectoryPlaybackObject | null = null;
   let graphMaterialSnapshot: GraphMaterialSnapshot[] = [];
+  let trajectoryCameraSnapshot: TrajectoryCameraSnapshot | null = null;
   let lastGraphAnimationTime = 0;
+  const trajectoryOrigin = new Vector3(0, 0, 0);
 
   function getFadeProgress(deltaSeconds: number): number {
     reactionPhaseElapsed += Math.max(0, deltaSeconds);
@@ -604,20 +631,106 @@ onMount(async () => {
     reactionPlaybackObject = null;
   }
 
+  function snapshotTrajectoryCamera(): void {
+    if (isXrSession || trajectoryCameraSnapshot) return;
+
+    trajectoryCameraSnapshot = {
+      activeCamera: camera,
+      activeControls: controls,
+      controlsTarget:
+        controls instanceof ObjectOrbitControls
+          ? controls.target.clone()
+          : null,
+      cameraTarget: cameraTarget.clone(),
+      newCameraTarget: newCameraTarget.clone(),
+      zoomTarget,
+      zoomFinished,
+      perspectivePosition: perspectiveCamera.position.clone(),
+      perspectiveQuaternion: perspectiveCamera.quaternion.clone(),
+      perspectiveFov: perspectiveCamera.fov,
+      perspectiveAspect: perspectiveCamera.aspect,
+      perspectiveZoom: perspectiveCamera.zoom,
+      perspectiveNear: perspectiveCamera.near,
+      perspectiveFar: perspectiveCamera.far,
+    };
+  }
+
+  function applyTrajectoryCameraSettings(
+    playback: TrajectoryPlaybackObject,
+  ): void {
+    if (isXrSession) return;
+
+    snapshotTrajectoryCamera();
+
+    camera = perspectiveCamera;
+    controls = controllers[0];
+    perspectiveCamera.fov = TRAJECTORY_CAMERA_FOV;
+    perspectiveCamera.aspect =
+      canvasWrapper.clientWidth / Math.max(canvasWrapper.clientHeight, 1);
+    perspectiveCamera.zoom = 1;
+    perspectiveCamera.near = 0.01;
+    perspectiveCamera.far = 1000;
+    perspectiveCamera.position.set(
+      0,
+      0,
+      getTrajectoryCameraDistance(playback.viewRadius),
+    );
+    perspectiveCamera.lookAt(trajectoryOrigin);
+    perspectiveCamera.updateProjectionMatrix();
+
+    cameraTarget.copy(trajectoryOrigin);
+    newCameraTarget.copy(trajectoryOrigin);
+    zoomTarget = perspectiveCamera.zoom;
+    zoomFinished = true;
+
+    if (controls instanceof ObjectOrbitControls) {
+      controls.target.copy(trajectoryOrigin);
+      controls.update();
+    }
+  }
+
+  function restoreTrajectoryCameraSettings(): void {
+    if (!trajectoryCameraSnapshot) return;
+
+    const snapshot = trajectoryCameraSnapshot;
+    perspectiveCamera.position.copy(snapshot.perspectivePosition);
+    perspectiveCamera.quaternion.copy(snapshot.perspectiveQuaternion);
+    perspectiveCamera.fov = snapshot.perspectiveFov;
+    perspectiveCamera.aspect = snapshot.perspectiveAspect;
+    perspectiveCamera.zoom = snapshot.perspectiveZoom;
+    perspectiveCamera.near = snapshot.perspectiveNear;
+    perspectiveCamera.far = snapshot.perspectiveFar;
+    perspectiveCamera.updateProjectionMatrix();
+
+    camera = snapshot.activeCamera;
+    controls = snapshot.activeControls;
+    cameraTarget.copy(snapshot.cameraTarget);
+    newCameraTarget.copy(snapshot.newCameraTarget);
+    zoomTarget = snapshot.zoomTarget;
+    zoomFinished = snapshot.zoomFinished;
+
+    if (snapshot.controlsTarget && controls instanceof ObjectOrbitControls) {
+      controls.target.copy(snapshot.controlsTarget);
+      controls.update();
+    }
+
+    trajectoryCameraSnapshot = null;
+  }
+
   function positionReactionPlaybackObject(
     playback: TrajectoryPlaybackObject,
   ): void {
     playback.root.rotation.set(0, 0, 0);
 
     if (isXrSession) {
-      const distance = Math.max(4, Math.min(8, playback.viewRadius * 1.8));
+      const distance = getTrajectoryXrObjectDistance(playback.viewRadius);
       playback.root.position.set(0, 0, -distance);
-      playback.root.scale.setScalar(1.05);
+      playback.root.scale.setScalar(1);
       return;
     }
 
-    playback.root.position.copy(cameraTarget);
-    playback.root.scale.setScalar(2.2);
+    playback.root.position.copy(trajectoryOrigin);
+    playback.root.scale.setScalar(1);
   }
 
   function startTrajectoryFadeOut(): void {
@@ -649,6 +762,7 @@ onMount(async () => {
 
       if (progress >= 1) {
         graphRoot.visible = false;
+        applyTrajectoryCameraSettings(reactionPlaybackObject);
         reactionPlaybackObject.root.visible = true;
         reactionPlaybackObject.setOpacity(0);
         reactionPlaybackPhase = "fadeTrajectoryIn";
@@ -687,6 +801,7 @@ onMount(async () => {
         disposeReactionPlaybackObject();
         graphRoot.visible = true;
         applyGraphOpacity(0);
+        restoreTrajectoryCameraSettings();
         reactionPlaybackPhase = "fadeGraphIn";
         reactionPhaseElapsed = 0;
       }

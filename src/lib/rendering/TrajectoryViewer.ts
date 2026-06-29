@@ -23,7 +23,16 @@ type XrMode = "immersive-vr" | "immersive-ar";
 
 const NODE_ID = "trajectory";
 const SINGLE_FRAME_HOLD_SECONDS = 1.2;
+export const TRAJECTORY_CAMERA_FOV = 60;
 const origin = new Vector3(0, 0, 0);
+
+export function getTrajectoryCameraDistance(viewRadius: number): number {
+  return Math.max(6, viewRadius * 2.8);
+}
+
+export function getTrajectoryXrObjectDistance(viewRadius: number): number {
+  return Math.max(2.5, Math.min(8, viewRadius * 1.35));
+}
 
 export type TrajectoryViewerState = {
   run: Run | null;
@@ -447,7 +456,7 @@ export class StandaloneTrajectoryViewer {
     this.onStateChange = options.onStateChange ?? (() => {});
 
     this.scene = new Scene();
-    this.camera = new PerspectiveCamera(60, 1, 0.01, 1000);
+    this.camera = new PerspectiveCamera(TRAJECTORY_CAMERA_FOV, 1, 0.01, 1000);
     this.camera.position.set(0, 0, this.getCameraDistance());
     this.scene.add(this.camera);
 
@@ -730,11 +739,11 @@ export class StandaloneTrajectoryViewer {
   }
 
   private getCameraDistance(): number {
-    return Math.max(6, this.playback.viewRadius * 2.8);
+    return getTrajectoryCameraDistance(this.playback.viewRadius);
   }
 
   private getXrObjectDistance(): number {
-    return Math.max(2.5, Math.min(8, this.playback.viewRadius * 1.35));
+    return getTrajectoryXrObjectDistance(this.playback.viewRadius);
   }
 
   private resetSceneRootForDesktop(): void {
