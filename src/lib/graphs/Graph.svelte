@@ -192,8 +192,14 @@ function getXyzBasePath(): string {
   return xyzPath.endsWith("/") ? xyzPath : `${xyzPath}/`;
 }
 
-function getNamedXyzUrl(name: string): string {
-  return `${getXyzBasePath()}${name}.xyz`;
+function getNamedXyzUrls(name: string): string[] {
+  const basePath = getXyzBasePath();
+  const candidates = [
+    `${basePath}${encodeURIComponent(name)}.xyz`,
+    `${basePath}${name}.xyz`,
+  ];
+
+  return [...new Set(candidates)];
 }
 
 async function fetchXyzTextByName(
@@ -212,16 +218,19 @@ async function fetchXyzTextByName(
     return fallbackFile.text();
   }
 
-  const url = getNamedXyzUrl(name);
-  const response = await fetch(url);
-  if (response.ok) {
-    return response.text();
+  for (const url of getNamedXyzUrls(name)) {
+    const response = await fetch(url);
+    if (response.ok) {
+      return response.text();
+    }
   }
 
   if (fallbackName) {
-    const fallbackResponse = await fetch(getNamedXyzUrl(fallbackName));
-    if (fallbackResponse.ok) {
-      return fallbackResponse.text();
+    for (const fallbackUrl of getNamedXyzUrls(fallbackName)) {
+      const fallbackResponse = await fetch(fallbackUrl);
+      if (fallbackResponse.ok) {
+        return fallbackResponse.text();
+      }
     }
   }
 
@@ -233,9 +242,7 @@ function enqueueReactionTrajectoryIfAvailable(reactionId: string): void {
     .then(async () => {
       try {
         const xyzText = await fetchXyzTextByName(reactionId);
-        if (!xyzText) {
-          console.log(`No xyz for ${reactionId}`);
-        }
+        if (!xyzText) return;
 
         reactionTrajectoryQueue.push({ reactionId, xyzText });
         void processReactionTrajectoryQueue();
