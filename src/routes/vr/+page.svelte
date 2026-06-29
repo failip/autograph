@@ -8,12 +8,14 @@ let graphLoaded = false;
 
 onMount(async () => {
   try {
-    const response = await fetch("/graphs/pentane/graph.json");
+    const response = await fetch(
+      "/graphs/AtmosphereReduced/atmosphere_nox_reduced.json",
+    );
     const text = await response.text();
     graph = createGraphFromString(text);
     graphLoaded = true;
   } catch (error) {
-    console.error("Failed to load JAM graph data:", error);
+    console.error("Failed to load AtmosphereReduced graph data:", error);
   }
 });
 </script>
@@ -22,12 +24,12 @@ onMount(async () => {
   <Graph
     {graph}
     webXR={true}
-    xyzPath="/graphs/pentane/"
-    startSpecies={["CCCCC", "[O][O]"]}
+    xyzPath="/graphs/AtmosphereReduced/xyz_species/"
+    startSpecies={["O=O", "N#N"]}
   />
 {:else}
   <div class="loading">
-    <p>Loading JAM Graph for VR...</p>
+    <p>Loading AtmosphereReduced graph for VR...</p>
   </div>
 {/if}
 
