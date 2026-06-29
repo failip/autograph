@@ -23,8 +23,8 @@ import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
 import { HdrSceneBackground } from "$lib/rendering/background";
 import { MoleculeGenerator } from "$lib/rendering/molecules";
 import { ObjectOrbitControls } from "$lib/rendering/ObjectOrbitControls";
-import TrajectoryViewer from "$lib/rendering/TrajectoryViewer.svelte";
-import { parseRun } from "$lib/rendering/xyz.js";
+import { TrajectoryPlaybackObject } from "$lib/rendering/TrajectoryViewer.js";
+import { parseRun, type Run } from "$lib/rendering/xyz.js";
 import { VRControls } from "$lib/vr/controls/VRControls";
 import { onMount } from "svelte";
 import {
@@ -36,6 +36,7 @@ import {
   DirectionalLight,
   InstancedMesh,
   LineBasicMaterial,
+  Material,
   Matrix4,
   Mesh,
   MeshBasicMaterial,
@@ -112,6 +113,8 @@ type ReactionTrajectoryPlayback = {
   xyzText: string;
 };
 
+type ReactionTrajectoryStarter = (playback: ReactionTrajectoryPlayback) => void;
+
 const REACTION_TRAJECTORY_FADE_MS = 350;
 const reactionTrajectoryQueue: ReactionTrajectoryPlayback[] = [];
 let activeReactionTrajectory: ReactionTrajectoryPlayback | null = null;
@@ -120,6 +123,7 @@ let reactionTrajectoryVisible = false;
 let reactionTrajectoryStarting = false;
 let reactionTrajectoryCompleting = false;
 let reactionTrajectoryLoadChain = Promise.resolve();
+let startReactionTrajectoryPlayback: ReactionTrajectoryStarter | null = null;
 let reactionPlaybackActive = false;
 
 $: reactionPlaybackActive =
@@ -218,10 +222,6 @@ async function fetchXyzTextByName(
   return null;
 }
 
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function enqueueReactionTrajectoryIfAvailable(reactionId: string): void {
   reactionTrajectoryLoadChain = reactionTrajectoryLoadChain
     .then(async () => {
@@ -238,36 +238,36 @@ function enqueueReactionTrajectoryIfAvailable(reactionId: string): void {
     .catch(() => {});
 }
 
-async function processReactionTrajectoryQueue(): Promise<void> {
+function processReactionTrajectoryQueue(): void {
   if (
     reactionTrajectoryStarting ||
     reactionTrajectoryCompleting ||
     activeReactionTrajectory ||
+    !startReactionTrajectoryPlayback ||
     reactionTrajectoryQueue.length === 0
   ) {
     return;
   }
 
   reactionTrajectoryStarting = true;
-  reactionGraphFaded = true;
-  await wait(REACTION_TRAJECTORY_FADE_MS);
-
   activeReactionTrajectory = reactionTrajectoryQueue.shift() ?? null;
+  reactionGraphFaded = true;
   reactionTrajectoryVisible = false;
-  await wait(0);
-  reactionTrajectoryVisible = true;
-  reactionTrajectoryStarting = false;
+
+  if (!activeReactionTrajectory) {
+    reactionGraphFaded = false;
+    reactionTrajectoryStarting = false;
+    return;
+  }
+
+  startReactionTrajectoryPlayback(activeReactionTrajectory);
 }
 
-async function handleReactionTrajectoryComplete(): Promise<void> {
-  if (!activeReactionTrajectory || reactionTrajectoryCompleting) return;
-
-  reactionTrajectoryCompleting = true;
-  reactionTrajectoryVisible = false;
-  await wait(REACTION_TRAJECTORY_FADE_MS);
+function handleReactionTrajectoryComplete(): void {
   activeReactionTrajectory = null;
   reactionGraphFaded = false;
-  await wait(REACTION_TRAJECTORY_FADE_MS);
+  reactionTrajectoryVisible = false;
+  reactionTrajectoryStarting = false;
   reactionTrajectoryCompleting = false;
   void processReactionTrajectoryQueue();
 }
@@ -530,6 +530,205 @@ onMount(async () => {
   graphRoot.name = "Graph Object Stage";
   scene.add(graphRoot);
 
+  type ReactionPlaybackPhase =
+    | "idle"
+    | "fadeGraphOut"
+    | "fadeTrajectoryIn"
+    | "playing"
+    | "fadeTrajectoryOut"
+    | "fadeGraphIn";
+
+  type GraphMaterialSnapshot = {
+    material: Material;
+    opacity: number;
+    transparent: boolean;
+  };
+
+  let reactionPlaybackPhase: ReactionPlaybackPhase = "idle";
+  let reactionPhaseElapsed = 0;
+  let reactionPlaybackObject: TrajectoryPlaybackObject | null = null;
+  let graphMaterialSnapshot: GraphMaterialSnapshot[] = [];
+  let lastGraphAnimationTime = 0;
+
+  function getFadeProgress(deltaSeconds: number): number {
+    reactionPhaseElapsed += Math.max(0, deltaSeconds);
+    const fadeSeconds = REACTION_TRAJECTORY_FADE_MS / 1000;
+    if (fadeSeconds <= 0) return 1;
+    return Math.min(1, reactionPhaseElapsed / fadeSeconds);
+  }
+
+  function getObjectMaterials(object: Object3D): Material[] {
+    if (!(object instanceof Mesh)) return [];
+    return Array.isArray(object.material) ? object.material : [object.material];
+  }
+
+  function captureGraphMaterialSnapshot(): GraphMaterialSnapshot[] {
+    const snapshots = new Map<Material, GraphMaterialSnapshot>();
+
+    graphRoot.traverse((object) => {
+      getObjectMaterials(object).forEach((material) => {
+        if (snapshots.has(material)) return;
+        snapshots.set(material, {
+          material,
+          opacity: material.opacity,
+          transparent: material.transparent,
+        });
+      });
+    });
+
+    return [...snapshots.values()];
+  }
+
+  function applyGraphOpacity(alpha: number): void {
+    const clampedAlpha = Math.max(0, Math.min(1, alpha));
+    graphMaterialSnapshot.forEach(({ material, opacity, transparent }) => {
+      material.opacity = opacity * clampedAlpha;
+      material.transparent = transparent || clampedAlpha < 1;
+      material.needsUpdate = true;
+    });
+  }
+
+  function restoreGraphOpacity(): void {
+    graphMaterialSnapshot.forEach(({ material, opacity, transparent }) => {
+      material.opacity = opacity;
+      material.transparent = transparent;
+      material.needsUpdate = true;
+    });
+    graphMaterialSnapshot = [];
+  }
+
+  function disposeReactionPlaybackObject(): void {
+    if (!reactionPlaybackObject) return;
+    scene.remove(reactionPlaybackObject.root);
+    reactionPlaybackObject.dispose();
+    reactionPlaybackObject = null;
+  }
+
+  function positionReactionPlaybackObject(
+    playback: TrajectoryPlaybackObject,
+  ): void {
+    playback.root.rotation.set(0, 0, 0);
+
+    if (isXrSession) {
+      const distance = Math.max(4, Math.min(8, playback.viewRadius * 1.8));
+      playback.root.position.set(0, 0, -distance);
+      playback.root.scale.setScalar(1.05);
+      return;
+    }
+
+    playback.root.position.copy(cameraTarget);
+    playback.root.scale.setScalar(2.2);
+  }
+
+  function startTrajectoryFadeOut(): void {
+    if (reactionPlaybackPhase !== "playing") return;
+    reactionPlaybackPhase = "fadeTrajectoryOut";
+    reactionPhaseElapsed = 0;
+    reactionTrajectoryCompleting = true;
+    reactionTrajectoryVisible = false;
+  }
+
+  function finishReactionPlayback(): void {
+    restoreGraphOpacity();
+    graphRoot.visible = true;
+    disposeReactionPlaybackObject();
+    reactionPlaybackPhase = "idle";
+    reactionPhaseElapsed = 0;
+    handleReactionTrajectoryComplete();
+  }
+
+  function updateReactionPlayback(deltaSeconds: number): void {
+    if (!reactionPlaybackObject && reactionPlaybackPhase !== "fadeGraphIn") {
+      return;
+    }
+
+    if (reactionPlaybackPhase === "fadeGraphOut") {
+      if (!reactionPlaybackObject) return;
+      const progress = getFadeProgress(deltaSeconds);
+      applyGraphOpacity(1 - progress);
+
+      if (progress >= 1) {
+        graphRoot.visible = false;
+        reactionPlaybackObject.root.visible = true;
+        reactionPlaybackObject.setOpacity(0);
+        reactionPlaybackPhase = "fadeTrajectoryIn";
+        reactionPhaseElapsed = 0;
+        reactionTrajectoryVisible = true;
+      }
+      return;
+    }
+
+    if (reactionPlaybackPhase === "fadeTrajectoryIn") {
+      if (!reactionPlaybackObject) return;
+      const progress = getFadeProgress(deltaSeconds);
+      reactionPlaybackObject.setOpacity(progress);
+
+      if (progress >= 1) {
+        reactionPlaybackObject.setOpacity(1);
+        reactionPlaybackObject.playOnce();
+        reactionPlaybackPhase = "playing";
+        reactionPhaseElapsed = 0;
+      }
+      return;
+    }
+
+    if (reactionPlaybackPhase === "playing") {
+      if (!reactionPlaybackObject) return;
+      reactionPlaybackObject.update(deltaSeconds);
+      return;
+    }
+
+    if (reactionPlaybackPhase === "fadeTrajectoryOut") {
+      if (!reactionPlaybackObject) return;
+      const progress = getFadeProgress(deltaSeconds);
+      reactionPlaybackObject.setOpacity(1 - progress);
+
+      if (progress >= 1) {
+        disposeReactionPlaybackObject();
+        graphRoot.visible = true;
+        applyGraphOpacity(0);
+        reactionPlaybackPhase = "fadeGraphIn";
+        reactionPhaseElapsed = 0;
+      }
+      return;
+    }
+
+    if (reactionPlaybackPhase === "fadeGraphIn") {
+      const progress = getFadeProgress(deltaSeconds);
+      applyGraphOpacity(progress);
+
+      if (progress >= 1) {
+        finishReactionPlayback();
+      }
+    }
+  }
+
+  startReactionTrajectoryPlayback = (playback) => {
+    if (reactionPlaybackPhase !== "idle") return;
+
+    try {
+      reactionPlaybackObject = new TrajectoryPlaybackObject({
+        initialFps: 30,
+        onComplete: startTrajectoryFadeOut,
+      });
+      reactionPlaybackObject.loadXyzText(playback.xyzText);
+      reactionPlaybackObject.setLoop(false);
+      reactionPlaybackObject.setOpacity(0);
+      reactionPlaybackObject.root.visible = false;
+      positionReactionPlaybackObject(reactionPlaybackObject);
+      scene.add(reactionPlaybackObject.root);
+
+      graphMaterialSnapshot = captureGraphMaterialSnapshot();
+      reactionPlaybackPhase = "fadeGraphOut";
+      reactionPhaseElapsed = 0;
+      reactionTrajectoryStarting = false;
+      reactionGraphFaded = true;
+    } catch {
+      disposeReactionPlaybackObject();
+      finishReactionPlayback();
+    }
+  };
+
   perspectiveCamera = new PerspectiveCamera(
     75,
     canvasWrapper.clientWidth / canvasWrapper.clientHeight,
@@ -742,8 +941,13 @@ onMount(async () => {
   const dir = new Vector3();
   const size = new Vector3();
 
-  const animate = function () {
+  const animate = function (time = performance.now()) {
+    const deltaSeconds =
+      lastGraphAnimationTime === 0 ? 0 : (time - lastGraphAnimationTime) / 1000;
+    lastGraphAnimationTime = time;
+
     if (reactionPlaybackActive) {
+      updateReactionPlayback(deltaSeconds);
       renderer.render(scene, camera);
 
       if (!webXR) {
@@ -2063,15 +2267,11 @@ function rerenderMolecules() {
 }
 </script>
 
-<div
-  class="page"
-  class:reaction_playback_active={reactionPlaybackActive}
->
+<div class="page" class:reaction_playback_active={reactionPlaybackActive}>
   <div
     bind:this={canvasWrapper}
     id="canvas_wrapper"
     class:gaussian_blur={searchVisible}
-    class:reaction_graph_faded={reactionGraphFaded}
   >
     <canvas
       bind:this={graphElement}
@@ -2082,20 +2282,10 @@ function rerenderMolecules() {
 
   {#if activeReactionTrajectory}
     <div
-      class="reaction-trajectory-overlay"
+      class="reaction-trajectory-label"
       class:visible={reactionTrajectoryVisible}
     >
-      <TrajectoryViewer
-        xyzText={activeReactionTrajectory.xyzText}
-        fileName={activeReactionTrajectory.reactionId}
-        showToolbar={false}
-        autoPlayOnce={true}
-        autoPlayDelayMs={REACTION_TRAJECTORY_FADE_MS}
-        onComplete={handleReactionTrajectoryComplete}
-      />
-      <div class="reaction-trajectory-label">
-        {activeReactionTrajectory.reactionId}
-      </div>
+      {activeReactionTrajectory.reactionId}
     </div>
   {/if}
 
@@ -2898,31 +3088,11 @@ function rerenderMolecules() {
   padding: 0px;
   margin: 0px;
   position: relative;
-  transition: opacity 350ms ease;
-}
-
-#canvas_wrapper.reaction_graph_faded {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.reaction-trajectory-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 200;
-  overflow: hidden;
-  background: #f0f0f0;
-  opacity: 0;
-  pointer-events: all;
-  transition: opacity 350ms ease;
-}
-
-.reaction-trajectory-overlay.visible {
-  opacity: 1;
 }
 
 .reaction-trajectory-label {
   position: absolute;
+  z-index: 200;
   top: 16px;
   left: 50%;
   max-width: min(720px, calc(100vw - 32px));
@@ -2935,13 +3105,23 @@ function rerenderMolecules() {
   color: #000000;
   font-size: 1rem;
   text-align: center;
+  opacity: 0;
   pointer-events: none;
+  transition: opacity 350ms ease;
+}
+
+.reaction-trajectory-label.visible {
+  opacity: 1;
 }
 
 .reaction_playback_active .top-right-button-group,
 .reaction_playback_active #keys_overlay,
 .reaction_playback_active #hovered_node {
   opacity: 0;
+  pointer-events: none;
+}
+
+.reaction_playback_active #canvas_wrapper {
   pointer-events: none;
 }
 

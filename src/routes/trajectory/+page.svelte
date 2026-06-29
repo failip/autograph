@@ -10,6 +10,8 @@ let fileName = "";
 let errorMessage = "";
 let isDragging = false;
 let urlInput = "";
+let viewerWrapper: HTMLDivElement;
+let viewerCanvas: HTMLCanvasElement;
 
 async function fetchAndLoad(resource: string): Promise<void> {
   if (!resource) return;
@@ -116,15 +118,25 @@ onMount(() => {
 <h1>Autograph</h1>
 
 {#if xyzText}
-  <TrajectoryViewer {xyzText} {fileName} />
-  <label class="open-file loaded">
-    Open XYZ
-    <input
-      type="file"
-      accept=".xyz,chemical/x-xyz,text/plain"
-      on:change={handleFileInput}
-    />
-  </label>
+  <div class="viewer-shell" bind:this={viewerWrapper}>
+    <canvas bind:this={viewerCanvas} class="trajectory-canvas"></canvas>
+    {#if viewerWrapper && viewerCanvas}
+      <TrajectoryViewer
+        canvas={viewerCanvas}
+        wrapper={viewerWrapper}
+        {xyzText}
+        {fileName}
+      />
+    {/if}
+    <label class="open-file loaded">
+      Open XYZ
+      <input
+        type="file"
+        accept=".xyz,chemical/x-xyz,text/plain"
+        on:change={handleFileInput}
+      />
+    </label>
+  </div>
 {:else}
   <main
     class="page"
@@ -209,6 +221,20 @@ onMount(() => {
   padding: 24px;
   background-color: #f0f0f0;
   color: #000000;
+}
+
+.viewer-shell {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.trajectory-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 h1 {
