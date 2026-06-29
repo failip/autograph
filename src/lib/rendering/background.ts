@@ -13,7 +13,7 @@ export class HdrSceneBackground {
     private scene: THREE.Scene,
     private renderer: THREE.WebGLRenderer,
     private hdrPath: string = DEFAULT_HDR_ENVIRONMENT_PATH,
-  ) {}
+  ) { }
 
   load(): void {
     new HDRLoader().load(
@@ -42,6 +42,8 @@ export class HdrSceneBackground {
 
   apply(): void {
     this.scene.environment = this.texture;
+    this.scene.backgroundBlurriness = 0.1;
+    this.scene.backgroundIntensity = 0.7;
 
     if (this.transparent) {
       this.scene.background = null;

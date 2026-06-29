@@ -23,6 +23,7 @@ import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
 import { HdrSceneBackground } from "$lib/rendering/background";
 import { MoleculeGenerator } from "$lib/rendering/molecules";
 import { ObjectOrbitControls } from "$lib/rendering/ObjectOrbitControls";
+import TrajectoryViewer from "$lib/rendering/TrajectoryViewer.svelte";
 import { parseRun } from "$lib/rendering/xyz.js";
 import { VRControls } from "$lib/vr/controls/VRControls";
 import { onMount } from "svelte";
@@ -106,6 +107,24 @@ let cursorInfo: HTMLDivElement;
 let pointerIsDown = false;
 let xrError = "";
 
+type ReactionTrajectoryPlayback = {
+  reactionId: string;
+  xyzText: string;
+};
+
+const REACTION_TRAJECTORY_FADE_MS = 350;
+const reactionTrajectoryQueue: ReactionTrajectoryPlayback[] = [];
+let activeReactionTrajectory: ReactionTrajectoryPlayback | null = null;
+let reactionGraphFaded = false;
+let reactionTrajectoryVisible = false;
+let reactionTrajectoryStarting = false;
+let reactionTrajectoryCompleting = false;
+let reactionTrajectoryLoadChain = Promise.resolve();
+let reactionPlaybackActive = false;
+
+$: reactionPlaybackActive =
+  reactionGraphFaded || activeReactionTrajectory !== null;
+
 let moleculeSize = 1.0;
 let reactionSize = 0.35;
 let lineWidth = 0.01;
@@ -156,6 +175,101 @@ let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
 if (hideCu) {
   hiddenElements.add("Cu");
+}
+
+function getXyzBasePath(): string {
+  if (!xyzPath) return "";
+  return xyzPath.endsWith("/") ? xyzPath : `${xyzPath}/`;
+}
+
+function getNamedXyzUrl(name: string): string {
+  return `${getXyzBasePath()}${name}.xyz`;
+}
+
+async function fetchXyzTextByName(
+  name: string,
+  fallbackName?: string,
+): Promise<string | null> {
+  const file = xyzFiles?.get(`${name}.xyz`);
+  if (file) {
+    return file.text();
+  }
+
+  const fallbackFile = fallbackName
+    ? xyzFiles?.get(`${fallbackName}.xyz`)
+    : undefined;
+  if (fallbackFile) {
+    return fallbackFile.text();
+  }
+
+  const url = getNamedXyzUrl(name);
+  const response = await fetch(url);
+  if (response.ok) {
+    return response.text();
+  }
+
+  if (fallbackName) {
+    const fallbackResponse = await fetch(getNamedXyzUrl(fallbackName));
+    if (fallbackResponse.ok) {
+      return fallbackResponse.text();
+    }
+  }
+
+  return null;
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function enqueueReactionTrajectoryIfAvailable(reactionId: string): void {
+  reactionTrajectoryLoadChain = reactionTrajectoryLoadChain
+    .then(async () => {
+      try {
+        const xyzText = await fetchXyzTextByName(reactionId);
+        if (!xyzText) return;
+
+        reactionTrajectoryQueue.push({ reactionId, xyzText });
+        void processReactionTrajectoryQueue();
+      } catch {
+        // Missing or unavailable reaction trajectories are expected.
+      }
+    })
+    .catch(() => {});
+}
+
+async function processReactionTrajectoryQueue(): Promise<void> {
+  if (
+    reactionTrajectoryStarting ||
+    reactionTrajectoryCompleting ||
+    activeReactionTrajectory ||
+    reactionTrajectoryQueue.length === 0
+  ) {
+    return;
+  }
+
+  reactionTrajectoryStarting = true;
+  reactionGraphFaded = true;
+  await wait(REACTION_TRAJECTORY_FADE_MS);
+
+  activeReactionTrajectory = reactionTrajectoryQueue.shift() ?? null;
+  reactionTrajectoryVisible = false;
+  await wait(0);
+  reactionTrajectoryVisible = true;
+  reactionTrajectoryStarting = false;
+}
+
+async function handleReactionTrajectoryComplete(): Promise<void> {
+  if (!activeReactionTrajectory || reactionTrajectoryCompleting) return;
+
+  reactionTrajectoryCompleting = true;
+  reactionTrajectoryVisible = false;
+  await wait(REACTION_TRAJECTORY_FADE_MS);
+  activeReactionTrajectory = null;
+  reactionGraphFaded = false;
+  await wait(REACTION_TRAJECTORY_FADE_MS);
+  reactionTrajectoryCompleting = false;
+  void processReactionTrajectoryQueue();
 }
 
 // Begin VR adapdter
@@ -603,6 +717,12 @@ onMount(async () => {
   graphRoot.add(lineInstances);
 
   function hover() {
+    if (reactionPlaybackActive) {
+      hoveredNode = undefined;
+      graphElement.style.cursor = "default";
+      return;
+    }
+
     if (controls instanceof VRControls) return;
     raycaster.setFromCamera(mousePosition, camera);
     const intersects = raycaster.intersectObjects(meshes.children);
@@ -623,6 +743,16 @@ onMount(async () => {
   const size = new Vector3();
 
   const animate = function () {
+    if (reactionPlaybackActive) {
+      renderer.render(scene, camera);
+
+      if (!webXR) {
+        requestAnimationFrame(animate);
+      }
+
+      return;
+    }
+
     controls.update();
 
     if (currentLayoutIteration < layoutIterations) {
@@ -902,6 +1032,7 @@ onMount(async () => {
   }
 
   function selectMolecule() {
+    if (reactionPlaybackActive) return;
     if (!hoveredNode) return;
     const nodeId = hoveredNode.userData?.name;
     if (!nodeId) return;
@@ -932,6 +1063,7 @@ onMount(async () => {
   }
 
   function selectMoleculeVR() {
+    if (reactionPlaybackActive) return;
     if (!hoveredNode) return;
     const nodeId = hoveredNode.userData?.name;
     if (!nodeId) return;
@@ -1040,7 +1172,7 @@ onMount(async () => {
     meshes.add(cube);
 
     if (node.type === "species") {
-      let data: string;
+      let data = "";
       if (xyzFiles) {
         const file = xyzFiles.get(node.name + ".xyz");
         if (!file) {
@@ -1048,14 +1180,26 @@ onMount(async () => {
         }
         data = await file.text();
       } else {
-        const url = useHash
-          ? `${xyzPath}${node.hash}/molecule.xyz`
-          : `${xyzPath}${node.name.includes("#") ? node.name.replace("#", "tt") : node.name}.xyz`;
-        const response = await fetch(url);
-        if (!response.ok) {
-          return;
+        if (useHash) {
+          const response = await fetch(`${xyzPath}${node.hash}/molecule.xyz`);
+          if (!response.ok) {
+            return;
+          }
+          data = await response.text();
+        } else {
+          const xyzText = await fetchXyzTextByName(
+            node.name,
+            node.name.includes("#") ? node.name.replace("#", "tt") : undefined,
+          );
+          if (!xyzText) {
+            return;
+          }
+          data = xyzText;
         }
-        data = await response.text();
+      }
+
+      if (!data) {
+        return;
       }
       const run = parseRun(data);
 
@@ -1154,6 +1298,8 @@ function updateMousePosition(event) {
 }
 
 function onKeyDown(event: KeyboardEvent) {
+  if (reactionPlaybackActive) return;
+
   if (event.key == "Escape") {
     searchVisible = false;
     pathSearchVisible = false;
@@ -1184,6 +1330,8 @@ function onKeyDown(event: KeyboardEvent) {
 }
 
 function qClick() {
+  if (reactionPlaybackActive) return;
+
   if (!searchVisible) {
     searchVisible = !searchVisible;
     search_value = "";
@@ -1202,6 +1350,8 @@ function qClick() {
 }
 
 function pClick() {
+  if (reactionPlaybackActive) return;
+
   if (!pathSearchVisible) {
     pathSearchVisible = !pathSearchVisible;
     pathSearchStart = [];
@@ -1214,6 +1364,8 @@ function pClick() {
 }
 
 function fClick() {
+  if (reactionPlaybackActive) return;
+
   if (!filterVisible) {
     filterVisible = !filterVisible;
     if (filterVisible) {
@@ -1225,6 +1377,8 @@ function fClick() {
 }
 
 function wClick() {
+  if (reactionPlaybackActive) return;
+
   const anyOverlaysVisible =
     searchVisible || pathSearchVisible || filterVisible || settingsVisible;
   if (anyOverlaysVisible) {
@@ -1234,6 +1388,8 @@ function wClick() {
 }
 
 function rClick() {
+  if (reactionPlaybackActive) return;
+
   const anyOverlaysVisible =
     searchVisible || pathSearchVisible || filterVisible || settingsVisible;
   if (anyOverlaysVisible) {
@@ -1454,6 +1610,8 @@ function filterGraphOld(): {
 }
 
 function addLayer() {
+  if (reactionPlaybackActive) return;
+
   const addedNodes: NodeId[] = [];
   const addedEdges: [NodeId, NodeId][] = [];
   inAddLayerContext = true;
@@ -1544,6 +1702,8 @@ function filterToInitialSpecies(event) {
 }
 
 function addSpeciesAsInitialSpecies(event) {
+  if (reactionPlaybackActive) return;
+
   const species = event.target.value;
   addInitialNode(species);
 }
@@ -1682,6 +1842,7 @@ function addAllPossibleReactionsToRendergraph(
     if (!renderGraph.hasNode(reactionId)) {
       renderGraph.addNode(reactionId, reaction.data);
       if (addedNodes) addedNodes.push(reactionId);
+      enqueueReactionTrajectoryIfAvailable(reactionId as string);
     }
 
     if (!renderGraph.hasLink(species, reactionId)) {
@@ -1902,11 +2063,15 @@ function rerenderMolecules() {
 }
 </script>
 
-<div class="page">
+<div
+  class="page"
+  class:reaction_playback_active={reactionPlaybackActive}
+>
   <div
     bind:this={canvasWrapper}
     id="canvas_wrapper"
     class:gaussian_blur={searchVisible}
+    class:reaction_graph_faded={reactionGraphFaded}
   >
     <canvas
       bind:this={graphElement}
@@ -1914,6 +2079,25 @@ function rerenderMolecules() {
       id="graph_element"
     />
   </div>
+
+  {#if activeReactionTrajectory}
+    <div
+      class="reaction-trajectory-overlay"
+      class:visible={reactionTrajectoryVisible}
+    >
+      <TrajectoryViewer
+        xyzText={activeReactionTrajectory.xyzText}
+        fileName={activeReactionTrajectory.reactionId}
+        showToolbar={false}
+        autoPlayOnce={true}
+        autoPlayDelayMs={REACTION_TRAJECTORY_FADE_MS}
+        onComplete={handleReactionTrajectoryComplete}
+      />
+      <div class="reaction-trajectory-label">
+        {activeReactionTrajectory.reactionId}
+      </div>
+    </div>
+  {/if}
 
   <div class="top-right-button-group">
     <button
@@ -2714,6 +2898,51 @@ function rerenderMolecules() {
   padding: 0px;
   margin: 0px;
   position: relative;
+  transition: opacity 350ms ease;
+}
+
+#canvas_wrapper.reaction_graph_faded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reaction-trajectory-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  overflow: hidden;
+  background: #f0f0f0;
+  opacity: 0;
+  pointer-events: all;
+  transition: opacity 350ms ease;
+}
+
+.reaction-trajectory-overlay.visible {
+  opacity: 1;
+}
+
+.reaction-trajectory-label {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  max-width: min(720px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  color: #000000;
+  font-size: 1rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.reaction_playback_active .top-right-button-group,
+.reaction_playback_active #keys_overlay,
+.reaction_playback_active #hovered_node {
+  opacity: 0;
+  pointer-events: none;
 }
 
 #graph_element {

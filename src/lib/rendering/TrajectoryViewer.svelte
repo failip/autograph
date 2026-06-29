@@ -22,11 +22,16 @@ import { parseRun, type Run } from "./xyz";
 
 export let xyzText: string;
 export let fileName: string | undefined = undefined;
-export let initialFps = 12;
+export let initialFps = 30;
+export let showToolbar = true;
+export let autoPlayOnce = false;
+export let autoPlayDelayMs = 0;
+export let onComplete: () => void = () => {};
 
 type XrMode = "immersive-vr" | "immersive-ar";
 
 const NODE_ID = "trajectory";
+const SINGLE_FRAME_HOLD_MS = 1200;
 const selectedSpecies = new Set<string>();
 const moleculeGenerator = new MoleculeGenerator();
 const origin = new Vector3(0, 0, 0);
@@ -62,6 +67,9 @@ let frameAccumulator = 0;
 let lastAnimationTime = 0;
 let moleculeScale = 1;
 let viewRadius = 3;
+let completionNotified = false;
+let completionTimer: ReturnType<typeof setTimeout> | null = null;
+let playbackStartTimer: ReturnType<typeof setTimeout> | null = null;
 
 $: if (mounted && xyzText !== loadedText) {
   loadTrajectory(xyzText);
@@ -189,6 +197,17 @@ function loadTrajectory(text: string): void {
   frameAccumulator = 0;
   frameIndex = 0;
   errorMessage = "";
+  completionNotified = false;
+
+  if (completionTimer) {
+    clearTimeout(completionTimer);
+    completionTimer = null;
+  }
+
+  if (playbackStartTimer) {
+    clearTimeout(playbackStartTimer);
+    playbackStartTimer = null;
+  }
 
   if (!scene) return;
 
@@ -216,15 +235,35 @@ function loadTrajectory(text: string): void {
     run = preparedRun;
     moleculeGroup = nextMolecule;
     sceneRoot?.add(moleculeGroup);
-    isPlaying = preparedRun.number_of_frames > 1;
+    loop = autoPlayOnce ? false : loop;
+
+    const canPlay = preparedRun.number_of_frames > 1;
+    if (autoPlayOnce && canPlay && autoPlayDelayMs > 0) {
+      isPlaying = false;
+      playbackStartTimer = setTimeout(() => {
+        playbackStartTimer = null;
+        isPlaying = true;
+      }, autoPlayDelayMs);
+    } else {
+      isPlaying = canPlay;
+    }
+
     updateReferencePlane();
     resetView();
+
+    if (autoPlayOnce && preparedRun.number_of_frames <= 1) {
+      notifyComplete(autoPlayDelayMs + SINGLE_FRAME_HOLD_MS);
+    }
   } catch (error) {
     removeCurrentMolecule();
     run = null;
     isPlaying = false;
     errorMessage =
       error instanceof Error ? error.message : "Unable to parse this XYZ file.";
+
+    if (autoPlayOnce) {
+      notifyComplete(autoPlayDelayMs + SINGLE_FRAME_HOLD_MS);
+    }
   }
 }
 
@@ -251,6 +290,21 @@ function applyFrame(index: number): void {
   );
 }
 
+function notifyComplete(delay = 0): void {
+  if (!autoPlayOnce || completionNotified) return;
+  completionNotified = true;
+
+  if (delay > 0) {
+    completionTimer = setTimeout(() => {
+      completionTimer = null;
+      onComplete();
+    }, delay);
+    return;
+  }
+
+  onComplete();
+}
+
 function advancePlaybackFrame(delta: number): void {
   if (!run || run.number_of_frames <= 1) return;
 
@@ -258,6 +312,7 @@ function advancePlaybackFrame(delta: number): void {
   if (!loop && nextFrame >= run.number_of_frames) {
     applyFrame(run.number_of_frames - 1);
     isPlaying = false;
+    notifyComplete();
     return;
   }
 
@@ -535,6 +590,14 @@ onDestroy(() => {
   renderer?.setAnimationLoop(null);
   resizeObserver?.disconnect();
   orbitControls?.dispose();
+  if (completionTimer) {
+    clearTimeout(completionTimer);
+    completionTimer = null;
+  }
+  if (playbackStartTimer) {
+    clearTimeout(playbackStartTimer);
+    playbackStartTimer = null;
+  }
   if (currentSession) {
     currentSession.removeEventListener("end", handleXrEnded);
     currentSession.end().catch(() => {});
@@ -555,79 +618,81 @@ onDestroy(() => {
 <div class="viewer" bind:this={wrapper}>
   <canvas bind:this={canvas}></canvas>
 
-  <div class="toolbar">
-    <div class="metadata">
-      <strong>{fileName ?? "XYZ trajectory"}</strong>
-      {#if run}
-        <span>{run.number_of_atoms} atoms</span>
-        <span>Frame {frameIndex + 1} / {run.number_of_frames}</span>
-      {:else}
-        <span>No trajectory loaded</span>
-      {/if}
-    </div>
+  {#if showToolbar}
+    <div class="toolbar">
+      <div class="metadata">
+        <strong>{fileName ?? "XYZ trajectory"}</strong>
+        {#if run}
+          <span>{run.number_of_atoms} atoms</span>
+          <span>Frame {frameIndex + 1} / {run.number_of_frames}</span>
+        {:else}
+          <span>No trajectory loaded</span>
+        {/if}
+      </div>
 
-    <div class="controls">
-      <button type="button" on:click={() => stepFrame(-1)} disabled={!run}
-        >Prev</button
-      >
-      <button
-        type="button"
-        on:click={togglePlayback}
-        disabled={!run || run.number_of_frames <= 1}
-      >
-        {isPlaying ? "Pause" : "Play"}
-      </button>
-      <button type="button" on:click={() => stepFrame(1)} disabled={!run}
-        >Next</button
-      >
-      <label>
-        Speed
-        <input
-          type="range"
-          min="1"
-          max="60"
-          step="1"
-          value={playbackFps}
-          on:input={handleSpeedInput}
-          disabled={!run}
-        />
-        <span>{playbackFps} fps</span>
-      </label>
-      <label class="inline">
-        <input type="checkbox" bind:checked={loop} disabled={!run} />
-        Loop
-      </label>
-      <button type="button" on:click={resetView} disabled={!run}
-        >Reset view</button
-      >
-    </div>
-
-    <div class="xr-controls">
-      {#if hasVr}
+      <div class="controls">
+        <button type="button" on:click={() => stepFrame(-1)} disabled={!run}
+          >Prev</button
+        >
         <button
           type="button"
-          on:click={() => startXr("immersive-vr")}
-          disabled={isImmersive || !run}
+          on:click={togglePlayback}
+          disabled={!run || run.number_of_frames <= 1}
         >
-          Enter VR
+          {isPlaying ? "Pause" : "Play"}
         </button>
-      {/if}
-      {#if hasAr}
-        <button
-          type="button"
-          on:click={() => startXr("immersive-ar")}
-          disabled={isImmersive || !run}
+        <button type="button" on:click={() => stepFrame(1)} disabled={!run}
+          >Next</button
         >
-          Enter AR
-        </button>
-      {/if}
-      {#if isImmersive}
-        <span
-          >{activeXrMode === "immersive-ar" ? "AR active" : "VR active"}</span
+        <label>
+          Speed
+          <input
+            type="range"
+            min="1"
+            max="60"
+            step="1"
+            value={playbackFps}
+            on:input={handleSpeedInput}
+            disabled={!run}
+          />
+          <span>{playbackFps} fps</span>
+        </label>
+        <label class="inline">
+          <input type="checkbox" bind:checked={loop} disabled={!run} />
+          Loop
+        </label>
+        <button type="button" on:click={resetView} disabled={!run}
+          >Reset view</button
         >
-      {/if}
+      </div>
+
+      <div class="xr-controls">
+        {#if hasVr}
+          <button
+            type="button"
+            on:click={() => startXr("immersive-vr")}
+            disabled={isImmersive || !run}
+          >
+            Enter VR
+          </button>
+        {/if}
+        {#if hasAr}
+          <button
+            type="button"
+            on:click={() => startXr("immersive-ar")}
+            disabled={isImmersive || !run}
+          >
+            Enter AR
+          </button>
+        {/if}
+        {#if isImmersive}
+          <span
+            >{activeXrMode === "immersive-ar" ? "AR active" : "VR active"}</span
+          >
+        {/if}
+      </div>
     </div>
-  </div>
+  {/if}
 
   {#if errorMessage || xrError}
     <div class="message">
