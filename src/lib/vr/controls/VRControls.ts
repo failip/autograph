@@ -38,6 +38,9 @@ export class VRControls {
   private rotateStart: Vector2;
   private rotateEnd: Vector2;
   private rotateDelta: Vector2;
+  private readonly worldUp = new Vector3(0, 1, 0);
+  private readonly cameraRight = new Vector3();
+  private readonly cameraQuaternion = new Quaternion();
 
   // Control limits
   public minDistance = 5;
@@ -258,12 +261,31 @@ export class VRControls {
       const thumbstickY = controller.axes[3] || 0; // Right thumbstick Y
 
       if (this.controlMode === "object" && this.controlledObject) {
+        let objectRotated = false;
+
         if (Math.abs(thumbstickX) > 0.1) {
-          this.controlledObject.rotation.y -= thumbstickX * this.rotationSpeed * 0.025;
+          this.controlledObject.rotateOnWorldAxis(
+            this.worldUp,
+            -thumbstickX * this.rotationSpeed * 0.025,
+          );
+          objectRotated = true;
         }
 
         if (Math.abs(thumbstickY) > 0.1) {
-          this.controlledObject.rotation.x -= thumbstickY * this.rotationSpeed * 0.025;
+          this.camera.getWorldQuaternion(this.cameraQuaternion);
+          this.cameraRight
+            .set(1, 0, 0)
+            .applyQuaternion(this.cameraQuaternion)
+            .normalize();
+          this.controlledObject.rotateOnWorldAxis(
+            this.cameraRight,
+            -thumbstickY * this.rotationSpeed * 0.025,
+          );
+          objectRotated = true;
+        }
+
+        if (objectRotated) {
+          this.controlledObject.updateMatrixWorld(true);
         }
       } else {
         if (Math.abs(thumbstickX) > 0.1) {
