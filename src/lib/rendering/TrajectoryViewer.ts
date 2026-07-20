@@ -31,7 +31,7 @@ export function getTrajectoryCameraDistance(viewRadius: number): number {
 }
 
 export function getTrajectoryXrObjectDistance(viewRadius: number): number {
-  return Math.max(2.5, Math.min(8, viewRadius * 1.35));
+  return Math.max(2.5, Math.min(8, viewRadius * 1.5));
 }
 
 export type TrajectoryViewerState = {

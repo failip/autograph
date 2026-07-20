@@ -115,6 +115,7 @@ const GRAPH_VR_CONTROLLER_HINTS: VRControllerHints = {
     ],
   },
 };
+const GRAPH_XR_OBJECT_DISTANCE = 45;
 let directionalLight: DirectionalLight;
 let lineInstances: InstancedMesh;
 let cameraTarget = new Vector3();
@@ -1152,7 +1153,7 @@ onMount(async () => {
   }
 
   function resetGraphRootForXr() {
-    graphRoot.position.set(0, 0, -50);
+    graphRoot.position.set(0, 0, -GRAPH_XR_OBJECT_DISTANCE);
     graphRoot.rotation.set(0, 0, 0);
     graphRoot.scale.setScalar(1);
   }
@@ -1198,7 +1199,7 @@ onMount(async () => {
         perspectiveCamera,
         new Object3D(),
         meshes,
-        50,
+        GRAPH_XR_OBJECT_DISTANCE,
         "object",
         graphRoot,
       );
