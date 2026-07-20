@@ -8,7 +8,7 @@ import {
 } from "$lib/filter/filter";
 import { PathSearchGraph } from "$lib/graphs/graph";
 import Fuse from "fuse.js";
-import createLayout from "ngraph.forcelayout";
+import createLayout, { type Spring } from "ngraph.forcelayout";
 import createGraph, {
   type Graph,
   type Link,
@@ -559,6 +559,84 @@ const layout = createLayout(renderGraph, {
   theta: 0.5,
   gravity: -1.5,
 });
+// Weak, layout-only springs keep disconnected components close without
+// creating visible graph links or overriding positions after each step.
+const disconnectedComponentSprings: Spring[] = [];
+let disconnectedComponentSpringsDirty = true;
+
+function getDisconnectedComponentAnchors(): NodeId[] {
+  const anchors: NodeId[] = [];
+  const visited = new Set<NodeId>();
+
+  renderGraph.forEachNode((node) => {
+    if (visited.has(node.id)) return;
+
+    const queue = [node.id];
+    let anchor = node.id;
+    let anchorDegree = node.links?.size ?? 0;
+    visited.add(node.id);
+
+    while (queue.length > 0) {
+      const nodeId = queue.shift();
+      if (nodeId === undefined) continue;
+
+      const currentNode = renderGraph.getNode(nodeId);
+      const currentDegree = currentNode?.links?.size ?? 0;
+      if (
+        currentDegree > anchorDegree ||
+        (currentDegree === anchorDegree &&
+          String(nodeId).localeCompare(String(anchor)) < 0)
+      ) {
+        anchor = nodeId;
+        anchorDegree = currentDegree;
+      }
+
+      currentNode?.links?.forEach((link) => {
+        const neighborId = link.fromId === nodeId ? link.toId : link.fromId;
+        if (visited.has(neighborId)) return;
+
+        visited.add(neighborId);
+        queue.push(neighborId);
+      });
+    }
+
+    anchors.push(anchor);
+  });
+
+  return anchors.sort((left, right) =>
+    String(left).localeCompare(String(right)),
+  );
+}
+
+function syncDisconnectedComponentSprings(): void {
+  disconnectedComponentSprings.forEach((spring) => {
+    layout.simulator.removeSpring(spring);
+  });
+  disconnectedComponentSprings.length = 0;
+
+  const anchors = getDisconnectedComponentAnchors();
+  if (anchors.length < 2) return;
+
+  const springLength = layout.simulator.settings.springLength * 1.25;
+  const springCoefficient =
+    layout.simulator.settings.springCoefficient * 0.2;
+  const springCount = anchors.length === 2 ? 1 : anchors.length;
+
+  for (let index = 0; index < springCount; index++) {
+    const fromBody = layout.getBody(anchors[index]);
+    const toBody = layout.getBody(anchors[(index + 1) % anchors.length]);
+    if (!fromBody || !toBody) continue;
+
+    disconnectedComponentSprings.push(
+      layout.simulator.addSpring(
+        fromBody,
+        toBody,
+        springLength,
+        springCoefficient,
+      ),
+    );
+  }
+}
 
 const objects = new Map<string, Object3D>();
 
@@ -1138,6 +1216,10 @@ onMount(async () => {
     }
 
     controls.update();
+    if (disconnectedComponentSpringsDirty) {
+      syncDisconnectedComponentSprings();
+      disconnectedComponentSpringsDirty = false;
+    }
     layout.step();
 
     const removedNodes = new Set<NodeId>();
@@ -1257,6 +1339,7 @@ onMount(async () => {
       return;
     }
 
+    disconnectedComponentSpringsDirty = true;
     const nodeChanges = non_update.filter((change) => change.node);
     const linkChanges = non_update.filter((change) => change.link);
 
