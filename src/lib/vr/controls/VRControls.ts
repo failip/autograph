@@ -11,7 +11,7 @@ export type {
   VRControllerHints,
 } from "./VRControllerHints";
 
-const POINTER_ORIGIN_INSET = 0.015;
+const POINTER_ORIGIN_INSET = 0;
 
 export class VRControls {
   public target: Object3D
