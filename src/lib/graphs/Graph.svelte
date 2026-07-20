@@ -496,9 +496,6 @@ function onTriggerPress(hand: XRHandedness) {
 
 function onGripPress(hand: XRHandedness) {
   console.log(`→ Aktion: Grip (${hand})`);
-  if (hand === "left") {
-    rClick();
-  }
 }
 
 function onLowerButtonPress(hand: XRHandedness) {
@@ -1197,6 +1194,9 @@ onMount(async () => {
       };
       controls.onBPressed = () => {
         wClick();
+      };
+      controls.onReset = () => {
+        rClick();
       };
     } catch (error) {
       resetGraphRootForDesktop();

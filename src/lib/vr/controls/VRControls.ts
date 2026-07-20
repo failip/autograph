@@ -55,12 +55,16 @@ export class VRControls {
   public onXPressed: (() => void) | null = null;
   public onYPressed: (() => void) | null = null;
   public onSelect: (() => void) | null = null;
+  public onReset: (() => void) | null = null;
   public onHover: ((object: Object3D | null) => void) | null = null;
 
   private hoveredObject: Object3D | null = null;
   private prevTriggerState: boolean[] = [false, false];
   private prevButton4State: boolean[] = [false, false];
   private prevButton5State: boolean[] = [false, false];
+  private resetHoldStartedAt: number | null = null;
+  private resetGestureLatched = false;
+  private readonly resetHoldDurationMs = 2000;
 
   constructor(
     renderer: WebGLRenderer,
@@ -86,6 +90,8 @@ export class VRControls {
       this.prevTriggerState = [false, false];
       this.prevButton4State = [false, false];
       this.prevButton5State = [false, false];
+      this.resetHoldStartedAt = null;
+      this.resetGestureLatched = false;
       this.syncInputSources();
     });
     this.syncInputSources();
@@ -345,6 +351,37 @@ export class VRControls {
         this.prevButton5State[index] = false;
       }
     });
+
+    this.handleResetGesture();
+  }
+
+  private handleResetGesture(): void {
+    const leftControllerIndex = this.handedness.indexOf("left");
+    const rightControllerIndex = this.handedness.indexOf("right");
+    const bothGripsPressed =
+      leftControllerIndex >= 0 &&
+      rightControllerIndex >= 0 &&
+      Boolean(this.controllers[leftControllerIndex]?.buttons[1]?.pressed) &&
+      Boolean(this.controllers[rightControllerIndex]?.buttons[1]?.pressed);
+
+    if (!bothGripsPressed) {
+      this.resetHoldStartedAt = null;
+      this.resetGestureLatched = false;
+      return;
+    }
+
+    if (this.resetGestureLatched) return;
+
+    const now = performance.now();
+    if (this.resetHoldStartedAt === null) {
+      this.resetHoldStartedAt = now;
+      return;
+    }
+
+    if (now - this.resetHoldStartedAt < this.resetHoldDurationMs) return;
+
+    this.resetGestureLatched = true;
+    this.onReset?.();
   }
 
   private updateRaycaster(): void {
