@@ -20,6 +20,7 @@ import RoundButton from "$lib/ui/RoundButton.svelte";
 import SideButton from "$lib/ui/SideButton.svelte";
 
 import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
+import type { GraphEvent, GraphEventHandler } from "$lib/graphs/graph-events";
 import { HdrSceneBackground } from "$lib/rendering/background";
 import { MoleculeGenerator } from "$lib/rendering/molecules";
 import { ObjectOrbitControls } from "$lib/rendering/ObjectOrbitControls";
@@ -66,6 +67,7 @@ export let xyzFiles: Map<string, File> | null = null;
 export let startSpecies: string[] = [];
 export let webXR: boolean = false;
 export let hideCu: boolean = false;
+export let onGraphEvent: GraphEventHandler | undefined = undefined;
 
 let pathSearchStart = new Array<string>();
 let pathChanged = false;
@@ -204,6 +206,63 @@ const runs = new Map<string, Run>();
 let currentFrameIndex = 0;
 let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
+
+function emitGraphEvent(event: GraphEvent): void {
+  onGraphEvent?.(event);
+}
+
+function setSpeciesSelected(nodeId: string, selected: boolean): boolean {
+  const selectionChanged = selected !== selectedSpecies.has(nodeId);
+  if (!selectionChanged) return false;
+
+  if (selected) {
+    selectedSpecies.add(nodeId);
+  } else {
+    selectedSpecies.delete(nodeId);
+  }
+
+  emitGraphEvent({
+    type: "selection-changed",
+    speciesId: nodeId,
+    selected,
+    selectedSpecies: Array.from(selectedSpecies),
+  });
+  return true;
+}
+
+function toggleSpeciesSelection(nodeId: string): void {
+  setSpeciesSelected(nodeId, !selectedSpecies.has(nodeId));
+}
+
+function clearSpeciesSelection(): string[] {
+  const previouslySelected = Array.from(selectedSpecies);
+  for (const nodeId of previouslySelected) {
+    setSpeciesSelected(nodeId, false);
+  }
+  return previouslySelected;
+}
+
+export function addInitialSpecies(
+  speciesIds: readonly string[],
+): string[] {
+  const addedSpecies: string[] = [];
+
+  for (const speciesId of new Set(speciesIds)) {
+    if (initialSpecies.has(speciesId)) continue;
+
+    const node = graph.getNode(speciesId);
+    if (!node || node.data?.type !== "species") {
+      console.warn(`Cannot add unknown graph species: ${speciesId}`);
+      continue;
+    }
+
+    addInitialNode(speciesId);
+    addedSpecies.push(speciesId);
+  }
+
+  return addedSpecies;
+}
+
 if (hideCu) {
   hiddenElements.add("Cu");
 }
@@ -1474,12 +1533,7 @@ onMount(async () => {
     const nodeId = hoveredNode.userData?.name;
     if (!nodeId) return;
 
-    // Mehrfachauswahl: Toggle-Verhalten
-    if (selectedSpecies.has(nodeId)) {
-      selectedSpecies.delete(nodeId);
-    } else {
-      selectedSpecies.add(nodeId);
-    }
+    toggleSpeciesSelection(nodeId);
 
     updateMolecule(nodeId);
 
@@ -1513,12 +1567,7 @@ onMount(async () => {
       return;
     }
 
-    // Mehrfachauswahl: Toggle-Verhalten
-    if (selectedSpecies.has(nodeId)) {
-      selectedSpecies.delete(nodeId);
-    } else {
-      selectedSpecies.add(nodeId);
-    }
+    toggleSpeciesSelection(nodeId);
 
     if (moleculeGroup && run) {
       moleculeGenerator.updateMolecule(
@@ -1832,6 +1881,7 @@ function rClick() {
   if (anyOverlaysVisible) {
     return;
   }
+  clearSpeciesSelection();
   renderGraph.clear();
   initialSpecies.clear();
   initialReactions.clear();
@@ -1841,6 +1891,8 @@ function rClick() {
   for (const species of startSpecies) {
     addInitialNode(species);
   }
+
+  emitGraphEvent({ type: "reset" });
 }
 
 function filterGraph(): { nodes: Set<NodeId>; edges: Set<[NodeId, NodeId]> } {
@@ -2049,6 +2101,7 @@ function filterGraphOld(): {
 function addLayer() {
   if (reactionPlaybackActive) return;
 
+  const layerSelection = Array.from(selectedSpecies);
   const addedNodes: NodeId[] = [];
   const addedEdges: [NodeId, NodeId][] = [];
   inAddLayerContext = true;
@@ -2076,12 +2129,23 @@ function addLayer() {
     });
   }
 
-  const nodesToReset = Array.from(selectedSpecies);
-  selectedSpecies.clear();
+  const nodesToReset = clearSpeciesSelection();
 
   for (const nodeId of nodesToReset) {
     console.log("Updating molecule after layer addition:", nodeId);
     updateMolecule(nodeId);
+  }
+
+  if (addedNodes.length > 0 || addedEdges.length > 0) {
+    emitGraphEvent({
+      type: "layer-added",
+      selectedSpecies: layerSelection,
+      addedNodeIds: addedNodes.map(String),
+      addedEdges: addedEdges.map(([fromId, toId]) => [
+        String(fromId),
+        String(toId),
+      ]),
+    });
   }
 }
 
