@@ -554,13 +554,10 @@ const initialReactions = new Set<string>();
 
 const dimensions = 3;
 const layout = createLayout(renderGraph, {
+  timeStep: 0.5,
   dimensions: dimensions,
-  timeStep: 0.2,
-  springLength: 8,
-  springCoefficient: 0.8,
+  theta: 0.5,
   gravity: -1.5,
-  theta: 0.8,
-  dragCoefficient: 0.98,
 });
 
 const objects = new Map<string, Object3D>();
