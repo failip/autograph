@@ -14,37 +14,68 @@ type GraphController = {
 };
 
 const TUTORIAL_START_SPECIES = ["O=O"];
-const TUTORIAL_UNLOCK_SPECIES = ["NttN", "O"];
+const TUTORIAL_NITROGEN_SPECIES = "NttN";
+const TUTORIAL_ATOMIC_OXYGEN_SPECIES = "[O]";
+const TUTORIAL_WATER_SPECIES = "O";
 const TUTORIAL_UNLOCK_FADE_MS = 650;
 const TUTORIAL_UNLOCK_FADE_DELAY_MS = 1000;
 
 let graph: NGraph;
 let graphLoaded = false;
 let graphController: GraphController | undefined;
-let tutorialSpeciesUnlocked = false;
+let tutorialNitrogenUnlocked = false;
+let tutorialWaterUnlocked = false;
+
+function hasExactSelection(
+  selectedSpecies: readonly string[],
+  requiredSpecies: readonly string[],
+): boolean {
+  if (selectedSpecies.length !== requiredSpecies.length) return false;
+
+  const selection = new Set(selectedSpecies);
+  return (
+    selection.size === requiredSpecies.length &&
+    requiredSpecies.every((speciesId) => selection.has(speciesId))
+  );
+}
+
+function revealTutorialSpecies(speciesIds: readonly string[]): void {
+  graphController?.addInitialSpecies(
+    speciesIds,
+    TUTORIAL_UNLOCK_FADE_MS,
+    TUTORIAL_UNLOCK_FADE_DELAY_MS,
+  );
+}
 
 function handleGraphEvent(event: GraphEvent): void {
   if (event.type === "reset") {
-    tutorialSpeciesUnlocked = false;
+    tutorialNitrogenUnlocked = false;
+    tutorialWaterUnlocked = false;
+    return;
+  }
+
+  if (event.type !== "layer-added" || !graphController) return;
+
+  if (
+    !tutorialNitrogenUnlocked &&
+    hasExactSelection(event.selectedSpecies, TUTORIAL_START_SPECIES)
+  ) {
+    tutorialNitrogenUnlocked = true;
+    revealTutorialSpecies([TUTORIAL_NITROGEN_SPECIES]);
     return;
   }
 
   if (
-    event.type !== "layer-added" ||
-    tutorialSpeciesUnlocked ||
-    event.selectedSpecies.length !== 1 ||
-    event.selectedSpecies[0] !== TUTORIAL_START_SPECIES[0] ||
-    !graphController
+    tutorialNitrogenUnlocked &&
+    !tutorialWaterUnlocked &&
+    hasExactSelection(event.selectedSpecies, [
+      TUTORIAL_NITROGEN_SPECIES,
+      TUTORIAL_ATOMIC_OXYGEN_SPECIES,
+    ])
   ) {
-    return;
+    tutorialWaterUnlocked = true;
+    revealTutorialSpecies([TUTORIAL_WATER_SPECIES]);
   }
-
-  tutorialSpeciesUnlocked = true;
-  graphController.addInitialSpecies(
-    TUTORIAL_UNLOCK_SPECIES,
-    TUTORIAL_UNLOCK_FADE_MS,
-    TUTORIAL_UNLOCK_FADE_DELAY_MS,
-  );
 }
 
 onMount(async () => {
