@@ -30,9 +30,9 @@ export type VRControllerHints = Partial<
 const CARD_WIDTH = 320;
 const CARD_PIXEL_SIZE = 0.0003;
 const CARD_PADDING = 14;
-const CARD_GAP = 9;
-const INPUT_VISUAL_WIDTH = 94;
-const INPUT_VISUAL_HEIGHT = 56;
+const CARD_GAP = 12;
+const INPUT_VISUAL_WIDTH = 86;
+const INPUT_VISUAL_HEIGHT = 48;
 
 const CONTROL_ICON_SVGS: Record<VRControlHintIcon, string> = {
   "button-a": `
@@ -206,7 +206,7 @@ export class VRControllerHintsView {
       width: "100%",
       flexDirection: "row",
       alignItems: "center",
-      gap: 10,
+      gap: 14,
       pointerEvents: "none",
     });
     row.add(
