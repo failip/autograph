@@ -31,7 +31,10 @@ import {
   TrajectoryPlaybackObject,
 } from "$lib/rendering/TrajectoryViewer.js";
 import { parseRun, type Run } from "$lib/rendering/xyz.js";
-import { VRControls } from "$lib/vr/controls/VRControls";
+import {
+  VRControls,
+  type VRControllerHints,
+} from "$lib/vr/controls/VRControls";
 import { onMount } from "svelte";
 import {
   AmbientLight,
@@ -99,6 +102,19 @@ let orthographicCamera: OrthographicCamera;
 let camera: PerspectiveCamera | OrthographicCamera;
 let controls: ObjectOrbitControls | VRControls;
 let controllers: [ObjectOrbitControls, ObjectOrbitControls];
+
+const GRAPH_VR_CONTROLLER_HINTS: VRControllerHints = {
+  left: {
+    hints: [{ input: "STICK Y", action: "Zoom" }],
+  },
+  right: {
+    hints: [
+      { input: "A", action: "Select molecule", accentColor: "#15803d" },
+      { input: "B", action: "Add layer", accentColor: "#b91c1c" },
+      { input: "STICK X/Y", action: "Rotate graph" },
+    ],
+  },
+};
 let directionalLight: DirectionalLight;
 let lineInstances: InstancedMesh;
 let cameraTarget = new Vector3();
@@ -1198,6 +1214,7 @@ onMount(async () => {
       controls.onReset = () => {
         rClick();
       };
+      controls.setControllerHints(GRAPH_VR_CONTROLLER_HINTS);
     } catch (error) {
       resetGraphRootForDesktop();
       sceneBackground.setTransparentBackground(false);

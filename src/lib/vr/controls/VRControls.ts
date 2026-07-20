@@ -1,5 +1,15 @@
 import { Object3D, PerspectiveCamera, Scene, Vector3, Vector2, WebGLRenderer, type WebXRArrayCamera, Spherical, Quaternion, Matrix4, Raycaster, CylinderGeometry, MeshBasicMaterial, Mesh } from "three";
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+import {
+  VRControllerHintsView,
+  type VRControllerHints,
+} from "./VRControllerHints";
+
+export type {
+  VRControlHint,
+  VRControllerHintPanel,
+  VRControllerHints,
+} from "./VRControllerHints";
 
 export class VRControls {
   public target: Object3D
@@ -8,12 +18,17 @@ export class VRControls {
   public rotationSpeed = 1.0;
   public enabled = true;
   private xrSession: XRSession;
+  private renderer: WebGLRenderer;
 
   private raycaster: Raycaster;
   private tempMatrix: Matrix4;
 
   public controller1: Object3D;
   public controller2: Object3D;
+  private controllerGrips: Object3D[] = [];
+  private controllerHintsView: VRControllerHintsView | null = null;
+  private lastHintsUpdateTime: number | null = null;
+  private disposed = false;
 
   private perspectiveCamera: PerspectiveCamera;
 
@@ -66,6 +81,20 @@ export class VRControls {
   private resetGestureLatched = false;
   private readonly resetHoldDurationMs = 2000;
 
+  private readonly handleInputSourcesChange = (): void => {
+    this.prevTriggerState = [false, false];
+    this.prevButton4State = [false, false];
+    this.prevButton5State = [false, false];
+    this.resetHoldStartedAt = null;
+    this.resetGestureLatched = false;
+    this.syncInputSources();
+    this.controllerHintsView?.refresh(this.handedness);
+  };
+
+  private readonly handleSessionEnd = (): void => {
+    this.dispose();
+  };
+
   constructor(
     renderer: WebGLRenderer,
     scene: Scene,
@@ -84,16 +113,13 @@ export class VRControls {
     }
 
     this.xrSession = xrSession;
+    this.renderer = renderer;
 
-    this.xrSession.addEventListener('inputsourceschange', () => {
-      // Reset states
-      this.prevTriggerState = [false, false];
-      this.prevButton4State = [false, false];
-      this.prevButton5State = [false, false];
-      this.resetHoldStartedAt = null;
-      this.resetGestureLatched = false;
-      this.syncInputSources();
-    });
+    this.xrSession.addEventListener(
+      "inputsourceschange",
+      this.handleInputSourcesChange,
+    );
+    this.xrSession.addEventListener("end", this.handleSessionEnd);
     this.syncInputSources();
 
     this.raycaster = new Raycaster();
@@ -136,6 +162,7 @@ export class VRControls {
       controllerModelFactory.createControllerModel(controllerGrip2),
     );
     this.dolly.add(controllerGrip2);
+    this.controllerGrips = [controllerGrip1, controllerGrip2];
 
     this.target = target;
     this.distanceFromFocus = distanceFromFocus;
@@ -170,6 +197,38 @@ export class VRControls {
 
     this.scene = scene;
     this.raycastGroup = raycastGroup;
+  }
+
+  public setControllerHints(hints: VRControllerHints | null): void {
+    if (hints === null || (!hints.left && !hints.right)) {
+      this.controllerHintsView?.dispose();
+      this.controllerHintsView = null;
+      this.lastHintsUpdateTime = null;
+      return;
+    }
+
+    if (!this.controllerHintsView) {
+      this.controllerHintsView = new VRControllerHintsView(
+        this.renderer,
+        this.controllerGrips,
+      );
+    }
+    this.controllerHintsView.setHints(hints, this.handedness);
+    this.lastHintsUpdateTime = null;
+  }
+
+  public dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+
+    this.xrSession.removeEventListener(
+      "inputsourceschange",
+      this.handleInputSourcesChange,
+    );
+    this.xrSession.removeEventListener("end", this.handleSessionEnd);
+    this.controllerHintsView?.dispose();
+    this.controllerHintsView = null;
+    this.lastHintsUpdateTime = null;
   }
 
   private syncInputSources(): void {
@@ -432,6 +491,8 @@ export class VRControls {
   public update(delta: number = 0.0001): void {
     if (!this.enabled) return;
 
+    this.updateControllerHints();
+
     this.updateRaycaster();
 
     // Handle VR controller input
@@ -474,6 +535,16 @@ export class VRControls {
     }
 
     this.scale = 1;
+  }
+
+  private updateControllerHints(): void {
+    if (!this.controllerHintsView) return;
+
+    const now = performance.now();
+    const deltaMilliseconds =
+      this.lastHintsUpdateTime === null ? 0 : now - this.lastHintsUpdateTime;
+    this.lastHintsUpdateTime = now;
+    this.controllerHintsView.update(deltaMilliseconds);
   }
 
 }

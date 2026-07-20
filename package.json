@@ -20,6 +20,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@pmndrs/uikit": "^1.0.74",
+		"@pmndrs/uikit-horizon": "^1.0.74",
 		"@sveltejs/adapter-static": "^3.0.9",
 		"@types/three": "^0.180.0",
 		"autograph": "link:",

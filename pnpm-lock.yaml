@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@pmndrs/uikit':
+        specifier: ^1.0.74
+        version: 1.0.74(three@0.180.0)
+      '@pmndrs/uikit-horizon':
+        specifier: ^1.0.74
+        version: 1.0.74(three@0.180.0)
       '@sveltejs/adapter-static':
         specifier: ^3.0.9
         version: 3.0.9(@sveltejs/kit@2.37.1(@sveltejs/vite-plugin-svelte@6.1.4(svelte@5.38.7)(vite@7.1.5))(svelte@5.38.7)(vite@7.1.5))
@@ -262,8 +268,28 @@ packages:
   '@jridgewell/trace-mapping@0.3.30':
     resolution: {integrity: sha512-GQ7Nw5G2lTu/BtHTKfXhKHok2WGetd4XYcVKGx00SjAk8GMwgJM3zr6zORiPGuOE+/vkc90KtTosSSvaCjKb2Q==}
 
+  '@pmndrs/msdfonts@1.0.74':
+    resolution: {integrity: sha512-cRMUq0RhvszDe4JfEZ8O8ZnZfZc0PsuiiMvwSb7CvFAQ156riCr1AueBvf4NEvLXHvBO7ZEMmgdODLSdEgg/HA==}
+
+  '@pmndrs/uikit-horizon@1.0.74':
+    resolution: {integrity: sha512-jCftsTJk0LjO9y3/oBC7fbykWPeUoXuhM/k1eTfSoD2I5kWgo1OWxdDTArQto+irRM81x73alR/wi7rqVr0hoA==}
+
+  '@pmndrs/uikit-lucide@1.0.74':
+    resolution: {integrity: sha512-tZ/g++iW6KEK3KdB2pRh/WpWgUh0Fs9k+S2SXBhEL5GidhDfBb3+mj/SZR8fe3oo+H3HkDoFIUT+UBz7hVbsCA==}
+
+  '@pmndrs/uikit-pub-sub@1.0.74':
+    resolution: {integrity: sha512-piiYQX/hjuXzTwBAjGbWqycEZsMFlsCKxoczs6G7M7kPWWmfLuFf9woOXHLtW5x6cnJJ19YrNuaQDtzG3SXj3Q==}
+
+  '@pmndrs/uikit@1.0.74':
+    resolution: {integrity: sha512-GF7Uwqile6UnbXQPXpbB9hkDSXJA2d0P3Vv33kLom4Q57JqCPoGGsjy4CzjsZlZwXb1riIUpu5CN5xnBtpPkmQ==}
+    peerDependencies:
+      three: '>=0.162'
+
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
+
+  '@preact/signals-core@1.14.4':
+    resolution: {integrity: sha512-HNB6HYeYKhQbJ1aKl+YRjrS4+QWHLKX6qKoUsfS/m0vqzsVaEBiZiaKbG/e+NKk2ch5ALQr/ihWaMHxiCuuWHA==}
 
   '@rollup/rollup-android-arm-eabi@4.50.1':
     resolution: {integrity: sha512-HJXwzoZN4eYTdD8bVV22DN8gsPCAj3V20NHKOs8ezfXanGpmVPR7kalUHd+Y31IJp9stdB87VKPFbsGY3H/2ag==}
@@ -432,6 +458,10 @@ packages:
   '@webgpu/types@0.1.64':
     resolution: {integrity: sha512-84kRIAGV46LJTlJZWxShiOrNL30A+9KokD7RB3dRCIqODFjodS5tCD5yyiZ8kIReGVZSDfA3XkkwyyOIF6K62A==}
 
+  '@zappar/msdf-generator@1.2.4':
+    resolution: {integrity: sha512-6S/MCk0Ky0ipewZJw4xFEzH/2aYfWmPXEkTdBtNyDDfkbicrNwgJgtxZ4SnTDyNe9XHMqDA4sL9srRsgDLRMqA==}
+    engines: {node: '>=18'}
+
   accessor-fn@1.5.3:
     resolution: {integrity: sha512-rkAofCwe/FvYFUlMB0v0gWmhqtfAtV1IUkdPbfhTUyYniu5LrC0A0UJkTH0Jv3S8SvwkmfuAlY+mQIJATdocMA==}
     engines: {node: '>=12'}
@@ -459,6 +489,9 @@ packages:
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
+
+  comlink@4.4.2:
+    resolution: {integrity: sha512-OxGdvBmJuNKSCMO4NTl1L47VRp6xn2wG4F/2hYzB6tiCb709otOxtEYCSvK80PtjODfXXZu8ds+Nw5kVCjqd2g==}
 
   cookie@0.6.0:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
@@ -838,8 +871,14 @@ packages:
   whatwg-url@5.0.0:
     resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
 
+  yoga-layout@3.2.1:
+    resolution: {integrity: sha512-0LPOt3AxKqMdFBZA3HBAt/t/8vIKq7VaQYbuA8WxCgung+p9TVyKRYdpvCb80HcdTN2NkbIKbhNwKUfm3tQywQ==}
+
   zimmerframe@1.1.2:
     resolution: {integrity: sha512-rAbqEGa8ovJy4pyBxZM70hg4pE6gDgaQ0Sl9M3enG3I0d6H4XSAM3GeNGLKnsBpuijUow064sf7ww1nutC5/3w==}
+
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
 
@@ -942,7 +981,39 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  '@pmndrs/msdfonts@1.0.74': {}
+
+  '@pmndrs/uikit-horizon@1.0.74(three@0.180.0)':
+    dependencies:
+      '@pmndrs/uikit': 1.0.74(three@0.180.0)
+      '@pmndrs/uikit-lucide': 1.0.74(three@0.180.0)
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - three
+
+  '@pmndrs/uikit-lucide@1.0.74(three@0.180.0)':
+    dependencies:
+      '@pmndrs/uikit': 1.0.74(three@0.180.0)
+    transitivePeerDependencies:
+      - three
+
+  '@pmndrs/uikit-pub-sub@1.0.74':
+    dependencies:
+      '@preact/signals-core': 1.14.4
+
+  '@pmndrs/uikit@1.0.74(three@0.180.0)':
+    dependencies:
+      '@pmndrs/msdfonts': 1.0.74
+      '@pmndrs/uikit-pub-sub': 1.0.74
+      '@preact/signals-core': 1.14.4
+      '@zappar/msdf-generator': 1.2.4
+      three: 0.180.0
+      yoga-layout: 3.2.1
+      zod: 4.4.3
+
   '@polka/url@1.0.0-next.29': {}
+
+  '@preact/signals-core@1.14.4': {}
 
   '@rollup/rollup-android-arm-eabi@4.50.1':
     optional: true
@@ -1079,6 +1150,10 @@ snapshots:
 
   '@webgpu/types@0.1.64': {}
 
+  '@zappar/msdf-generator@1.2.4':
+    dependencies:
+      comlink: 4.4.2
+
   accessor-fn@1.5.3: {}
 
   acorn@8.15.0: {}
@@ -1094,6 +1169,8 @@ snapshots:
   chroma-js@2.6.0: {}
 
   clsx@2.1.1: {}
+
+  comlink@4.4.2: {}
 
   cookie@0.6.0: {}
 
@@ -1462,4 +1539,8 @@ snapshots:
       tr46: 0.0.3
       webidl-conversions: 3.0.1
 
+  yoga-layout@3.2.1: {}
+
   zimmerframe@1.1.2: {}
+
+  zod@4.4.3: {}
