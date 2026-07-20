@@ -25,7 +25,7 @@ onMount(async () => {
     {graph}
     webXR={true}
     xyzPath="/graphs/AtmosphereReduced/xyz_species/"
-    startSpecies={["O=O", "NttN"]}
+    startSpecies={["O=O", "NttN", "O"]}
   />
 {:else}
   <div class="loading">

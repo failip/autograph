@@ -85,8 +85,13 @@ let graphElement: HTMLCanvasElement;
 let canvasWrapper: HTMLDivElement;
 const moleculeGenerator = new MoleculeGenerator();
 const mousePosition = new Vector2();
-let layoutIterations = 1000;
+const initialLayoutIterations = 160;
+const defaultLayoutIterations = 1000;
+let layoutIterations = initialLayoutIterations;
+const disconnectedComponentMaxDistance = 7;
+const disconnectedComponentCenterPull = 0.75;
 let currentLayoutIteration = 0;
+let initialLayoutSettled = false;
 let hoveredNode: Object3D | undefined;
 let targetedNode: Object3D | undefined;
 let searchVisible = false;
@@ -113,6 +118,22 @@ let allMoleculesVisible = true;
 let cursorInfo: HTMLDivElement;
 let pointerIsDown = false;
 let xrError = "";
+
+function restartLayout(): void {
+  layoutIterations = initialLayoutSettled
+    ? defaultLayoutIterations
+    : initialLayoutIterations;
+  currentLayoutIteration = 0;
+}
+
+function markInitialLayoutSettled(): void {
+  if (
+    !initialLayoutSettled &&
+    currentLayoutIteration >= initialLayoutIterations
+  ) {
+    initialLayoutSettled = true;
+  }
+}
 
 type ReactionTrajectoryPlayback = {
   reactionId: string;
@@ -500,9 +521,97 @@ const layout = createLayout(renderGraph, {
   timeStep: 0.5,
   dimensions: dimensions,
   theta: 0.5,
+  gravity: -1.5,
 });
 
 const objects = new Map<string, Object3D>();
+
+function getLayoutComponentCenter(component: NodeId[]): Vector {
+  const center = { x: 0, y: 0, z: 0 } as Vector;
+  component.forEach((nodeId) => {
+    const position = layout.getNodePosition(nodeId);
+    center.x += position.x;
+    center.y += position.y;
+    center.z += position.z || 0;
+  });
+
+  center.x /= component.length;
+  center.y /= component.length;
+  center.z /= component.length;
+  return center;
+}
+
+function getLayoutComponents(): NodeId[][] {
+  const components: NodeId[][] = [];
+  const visited = new Set<NodeId>();
+
+  renderGraph.forEachNode((node) => {
+    if (visited.has(node.id)) return;
+
+    const component: NodeId[] = [];
+    const queue: NodeId[] = [node.id];
+    visited.add(node.id);
+
+    while (queue.length > 0) {
+      const nodeId = queue.shift();
+      if (nodeId === undefined) continue;
+
+      component.push(nodeId);
+      const currentNode = renderGraph.getNode(nodeId);
+      currentNode?.links?.forEach((link) => {
+        const nextId = link.fromId === nodeId ? link.toId : link.fromId;
+        if (visited.has(nextId)) return;
+
+        visited.add(nextId);
+        queue.push(nextId);
+      });
+    }
+
+    components.push(component);
+  });
+
+  return components;
+}
+
+function keepDisconnectedComponentsNearby(): void {
+  const components = getLayoutComponents();
+  if (components.length <= 1) return;
+
+  const anchorComponent = components.reduce((largest, component) =>
+    component.length > largest.length ? component : largest,
+  );
+  const anchorCenter = getLayoutComponentCenter(anchorComponent);
+
+  components.forEach((component) => {
+    if (component === anchorComponent) return;
+
+    const center = getLayoutComponentCenter(component);
+    const offsetX = center.x - anchorCenter.x;
+    const offsetY = center.y - anchorCenter.y;
+    const offsetZ = (center.z || 0) - (anchorCenter.z || 0);
+    const distance = Math.sqrt(
+      offsetX * offsetX + offsetY * offsetY + offsetZ * offsetZ,
+    );
+    if (distance <= disconnectedComponentMaxDistance) return;
+
+    const shiftRatio =
+      ((distance - disconnectedComponentMaxDistance) / distance) *
+      disconnectedComponentCenterPull;
+    const shiftX = offsetX * shiftRatio;
+    const shiftY = offsetY * shiftRatio;
+    const shiftZ = offsetZ * shiftRatio;
+
+    component.forEach((nodeId) => {
+      const position = layout.getNodePosition(nodeId);
+      layout.setNodePosition(
+        nodeId,
+        position.x - shiftX,
+        position.y - shiftY,
+        (position.z || 0) - shiftZ,
+      );
+    });
+  });
+}
 
 onMount(async () => {
   if (!(await isInlineXrAvailable())) {
@@ -1083,7 +1192,9 @@ onMount(async () => {
 
     if (currentLayoutIteration < layoutIterations) {
       layout.step();
+      keepDisconnectedComponentsNearby();
       currentLayoutIteration++;
+      markInitialLayoutSettled();
     }
 
     const removedNodes = new Set<NodeId>();
@@ -1094,7 +1205,7 @@ onMount(async () => {
       } else if (change.changeType == "add") {
         handleAddedNode(change.node.id);
       }
-      currentLayoutIteration = 0;
+      restartLayout();
     });
 
     queuedNodeEvents.length = 0;
@@ -1120,7 +1231,7 @@ onMount(async () => {
 
     if (queuedLinkEvents.length > 0) {
       lineInstances.instanceMatrix.needsUpdate = true;
-      currentLayoutIteration = 0;
+      restartLayout();
     }
 
     queuedLinkEvents.length = 0;
