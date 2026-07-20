@@ -117,6 +117,7 @@ let xrError = "";
 type ReactionTrajectoryPlayback = {
   reactionId: string;
   xyzText: string;
+  onComplete?: () => void;
 };
 
 type ReactionTrajectoryStarter = (playback: ReactionTrajectoryPlayback) => void;
@@ -130,10 +131,11 @@ let reactionTrajectoryStarting = false;
 let reactionTrajectoryCompleting = false;
 let reactionTrajectoryLoadChain = Promise.resolve();
 let startReactionTrajectoryPlayback: ReactionTrajectoryStarter | null = null;
+let layerCommitPending = false;
 let reactionPlaybackActive = false;
 
 $: reactionPlaybackActive =
-  reactionGraphFaded || activeReactionTrajectory !== null;
+  layerCommitPending || reactionGraphFaded || activeReactionTrajectory !== null;
 
 let moleculeSize = 1.0;
 let reactionSize = 0.35;
@@ -183,6 +185,7 @@ const runs = new Map<string, Run>();
 let currentFrameIndex = 0;
 let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
+const pendingNodeFadeInDurations = new Map<string, number>();
 
 function emitGraphEvent(event: GraphEvent): void {
   onGraphEvent?.(event);
@@ -221,6 +224,7 @@ function clearSpeciesSelection(): string[] {
 
 export function addInitialSpecies(
   speciesIds: readonly string[],
+  fadeInDurationMs = 0,
 ): string[] {
   const addedSpecies: string[] = [];
 
@@ -233,6 +237,9 @@ export function addInitialSpecies(
       continue;
     }
 
+    if (fadeInDurationMs > 0 && !renderGraph.hasNode(speciesId)) {
+      pendingNodeFadeInDurations.set(speciesId, fadeInDurationMs);
+    }
     addInitialNode(speciesId);
     addedSpecies.push(speciesId);
   }
@@ -294,20 +301,48 @@ async function fetchXyzTextByName(
   return null;
 }
 
-function enqueueReactionTrajectoryIfAvailable(reactionId: string): void {
+function playReactionTrajectoriesBefore(
+  reactionIds: readonly string[],
+  onComplete: () => void,
+): void {
+  let completed = false;
+  const completeOnce = () => {
+    if (completed) return;
+    completed = true;
+    onComplete();
+  };
+
   reactionTrajectoryLoadChain = reactionTrajectoryLoadChain
     .then(async () => {
-      try {
-        const xyzText = await fetchXyzTextByName(reactionId);
-        if (!xyzText) return;
+      const playbacks: ReactionTrajectoryPlayback[] = [];
 
-        reactionTrajectoryQueue.push({ reactionId, xyzText });
-        void processReactionTrajectoryQueue();
-      } catch {
-        // Missing or unavailable reaction trajectories are expected.
+      for (const reactionId of new Set(reactionIds)) {
+        try {
+          const xyzText = await fetchXyzTextByName(reactionId);
+          if (xyzText) {
+            playbacks.push({ reactionId, xyzText });
+          }
+        } catch {
+          // Missing or unavailable reaction trajectories are expected.
+        }
       }
+
+      if (playbacks.length === 0) {
+        completeOnce();
+        return;
+      }
+
+      const finalPlayback = playbacks.at(-1);
+      if (!finalPlayback) {
+        completeOnce();
+        return;
+      }
+
+      finalPlayback.onComplete = completeOnce;
+      reactionTrajectoryQueue.push(...playbacks);
+      void processReactionTrajectoryQueue();
     })
-    .catch(() => {});
+    .catch(completeOnce);
 }
 
 function processReactionTrajectoryQueue(): void {
@@ -336,11 +371,13 @@ function processReactionTrajectoryQueue(): void {
 }
 
 function handleReactionTrajectoryComplete(): void {
+  const completedTrajectory = activeReactionTrajectory;
   activeReactionTrajectory = null;
   reactionGraphFaded = false;
   reactionTrajectoryVisible = false;
   reactionTrajectoryStarting = false;
   reactionTrajectoryCompleting = false;
+  completedTrajectory?.onComplete?.();
   void processReactionTrajectoryQueue();
 }
 
@@ -719,6 +756,10 @@ onMount(async () => {
   let trajectoryCameraSnapshot: TrajectoryCameraSnapshot | null = null;
   let lastGraphAnimationTime = 0;
   const trajectoryOrigin = new Vector3(0, 0, 0);
+  const nodeFadeIns = new Map<
+    string,
+    { startedAt: number; durationMs: number }
+  >();
 
   function getFadeProgress(deltaSeconds: number): number {
     reactionPhaseElapsed += Math.max(0, deltaSeconds);
@@ -730,6 +771,73 @@ onMount(async () => {
   function getObjectMaterials(object: Object3D): Material[] {
     if (!(object instanceof Mesh)) return [];
     return Array.isArray(object.material) ? object.material : [object.material];
+  }
+
+  function applyNodeFadeOpacity(
+    nodeId: string,
+    object: Object3D,
+    alpha: number,
+  ): void {
+    const targetOpacity = graph.getNode(nodeId)?.data.inSecondaryGraphs
+      ? 1
+      : 0.1;
+    const opacity = targetOpacity * Math.max(0, Math.min(1, alpha));
+
+    object.traverse((child) => {
+      getObjectMaterials(child).forEach((material) => {
+        material.opacity = opacity;
+        material.transparent = opacity < 1;
+        material.needsUpdate = true;
+      });
+    });
+  }
+
+  function getNodeFadeProgress(
+    fade: { startedAt: number; durationMs: number },
+    time: number,
+  ): number {
+    if (fade.durationMs <= 0) return 1;
+    return Math.min(1, Math.max(0, (time - fade.startedAt) / fade.durationMs));
+  }
+
+  function startNodeFadeIn(nodeId: string, object: Object3D): void {
+    const durationMs = pendingNodeFadeInDurations.get(nodeId);
+    if (durationMs === undefined) return;
+
+    pendingNodeFadeInDurations.delete(nodeId);
+    nodeFadeIns.set(nodeId, {
+      startedAt: performance.now(),
+      durationMs,
+    });
+    applyNodeFadeOpacity(nodeId, object, 0);
+  }
+
+  function applyCurrentNodeFade(nodeId: string, object: Object3D): void {
+    const fade = nodeFadeIns.get(nodeId);
+    if (!fade) return;
+    applyNodeFadeOpacity(
+      nodeId,
+      object,
+      getNodeFadeProgress(fade, performance.now()),
+    );
+  }
+
+  function updateNodeFadeIns(time: number): void {
+    nodeFadeIns.forEach((fade, nodeId) => {
+      if (!renderGraph.hasNode(nodeId)) {
+        nodeFadeIns.delete(nodeId);
+        return;
+      }
+
+      const object = objects.get(nodeId);
+      if (!object) return;
+
+      const progress = getNodeFadeProgress(fade, time);
+      applyNodeFadeOpacity(nodeId, object, progress);
+      if (progress >= 1) {
+        nodeFadeIns.delete(nodeId);
+      }
+    });
   }
 
   function captureGraphMaterialSnapshot(): GraphMaterialSnapshot[] {
@@ -1316,6 +1424,7 @@ onMount(async () => {
       rerenderLines = false;
     }
 
+    updateNodeFadeIns(time);
     renderer.render(scene, camera);
 
     if (!webXR) {
@@ -1388,6 +1497,8 @@ onMount(async () => {
   }
 
   function handleRemovedNode(nodeId: string) {
+    pendingNodeFadeInDurations.delete(nodeId);
+    nodeFadeIns.delete(nodeId);
     const object = objects.get(nodeId);
     if (object === undefined) {
       return;
@@ -1547,6 +1658,7 @@ onMount(async () => {
       }
 
       meshes.add(object);
+      startNodeFadeIn(nodeId, object);
       return;
     }
 
@@ -1573,6 +1685,7 @@ onMount(async () => {
       node.type == "species" ? moleculeSize : reactionSize,
     );
     meshes.add(cube);
+    startNodeFadeIn(nodeId, cube);
 
     if (node.type === "species") {
       let data = "";
@@ -1624,7 +1737,6 @@ onMount(async () => {
       if (renderGraph.hasNode(nodeId)) {
         objects.set(nodeId, molecule);
         meshes.remove(cube);
-        meshes.add(molecule);
 
         if (!node.inSecondaryGraphs) {
           molecule.traverse((child) => {
@@ -1635,6 +1747,8 @@ onMount(async () => {
             }
           });
         }
+        applyCurrentNodeFade(nodeId, molecule);
+        meshes.add(molecule);
       }
     }
     return;
@@ -2015,28 +2129,41 @@ function filterGraphOld(): {
   return { nodes: nodesToRemove, edges: edgesToRemove };
 }
 
-function addLayer() {
-  if (reactionPlaybackActive) return;
+function cloneRenderGraph(): Graph {
+  const clone = createGraph();
 
-  const layerSelection = Array.from(selectedSpecies);
-  const addedNodes: NodeId[] = [];
-  const addedEdges: [NodeId, NodeId][] = [];
-  inAddLayerContext = true;
-
-  const oldSpecies = new Set<string>(currentSpecies);
-  currentSpecies.forEach((species) => {
-    addAllPossibleReactionsToRendergraph(
-      graph,
-      renderGraph,
-      species,
-      currentSpecies,
-      oldSpecies,
-      addedNodes,
-      addedEdges,
-    );
+  renderGraph.forEachNode((node) => {
+    clone.addNode(node.id, node.data);
+  });
+  renderGraph.forEachLink((link) => {
+    clone.addLink(link.fromId, link.toId, link.data);
   });
 
-  inAddLayerContext = false;
+  return clone;
+}
+
+function commitStagedLayer(
+  stagedRenderGraph: Graph,
+  stagedCurrentSpecies: Set<string>,
+  layerSelection: string[],
+  addedNodes: NodeId[],
+  addedEdges: [NodeId, NodeId][],
+): void {
+  layerCommitPending = false;
+
+  addedNodes.forEach((nodeId) => {
+    const node = stagedRenderGraph.getNode(nodeId);
+    if (node && !renderGraph.hasNode(nodeId)) {
+      renderGraph.addNode(nodeId, node.data);
+    }
+  });
+  addedEdges.forEach(([fromId, toId]) => {
+    if (!renderGraph.hasLink(fromId, toId)) {
+      renderGraph.addLink(fromId, toId);
+    }
+  });
+
+  currentSpecies = stagedCurrentSpecies;
 
   if (undoEnabled) {
     undoStack.push({
@@ -2046,6 +2173,42 @@ function addLayer() {
     });
   }
 
+  emitGraphEvent({
+    type: "layer-added",
+    selectedSpecies: layerSelection,
+    addedNodeIds: addedNodes.map(String),
+    addedEdges: addedEdges.map(([fromId, toId]) => [
+      String(fromId),
+      String(toId),
+    ]),
+  });
+}
+
+function addLayer() {
+  if (reactionPlaybackActive) return;
+
+  const layerSelection = Array.from(selectedSpecies);
+  const stagedRenderGraph = cloneRenderGraph();
+  const stagedCurrentSpecies = new Set(currentSpecies);
+  const addedNodes: NodeId[] = [];
+  const addedEdges: [NodeId, NodeId][] = [];
+  inAddLayerContext = true;
+
+  const oldSpecies = new Set<string>(currentSpecies);
+  stagedCurrentSpecies.forEach((species) => {
+    addAllPossibleReactionsToRendergraph(
+      graph,
+      stagedRenderGraph,
+      species,
+      stagedCurrentSpecies,
+      oldSpecies,
+      addedNodes,
+      addedEdges,
+    );
+  });
+
+  inAddLayerContext = false;
+
   const nodesToReset = clearSpeciesSelection();
 
   for (const nodeId of nodesToReset) {
@@ -2053,17 +2216,29 @@ function addLayer() {
     updateMolecule(nodeId);
   }
 
-  if (addedNodes.length > 0 || addedEdges.length > 0) {
-    emitGraphEvent({
-      type: "layer-added",
-      selectedSpecies: layerSelection,
-      addedNodeIds: addedNodes.map(String),
-      addedEdges: addedEdges.map(([fromId, toId]) => [
-        String(fromId),
-        String(toId),
-      ]),
-    });
+  if (addedNodes.length === 0 && addedEdges.length === 0) {
+    if (undoEnabled) {
+      undoStack.push({ type: "addLayer", addedNodes, addedEdges });
+    }
+    return;
   }
+
+  const addedReactionIds = addedNodes
+    .filter(
+      (nodeId) => stagedRenderGraph.getNode(nodeId)?.data.type === "reaction",
+    )
+    .map(String);
+
+  layerCommitPending = true;
+  playReactionTrajectoriesBefore(addedReactionIds, () => {
+    commitStagedLayer(
+      stagedRenderGraph,
+      stagedCurrentSpecies,
+      layerSelection,
+      addedNodes,
+      addedEdges,
+    );
+  });
 }
 
 function addInitialNode(node: string) {
@@ -2260,7 +2435,6 @@ function addAllPossibleReactionsToRendergraph(
     if (!renderGraph.hasNode(reactionId)) {
       renderGraph.addNode(reactionId, reaction.data);
       if (addedNodes) addedNodes.push(reactionId);
-      enqueueReactionTrajectoryIfAvailable(reactionId as string);
     }
 
     if (!renderGraph.hasLink(species, reactionId)) {
