@@ -256,11 +256,26 @@ export class VRControls {
     this.controllers.forEach((controller, index) => {
       if (!controller) return;
 
-      // Handle thumbstick rotation (orbit)
-      const thumbstickX = controller.axes[2] || 0; // Right thumbstick X
-      const thumbstickY = controller.axes[3] || 0; // Right thumbstick Y
+      const thumbstickX = controller.axes[2] || 0;
+      const thumbstickY = controller.axes[3] || 0;
+      const handedness = this.handedness[index];
 
-      if (this.controlMode === "object" && this.controlledObject) {
+      if (handedness === "left") {
+        if (Math.abs(thumbstickY) > 0.1) {
+          if (this.controlMode === "object") {
+            this.moveControlledObject(
+              thumbstickY * this.distanceFromFocus * 0.015,
+            );
+          } else {
+            const zoomScale = 1 + Math.abs(thumbstickY) * 0.02;
+            if (thumbstickY < 0) {
+              this.dollyOut(zoomScale);
+            } else {
+              this.dollyIn(zoomScale);
+            }
+          }
+        }
+      } else if (this.controlMode === "object" && this.controlledObject) {
         let objectRotated = false;
 
         if (Math.abs(thumbstickX) > 0.1) {
@@ -299,8 +314,6 @@ export class VRControls {
 
       // Handle trigger for selection
       const trigger = controller.buttons[0] ? controller.buttons[0].value : 0;
-      const squeeze = controller.buttons[1] ? controller.buttons[1].value : 0;
-      const handedness = this.handedness[index];
 
       if (trigger > 0.5 && !this.prevTriggerState[index]) {
         console.log("Trigger pressed on controller", trigger);
@@ -310,17 +323,6 @@ export class VRControls {
         this.prevTriggerState[index] = true;
       } else if (trigger < 0.5) {
         this.prevTriggerState[index] = false;
-      }
-
-      if (squeeze > 0.1 && this.controlMode === "object") {
-        const direction = handedness === "left" ? -1 : 1;
-        this.moveControlledObject(direction * squeeze * this.distanceFromFocus * 0.015);
-      } else if (squeeze > 0.1) {
-        if (handedness === "left") {
-          this.dollyIn(1 + squeeze * 0.02);
-        } else {
-          this.dollyOut(1 + squeeze * 0.02);
-        }
       }
 
       // Handle A/X buttons (Button 4)

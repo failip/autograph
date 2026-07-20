@@ -1047,7 +1047,7 @@ onMount(async () => {
       controls.onHover = (object) => {
         hoveredNode = object ?? undefined;
       };
-      controls.onSelect = () => {
+      controls.onAPressed = () => {
         selectMoleculeVR();
       };
       controls.onBPressed = () => {
@@ -2575,7 +2575,7 @@ function rerenderMolecules() {
           qClick();
         }}
       >
-        add inital species
+        {isXrSession ? "select molecule" : "add inital species"}
       </p>
     </div>
 
