@@ -11,6 +11,8 @@ export type {
   VRControllerHints,
 } from "./VRControllerHints";
 
+const POINTER_ORIGIN_INSET = 0.03;
+
 export class VRControls {
   public target: Object3D
   public camera: PerspectiveCamera;
@@ -142,7 +144,7 @@ export class VRControls {
       color: 0xffffff,
       transparent: true,
       opacity: 0.9,
-      depthTest: false,
+      depthTest: true,
       depthWrite: false,
     });
     const hoverIndicatorGeometry = new RingGeometry(0.65, 1, 32);
@@ -157,6 +159,7 @@ export class VRControls {
     for (const controller of [this.controller1, this.controller2]) {
       const pointer = new Mesh(pointerGeometry, pointerMaterial);
       pointer.name = "line";
+      pointer.position.z = POINTER_ORIGIN_INSET;
       controller.add(pointer);
       this.controllerPointers.push(pointer);
 
@@ -476,7 +479,7 @@ export class VRControls {
 
   private updateRaycaster(): void {
     const controllers = [this.controller1, this.controller2];
-    const defaultPointerScale = Math.max(this.distanceFromFocus, 5) / 5;
+    const defaultPointerLength = Math.max(this.distanceFromFocus, 5);
     const rightControllerIndex = this.handedness.indexOf("right");
 
     if (rightControllerIndex < 0) {
@@ -487,7 +490,7 @@ export class VRControls {
     const controller = controllers[rightControllerIndex];
     const pointer = this.controllerPointers[rightControllerIndex];
     const hoverIndicator = this.hoverIndicators[rightControllerIndex];
-    pointer.scale.z = defaultPointerScale;
+    pointer.scale.z = (defaultPointerLength + POINTER_ORIGIN_INSET) / 5;
     hoverIndicator.visible = false;
 
     if (!this.raycastGroup) {
@@ -509,7 +512,7 @@ export class VRControls {
     }
 
     const intersection = intersects[0];
-    pointer.scale.z = intersection.distance / 5;
+    pointer.scale.z = (intersection.distance + POINTER_ORIGIN_INSET) / 5;
     hoverIndicator.position.set(0, 0, -intersection.distance);
     hoverIndicator.scale.setScalar(
       Math.max(intersection.distance * 0.006, 0.03),
