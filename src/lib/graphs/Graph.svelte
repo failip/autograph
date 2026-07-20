@@ -8,7 +8,7 @@ import {
 } from "$lib/filter/filter";
 import { PathSearchGraph } from "$lib/graphs/graph";
 import Fuse from "fuse.js";
-import createLayout, { type Vector } from "ngraph.forcelayout";
+import createLayout from "ngraph.forcelayout";
 import createGraph, {
   type Graph,
   type Link,
@@ -87,13 +87,6 @@ let graphElement: HTMLCanvasElement;
 let canvasWrapper: HTMLDivElement;
 const moleculeGenerator = new MoleculeGenerator();
 const mousePosition = new Vector2();
-const initialLayoutIterations = 160;
-const defaultLayoutIterations = 1000;
-let layoutIterations = initialLayoutIterations;
-const disconnectedComponentMaxDistance = 7;
-const disconnectedComponentCenterPull = 0.75;
-let currentLayoutIteration = 0;
-let initialLayoutSettled = false;
 let hoveredNode: Object3D | undefined;
 let targetedNode: Object3D | undefined;
 let searchVisible = false;
@@ -120,22 +113,6 @@ let allMoleculesVisible = true;
 let cursorInfo: HTMLDivElement;
 let pointerIsDown = false;
 let xrError = "";
-
-function restartLayout(): void {
-  layoutIterations = initialLayoutSettled
-    ? defaultLayoutIterations
-    : initialLayoutIterations;
-  currentLayoutIteration = 0;
-}
-
-function markInitialLayoutSettled(): void {
-  if (
-    !initialLayoutSettled &&
-    currentLayoutIteration >= initialLayoutIterations
-  ) {
-    initialLayoutSettled = true;
-  }
-}
 
 type ReactionTrajectoryPlayback = {
   reactionId: string;
@@ -587,93 +564,6 @@ const layout = createLayout(renderGraph, {
 });
 
 const objects = new Map<string, Object3D>();
-
-function getLayoutComponentCenter(component: NodeId[]): Vector {
-  const center = { x: 0, y: 0, z: 0 } as Vector;
-  component.forEach((nodeId) => {
-    const position = layout.getNodePosition(nodeId);
-    center.x += position.x;
-    center.y += position.y;
-    center.z += position.z || 0;
-  });
-
-  center.x /= component.length;
-  center.y /= component.length;
-  center.z /= component.length;
-  return center;
-}
-
-function getLayoutComponents(): NodeId[][] {
-  const components: NodeId[][] = [];
-  const visited = new Set<NodeId>();
-
-  renderGraph.forEachNode((node) => {
-    if (visited.has(node.id)) return;
-
-    const component: NodeId[] = [];
-    const queue: NodeId[] = [node.id];
-    visited.add(node.id);
-
-    while (queue.length > 0) {
-      const nodeId = queue.shift();
-      if (nodeId === undefined) continue;
-
-      component.push(nodeId);
-      const currentNode = renderGraph.getNode(nodeId);
-      currentNode?.links?.forEach((link) => {
-        const nextId = link.fromId === nodeId ? link.toId : link.fromId;
-        if (visited.has(nextId)) return;
-
-        visited.add(nextId);
-        queue.push(nextId);
-      });
-    }
-
-    components.push(component);
-  });
-
-  return components;
-}
-
-function keepDisconnectedComponentsNearby(): void {
-  const components = getLayoutComponents();
-  if (components.length <= 1) return;
-
-  const anchorComponent = components.reduce((largest, component) =>
-    component.length > largest.length ? component : largest,
-  );
-  const anchorCenter = getLayoutComponentCenter(anchorComponent);
-
-  components.forEach((component) => {
-    if (component === anchorComponent) return;
-
-    const center = getLayoutComponentCenter(component);
-    const offsetX = center.x - anchorCenter.x;
-    const offsetY = center.y - anchorCenter.y;
-    const offsetZ = (center.z || 0) - (anchorCenter.z || 0);
-    const distance = Math.sqrt(
-      offsetX * offsetX + offsetY * offsetY + offsetZ * offsetZ,
-    );
-    if (distance <= disconnectedComponentMaxDistance) return;
-
-    const shiftRatio =
-      ((distance - disconnectedComponentMaxDistance) / distance) *
-      disconnectedComponentCenterPull;
-    const shiftX = offsetX * shiftRatio;
-    const shiftY = offsetY * shiftRatio;
-    const shiftZ = offsetZ * shiftRatio;
-
-    component.forEach((nodeId) => {
-      const position = layout.getNodePosition(nodeId);
-      layout.setNodePosition(
-        nodeId,
-        position.x - shiftX,
-        position.y - shiftY,
-        (position.z || 0) - shiftZ,
-      );
-    });
-  });
-}
 
 onMount(async () => {
   if (!(await isInlineXrAvailable())) {
@@ -1251,13 +1141,7 @@ onMount(async () => {
     }
 
     controls.update();
-
-    if (currentLayoutIteration < layoutIterations) {
-      layout.step();
-      keepDisconnectedComponentsNearby();
-      currentLayoutIteration++;
-      markInitialLayoutSettled();
-    }
+    layout.step();
 
     const removedNodes = new Set<NodeId>();
     queuedNodeEvents.forEach((change) => {
@@ -1267,7 +1151,6 @@ onMount(async () => {
       } else if (change.changeType == "add") {
         handleAddedNode(change.node.id);
       }
-      restartLayout();
     });
 
     queuedNodeEvents.length = 0;
@@ -1293,48 +1176,27 @@ onMount(async () => {
 
     if (queuedLinkEvents.length > 0) {
       lineInstances.instanceMatrix.needsUpdate = true;
-      restartLayout();
     }
 
     queuedLinkEvents.length = 0;
     hover();
 
-    if (currentLayoutIteration < layoutIterations) {
-      let maxDistSq = 0;
-      renderGraph.forEachNode((node) => {
-        const position = layout.getNodePosition(node.id);
-        const cube = objects.get(node.id as string);
+    renderGraph.forEachNode((node) => {
+      const position = layout.getNodePosition(node.id);
+      const cube = objects.get(node.id as string);
 
-        const distSq =
-          position.x * position.x +
-          position.y * position.y +
-          (position.z || 0) * (position.z || 0);
-        if (distSq > maxDistSq) {
-          maxDistSq = distSq;
-        }
+      if (cube === undefined) {
+        return;
+      }
 
-        if (cube === undefined) {
-          return;
-        }
+      cube.position.set(position.x, position.y, position.z ?? 0);
+    });
 
-        if (dimensions == 2) {
-          cube.position.x = position.x;
-          cube.position.y = position.y;
-        } else {
-          cube?.position.copy(position);
-        }
-      });
+    renderGraph.forEachLink((link) => {
+      updateLink(link);
+    });
 
-      const maxDist = Math.sqrt(maxDistSq);
-      // const scale = maxDist * 2.5;
-      // backgroundSprite.scale.set(scale, scale, 1);
-
-      renderGraph.forEachLink((link) => {
-        updateLink(link);
-      });
-
-      lineInstances.instanceMatrix.needsUpdate = true;
-    }
+    lineInstances.instanceMatrix.needsUpdate = true;
 
     if (!zoomFinished) {
       camera.zoom = camera.zoom + (zoomTarget - camera.zoom) * 0.1;
@@ -1363,9 +1225,7 @@ onMount(async () => {
       allMoleculesVisible = true;
     }
 
-    rerenderLines =
-      rerenderLines ||
-      (pathChanged && currentLayoutIteration == layoutIterations);
+    rerenderLines = rerenderLines || pathChanged;
 
     if (rerenderLines) {
       pathChanged = false;
@@ -1599,32 +1459,6 @@ onMount(async () => {
   }
 
   async function handleAddedNode(nodeId: string) {
-    let mostDistantPosition = {
-      x: 0,
-      y: 0,
-      z: 0,
-    } as Vector;
-    let maxDistance = 0.0;
-    const links = renderGraph.getNode(nodeId)?.links;
-    links?.forEach((link) => {
-      const otherNode = link.fromId === nodeId ? link.toId : link.fromId;
-      const otherNodePos = layout.getNodePosition(otherNode);
-      const distance = Math.sqrt(
-        otherNodePos.x ** 2 + otherNodePos.y ** 2 + otherNodePos.z ** 2,
-      );
-      if (distance > maxDistance) {
-        maxDistance = distance;
-        mostDistantPosition = otherNodePos;
-      }
-    });
-
-    layout.setNodePosition(
-      nodeId,
-      mostDistantPosition.x,
-      mostDistantPosition.y,
-      mostDistantPosition.z,
-    );
-
     if (objects.has(nodeId)) {
       const object = objects.get(nodeId);
 
