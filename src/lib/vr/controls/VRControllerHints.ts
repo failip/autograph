@@ -32,7 +32,7 @@ const CARD_PIXEL_SIZE = 0.0003;
 const CARD_PADDING = 14;
 const CARD_GAP = 12;
 const INPUT_VISUAL_WIDTH = 86;
-const INPUT_VISUAL_HEIGHT = 48;
+const INPUT_VISUAL_HEIGHT = 42;
 
 const CONTROL_ICON_SVGS: Record<VRControlHintIcon, string> = {
   "button-a": `
