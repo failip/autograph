@@ -1,4 +1,4 @@
-import { Object3D, PerspectiveCamera, Scene, Vector3, Vector2, WebGLRenderer, type WebXRArrayCamera, Spherical, Quaternion, Matrix4, Raycaster, CylinderGeometry, MeshBasicMaterial, Mesh } from "three";
+import { Object3D, PerspectiveCamera, Scene, Vector3, Vector2, WebGLRenderer, type WebXRArrayCamera, Spherical, Quaternion, Matrix4, Raycaster, CylinderGeometry, RingGeometry, MeshBasicMaterial, Mesh } from "three";
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import {
   VRControllerHintsView,
@@ -25,6 +25,8 @@ export class VRControls {
 
   public controller1: Object3D;
   public controller2: Object3D;
+  private controllerPointers: Mesh[] = [];
+  private hoverIndicators: Mesh[] = [];
   private controllerGrips: Object3D[] = [];
   private controllerHintsView: VRControllerHintsView | null = null;
   private lastHintsUpdateTime: number | null = null;
@@ -88,6 +90,7 @@ export class VRControls {
     this.resetHoldStartedAt = null;
     this.resetGestureLatched = false;
     this.syncInputSources();
+    this.refreshPointerVisuals();
     this.controllerHintsView?.refresh(this.handedness);
   };
 
@@ -132,22 +135,42 @@ export class VRControls {
     this.controller1 = renderer.xr.getController(0);
     this.controller2 = renderer.xr.getController(1);
 
-    const geometry = new CylinderGeometry(0.002, 0.002, 5, 32);
-    geometry.rotateX(-Math.PI / 2);
-    geometry.translate(0, 0, -2.5);
-
-    const material = new MeshBasicMaterial({
-      color: 0x111111,
+    const pointerGeometry = new CylinderGeometry(0.002, 0.002, 5, 32);
+    pointerGeometry.rotateX(-Math.PI / 2);
+    pointerGeometry.translate(0, 0, -2.5);
+    const pointerMaterial = new MeshBasicMaterial({
+      color: 0xffffff,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.9,
       depthTest: false,
+      depthWrite: false,
+    });
+    const hoverIndicatorGeometry = new RingGeometry(0.65, 1, 32);
+    const hoverIndicatorMaterial = new MeshBasicMaterial({
+      color: 0x22d3ee,
+      transparent: true,
+      opacity: 0.95,
+      depthTest: false,
+      depthWrite: false,
     });
 
-    const line = new Mesh(geometry, material);
-    line.name = 'line';
+    for (const controller of [this.controller1, this.controller2]) {
+      const pointer = new Mesh(pointerGeometry, pointerMaterial);
+      pointer.name = "line";
+      controller.add(pointer);
+      this.controllerPointers.push(pointer);
 
-    this.controller1.add(line.clone());
-    this.controller2.add(line.clone());
+      const hoverIndicator = new Mesh(
+        hoverIndicatorGeometry,
+        hoverIndicatorMaterial,
+      );
+      hoverIndicator.name = "hover-indicator";
+      hoverIndicator.visible = false;
+      hoverIndicator.renderOrder = 1000;
+      controller.add(hoverIndicator);
+      this.hoverIndicators.push(hoverIndicator);
+    }
+    this.refreshPointerVisuals();
 
     this.dolly.add(this.controller1);
     this.dolly.add(this.controller2);
@@ -241,6 +264,14 @@ export class VRControls {
         this.handedness.push(source.handedness);
       }
     });
+  }
+
+  private refreshPointerVisuals(): void {
+    for (let index = 0; index < this.controllerPointers.length; index++) {
+      const isRightController = this.handedness[index] === "right";
+      this.controllerPointers[index].visible = isRightController;
+      this.hoverIndicators[index].visible = false;
+    }
   }
 
   private initializeDollyPosition(): void {
@@ -444,48 +475,58 @@ export class VRControls {
   }
 
   private updateRaycaster(): void {
-    let foundIntersection = false;
-
     const controllers = [this.controller1, this.controller2];
     const defaultPointerScale = Math.max(this.distanceFromFocus, 5) / 5;
+    const rightControllerIndex = this.handedness.indexOf("right");
 
-    for (const controller of controllers) {
-      this.tempMatrix.identity().extractRotation(controller.matrixWorld);
-      this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
-      this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(this.tempMatrix);
-      if (!this.raycastGroup) continue;
-      const intersects = this.raycaster.intersectObjects(
-        this.raycastGroup.children,
-        true,
-      );
-      if (intersects.length > 0) {
-        console.log('intersected', intersects[0].object);
-        const object = intersects[0].object;
-        if (this.hoveredObject !== object) {
-          this.hoveredObject = object;
-          if (this.onHover) this.onHover(this.hoveredObject);
-        }
-        foundIntersection = true;
-
-        // Adjust pointer length
-        const line = controller.getObjectByName('line');
-        if (line) {
-          line.scale.z = intersects[0].distance / 5;
-        }
-        break;
-      } else {
-        // Reset pointer length
-        const line = controller.getObjectByName('line');
-        if (line) {
-          line.scale.z = defaultPointerScale;
-        }
-      }
+    if (rightControllerIndex < 0) {
+      this.clearHoveredObject();
+      return;
     }
 
-    if (!foundIntersection && this.hoveredObject) {
-      this.hoveredObject = null;
-      if (this.onHover) this.onHover(null);
+    const controller = controllers[rightControllerIndex];
+    const pointer = this.controllerPointers[rightControllerIndex];
+    const hoverIndicator = this.hoverIndicators[rightControllerIndex];
+    pointer.scale.z = defaultPointerScale;
+    hoverIndicator.visible = false;
+
+    if (!this.raycastGroup) {
+      this.clearHoveredObject();
+      return;
     }
+
+    this.tempMatrix.identity().extractRotation(controller.matrixWorld);
+    this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+    this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(this.tempMatrix);
+    const intersects = this.raycaster.intersectObjects(
+      this.raycastGroup.children,
+      true,
+    );
+
+    if (intersects.length === 0) {
+      this.clearHoveredObject();
+      return;
+    }
+
+    const intersection = intersects[0];
+    pointer.scale.z = intersection.distance / 5;
+    hoverIndicator.position.set(0, 0, -intersection.distance);
+    hoverIndicator.scale.setScalar(
+      Math.max(intersection.distance * 0.006, 0.03),
+    );
+    hoverIndicator.visible = true;
+
+    if (this.hoveredObject !== intersection.object) {
+      this.hoveredObject = intersection.object;
+      this.onHover?.(this.hoveredObject);
+    }
+  }
+
+  private clearHoveredObject(): void {
+    if (!this.hoveredObject) return;
+
+    this.hoveredObject = null;
+    this.onHover?.(null);
   }
 
   public update(delta: number = 0.0001): void {
