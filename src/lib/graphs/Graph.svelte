@@ -185,7 +185,8 @@ const runs = new Map<string, Run>();
 let currentFrameIndex = 0;
 let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
-const pendingNodeFadeInDurations = new Map<string, number>();
+type NodeFadeInTiming = { durationMs: number; delayMs: number };
+const pendingNodeFadeIns = new Map<string, NodeFadeInTiming>();
 
 function emitGraphEvent(event: GraphEvent): void {
   onGraphEvent?.(event);
@@ -225,6 +226,7 @@ function clearSpeciesSelection(): string[] {
 export function addInitialSpecies(
   speciesIds: readonly string[],
   fadeInDurationMs = 0,
+  fadeInDelayMs = 0,
 ): string[] {
   const addedSpecies: string[] = [];
 
@@ -237,8 +239,14 @@ export function addInitialSpecies(
       continue;
     }
 
-    if (fadeInDurationMs > 0 && !renderGraph.hasNode(speciesId)) {
-      pendingNodeFadeInDurations.set(speciesId, fadeInDurationMs);
+    if (
+      (fadeInDurationMs > 0 || fadeInDelayMs > 0) &&
+      !renderGraph.hasNode(speciesId)
+    ) {
+      pendingNodeFadeIns.set(speciesId, {
+        durationMs: fadeInDurationMs,
+        delayMs: fadeInDelayMs,
+      });
     }
     addInitialNode(speciesId);
     addedSpecies.push(speciesId);
@@ -758,7 +766,7 @@ onMount(async () => {
   const trajectoryOrigin = new Vector3(0, 0, 0);
   const nodeFadeIns = new Map<
     string,
-    { startedAt: number; durationMs: number }
+    NodeFadeInTiming & { startedAt: number }
   >();
 
   function getFadeProgress(deltaSeconds: number): number {
@@ -793,21 +801,23 @@ onMount(async () => {
   }
 
   function getNodeFadeProgress(
-    fade: { startedAt: number; durationMs: number },
+    fade: NodeFadeInTiming & { startedAt: number },
     time: number,
   ): number {
+    const fadeElapsedMs = time - fade.startedAt - fade.delayMs;
+    if (fadeElapsedMs <= 0) return 0;
     if (fade.durationMs <= 0) return 1;
-    return Math.min(1, Math.max(0, (time - fade.startedAt) / fade.durationMs));
+    return Math.min(1, fadeElapsedMs / fade.durationMs);
   }
 
   function startNodeFadeIn(nodeId: string, object: Object3D): void {
-    const durationMs = pendingNodeFadeInDurations.get(nodeId);
-    if (durationMs === undefined) return;
+    const timing = pendingNodeFadeIns.get(nodeId);
+    if (!timing) return;
 
-    pendingNodeFadeInDurations.delete(nodeId);
+    pendingNodeFadeIns.delete(nodeId);
     nodeFadeIns.set(nodeId, {
       startedAt: performance.now(),
-      durationMs,
+      ...timing,
     });
     applyNodeFadeOpacity(nodeId, object, 0);
   }
@@ -1497,7 +1507,7 @@ onMount(async () => {
   }
 
   function handleRemovedNode(nodeId: string) {
-    pendingNodeFadeInDurations.delete(nodeId);
+    pendingNodeFadeIns.delete(nodeId);
     nodeFadeIns.delete(nodeId);
     const object = objects.get(nodeId);
     if (object === undefined) {

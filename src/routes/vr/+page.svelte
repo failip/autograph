@@ -9,12 +9,14 @@ type GraphController = {
   addInitialSpecies(
     speciesIds: readonly string[],
     fadeInDurationMs?: number,
+    fadeInDelayMs?: number,
   ): string[];
 };
 
 const TUTORIAL_START_SPECIES = ["O=O"];
 const TUTORIAL_UNLOCK_SPECIES = ["NttN", "O"];
 const TUTORIAL_UNLOCK_FADE_MS = 650;
+const TUTORIAL_UNLOCK_FADE_DELAY_MS = 1000;
 
 let graph: NGraph;
 let graphLoaded = false;
@@ -41,6 +43,7 @@ function handleGraphEvent(event: GraphEvent): void {
   graphController.addInitialSpecies(
     TUTORIAL_UNLOCK_SPECIES,
     TUTORIAL_UNLOCK_FADE_MS,
+    TUTORIAL_UNLOCK_FADE_DELAY_MS,
   );
 }
 
