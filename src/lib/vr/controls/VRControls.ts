@@ -156,7 +156,7 @@ export class VRControls {
         varying float vBeamProgress;
 
         void main() {
-          float fadeIn = smoothstep(0.03, 0.25, vBeamProgress);
+          float fadeIn = smoothstep(0.03, 0.1, vBeamProgress);
           float fadeOut = 1.0 - smoothstep(0.55, 0.90, vBeamProgress);
           float alpha = fadeIn * fadeOut;
 
