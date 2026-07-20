@@ -1,4 +1,4 @@
-import { Object3D, PerspectiveCamera, Scene, Vector3, Vector2, WebGLRenderer, type WebXRArrayCamera, Spherical, Quaternion, Matrix4, Raycaster, CylinderGeometry, RingGeometry, MeshBasicMaterial, Mesh } from "three";
+import { Object3D, PerspectiveCamera, Scene, Vector3, Vector2, WebGLRenderer, type WebXRArrayCamera, Spherical, Quaternion, Matrix4, Raycaster, CylinderGeometry, RingGeometry, MeshBasicMaterial, ShaderMaterial, Mesh } from "three";
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import {
   VRControllerHintsView,
@@ -140,12 +140,30 @@ export class VRControls {
     const pointerGeometry = new CylinderGeometry(0.002, 0.002, 5, 32);
     pointerGeometry.rotateX(-Math.PI / 2);
     pointerGeometry.translate(0, 0, -2.5);
-    const pointerMaterial = new MeshBasicMaterial({
-      color: 0xffffff,
+    const pointerMaterial = new ShaderMaterial({
       transparent: true,
-      opacity: 0.9,
       depthTest: true,
       depthWrite: false,
+      vertexShader: `
+        varying float vBeamProgress;
+
+        void main() {
+          vBeamProgress = clamp(-position.z / 5.0, 0.0, 1.0);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying float vBeamProgress;
+
+        void main() {
+          float fadeIn = smoothstep(0.03, 0.25, vBeamProgress);
+          float fadeOut = 1.0 - smoothstep(0.55, 0.90, vBeamProgress);
+          float alpha = fadeIn * fadeOut;
+
+          if (alpha < 0.01) discard;
+          gl_FragColor = vec4(1.0, 1.0, 1.0, alpha);
+        }
+      `,
     });
     const hoverIndicatorGeometry = new RingGeometry(0.65, 1, 32);
     const hoverIndicatorMaterial = new MeshBasicMaterial({
