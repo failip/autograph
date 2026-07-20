@@ -105,13 +105,17 @@ let controllers: [ObjectOrbitControls, ObjectOrbitControls];
 
 const GRAPH_VR_CONTROLLER_HINTS: VRControllerHints = {
   left: {
-    hints: [{ input: "STICK Y", action: "Zoom" }],
+    hints: [{ input: "STICK Y", action: "Zoom", icon: "thumbstick-y" }],
   },
   right: {
     hints: [
-      { input: "A", action: "Select molecule", accentColor: "#15803d" },
-      { input: "B", action: "Add layer", accentColor: "#b91c1c" },
-      { input: "STICK X/Y", action: "Rotate graph" },
+      { input: "A", action: "Select molecule", icon: "button-a" },
+      { input: "B", action: "Add layer", icon: "button-b" },
+      {
+        input: "STICK X/Y",
+        action: "Rotate graph",
+        icon: "thumbstick-xy",
+      },
     ],
   },
 };

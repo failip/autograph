@@ -7,6 +7,7 @@ import {
 
 export type {
   VRControlHint,
+  VRControlHintIcon,
   VRControllerHintPanel,
   VRControllerHints,
 } from "./VRControllerHints";
