@@ -124,13 +124,27 @@ async function loadGraph(graphName: string) {
             </div>
             <div class="center">
                 <label for="elementHider">Don't visualize cu (optional)</label>
-                    <input 
-                        type="checkbox" 
+                    <input
+                        type="checkbox"
                         name="elementHider"
-                        on:change={(event) => { 
-                            hideCu = event.target.checked; 
-                        }} 
+                        on:change={(event) => {
+                            hideCu = event.target.checked;
+                        }}
                     />
+            </div>
+            <div
+                class="center"
+                title="Look up 3D structures by each species'/reaction's 'hash' attribute instead of its name/SMILES. Use this if your identifiers contain characters that aren't valid filenames."
+            >
+                <label for="useHash">Use hash for XYZ lookup (optional)</label>
+                <input
+                    type="checkbox"
+                    id="useHash"
+                    name="useHash"
+                    on:change={(event) => {
+                        useHash = event.target.checked;
+                    }}
+                />
             </div>
         </div>
         <div>
