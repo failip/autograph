@@ -1023,7 +1023,10 @@ onMount(async () => {
     if (node.type === "species") {
       let data: string;
       if (xyzFiles) {
-        const file = xyzFiles.get(node.name + ".xyz");
+        const filename = useHash
+          ? `${node.hash}.xyz`
+          : `${node.name}.xyz`;
+        const file = xyzFiles.get(filename);
         if (!file) {
           return;
         }
