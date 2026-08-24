@@ -72,6 +72,7 @@ export let xyzFiles: Map<string, File> | null = null;
 export let startSpecies: string[] = [];
 export let webXR: boolean = false;
 export let hideCu: boolean = false;
+export let reactionTrajectoryPlaybackEnabled: boolean = true;
 export let onGraphEvent: GraphEventHandler | undefined = undefined;
 
 let pathSearchStart = new Array<string>();
@@ -360,6 +361,19 @@ export function addGraphContent(
   return addedNodeIds.map(String);
 }
 
+export function enableGraphNodes(nodeIds: readonly string[]): string[] {
+  const newlyEnabledNodeIds: string[] = [];
+
+  for (const nodeId of new Set(nodeIds)) {
+    if (!graph.hasNode(nodeId) || enabledGraphNodeIds.has(nodeId)) continue;
+
+    enabledGraphNodeIds.add(nodeId);
+    newlyEnabledNodeIds.push(nodeId);
+  }
+
+  return newlyEnabledNodeIds;
+}
+
 if (hideCu) {
   hiddenElements.add("Cu");
 }
@@ -418,6 +432,11 @@ function playReactionTrajectoriesBefore(
   reactionIds: readonly string[],
   onComplete: () => void,
 ): void {
+  if (!reactionTrajectoryPlaybackEnabled) {
+    onComplete();
+    return;
+  }
+
   let completed = false;
   const completeOnce = () => {
     if (completed) return;
@@ -2306,6 +2325,10 @@ function addLayer() {
   if (reactionPlaybackActive) return;
 
   const layerSelection = Array.from(selectedSpecies);
+  emitGraphEvent({
+    type: "layer-requested",
+    selectedSpecies: layerSelection,
+  });
   const stagedRenderGraph = cloneRenderGraph();
   const stagedCurrentSpecies = new Set(currentSpecies);
   const addedNodes: NodeId[] = [];

@@ -12,12 +12,18 @@ export type GraphLayerAddedEvent = {
   addedEdges: readonly (readonly [string, string])[];
 };
 
+export type GraphLayerRequestedEvent = {
+  type: "layer-requested";
+  selectedSpecies: readonly string[];
+};
+
 export type GraphResetEvent = {
   type: "reset";
 };
 
 export type GraphEvent =
   | GraphSelectionChangedEvent
+  | GraphLayerRequestedEvent
   | GraphLayerAddedEvent
   | GraphResetEvent;
 

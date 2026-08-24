@@ -16,6 +16,7 @@ type GraphController = {
     fadeInDurationMs?: number,
     fadeInDelayMs?: number,
   ): string[];
+  enableGraphNodes(nodeIds: readonly string[]): string[];
 };
 
 const TUTORIAL_START_SPECIES = ["O=O"];
@@ -27,14 +28,18 @@ const TUTORIAL_UNLOCK_FADE_MS = 650;
 const TUTORIAL_UNLOCK_FADE_DELAY_MS = 1000;
 const SHOW_FULL_EXTENDED_NETWORK_ON_COMPLETION = true;
 const EXTENDED_NETWORK_FADE_MS = 900;
+const REACTION_VIEWING_QUERY_PARAMETER = "reactionViewing";
 
 let graph: NGraph;
 let graphLoaded = false;
+let reactionTrajectoryPlaybackEnabled = true;
 let graphController: GraphController | undefined;
 let extendedNetworkNodeIds: string[] = [];
 let deferredNetworkNodeIds: string[] = [];
 let tutorialNitrogenUnlocked = false;
 let tutorialWaterUnlocked = false;
+let tutorialCompletionSpeciesReached = false;
+let tutorialExtendedNetworkPrimed = false;
 let tutorialExtendedNetworkUnlocked = false;
 
 function hasExactSelection(
@@ -62,16 +67,42 @@ function handleGraphEvent(event: GraphEvent): void {
   if (event.type === "reset") {
     tutorialNitrogenUnlocked = false;
     tutorialWaterUnlocked = false;
+    tutorialCompletionSpeciesReached = false;
+    tutorialExtendedNetworkPrimed = false;
     tutorialExtendedNetworkUnlocked = false;
     return;
   }
 
-  if (event.type !== "layer-added" || !graphController) return;
+  if (!graphController) return;
+
+  if (event.type === "layer-requested") {
+    if (
+      tutorialCompletionSpeciesReached &&
+      !tutorialExtendedNetworkUnlocked &&
+      hasExactSelection(event.selectedSpecies, [TUTORIAL_COMPLETION_SPECIES])
+    ) {
+      graphController.enableGraphNodes(extendedNetworkNodeIds);
+      tutorialExtendedNetworkPrimed = true;
+    }
+    return;
+  }
+
+  if (event.type !== "layer-added") return;
 
   if (
-    !tutorialExtendedNetworkUnlocked &&
+    !tutorialCompletionSpeciesReached &&
     event.addedNodeIds.includes(TUTORIAL_COMPLETION_SPECIES)
   ) {
+    tutorialCompletionSpeciesReached = true;
+    return;
+  }
+
+  if (
+    tutorialExtendedNetworkPrimed &&
+    !tutorialExtendedNetworkUnlocked &&
+    hasExactSelection(event.selectedSpecies, [TUTORIAL_COMPLETION_SPECIES])
+  ) {
+    tutorialExtendedNetworkPrimed = false;
     tutorialExtendedNetworkUnlocked = true;
     if (SHOW_FULL_EXTENDED_NETWORK_ON_COMPLETION) {
       graphController.addGraphContent(
@@ -106,6 +137,11 @@ function handleGraphEvent(event: GraphEvent): void {
 
 onMount(async () => {
   try {
+    reactionTrajectoryPlaybackEnabled =
+      new URLSearchParams(window.location.search).get(
+        REACTION_VIEWING_QUERY_PARAMETER,
+      ) !== "false";
+
     const [tutorialResponse, extendedResponse] = await Promise.all([
       fetch("/graphs/AtmosphereReduced/atmosphere_nox_reduced.json"),
       fetch(
@@ -145,6 +181,7 @@ onMount(async () => {
     xyzFallbackPaths={["/graphs/AtmosphereReduced/extended/xyz_species/"]}
     deferredNodeIds={deferredNetworkNodeIds}
     startSpecies={TUTORIAL_START_SPECIES}
+    {reactionTrajectoryPlaybackEnabled}
     onGraphEvent={handleGraphEvent}
   />
 {:else}
