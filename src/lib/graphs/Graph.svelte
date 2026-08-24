@@ -65,6 +65,8 @@ import {
 export let graph: Graph;
 export let secondaryGraphs: Graph[] = [];
 export let xyzPath: string;
+export let xyzFallbackPaths: string[] = [];
+export let deferredNodeIds: readonly string[] = [];
 export let useHash: boolean = false;
 export let xyzFiles: Map<string, File> | null = null;
 export let startSpecies: string[] = [];
@@ -206,8 +208,25 @@ const runs = new Map<string, Run>();
 let currentFrameIndex = 0;
 let selectedSpecies = new Set<string>();
 let hiddenElements = new Set<string>();
+const initiallyDeferredNodeIds = new Set<NodeId>(deferredNodeIds);
+let enabledGraphNodeIds = new Set<NodeId>();
 type NodeFadeInTiming = { durationMs: number; delayMs: number };
 const pendingNodeFadeIns = new Map<string, NodeFadeInTiming>();
+
+function resetEnabledGraphNodeIds(): void {
+  enabledGraphNodeIds = new Set<NodeId>();
+  graph.forEachNode((node) => {
+    if (!initiallyDeferredNodeIds.has(node.id)) {
+      enabledGraphNodeIds.add(node.id);
+    }
+  });
+}
+
+function isGraphNodeEnabled(nodeId: NodeId): boolean {
+  return enabledGraphNodeIds.has(nodeId);
+}
+
+resetEnabledGraphNodeIds();
 
 function emitGraphEvent(event: GraphEvent): void {
   onGraphEvent?.(event);
@@ -255,7 +274,11 @@ export function addInitialSpecies(
     if (initialSpecies.has(speciesId)) continue;
 
     const node = graph.getNode(speciesId);
-    if (!node || node.data?.type !== "species") {
+    if (
+      !node ||
+      node.data?.type !== "species" ||
+      !isGraphNodeEnabled(speciesId)
+    ) {
       console.warn(`Cannot add unknown graph species: ${speciesId}`);
       continue;
     }
@@ -276,21 +299,82 @@ export function addInitialSpecies(
   return addedSpecies;
 }
 
+export function addGraphContent(
+  nodeIds: readonly string[],
+  fadeInDurationMs = 0,
+  fadeInDelayMs = 0,
+): string[] {
+  const requestedNodeIds = new Set<NodeId>();
+  const addedNodeIds: NodeId[] = [];
+
+  for (const nodeId of new Set(nodeIds)) {
+    if (graph.hasNode(nodeId)) {
+      requestedNodeIds.add(nodeId);
+      enabledGraphNodeIds.add(nodeId);
+    }
+  }
+
+  renderGraph.beginUpdate();
+  try {
+    requestedNodeIds.forEach((nodeId) => {
+      if (renderGraph.hasNode(nodeId)) return;
+
+      const node = graph.getNode(nodeId);
+      if (!node) return;
+
+      if (fadeInDurationMs > 0 || fadeInDelayMs > 0) {
+        pendingNodeFadeIns.set(String(nodeId), {
+          durationMs: fadeInDurationMs,
+          delayMs: fadeInDelayMs,
+        });
+      }
+
+      node.data.inSecondaryGraphs = secondaryGraphs.every((secondaryGraph) =>
+        secondaryGraph.hasNode(nodeId),
+      );
+      renderGraph.addNode(nodeId, node.data);
+      addedNodeIds.push(nodeId);
+
+      if (node.data.type === "species") {
+        currentSpecies.add(String(nodeId));
+      }
+    });
+
+    graph.forEachLink((link) => {
+      if (
+        !requestedNodeIds.has(link.fromId) ||
+        !requestedNodeIds.has(link.toId) ||
+        renderGraph.hasLink(link.fromId, link.toId)
+      ) {
+        return;
+      }
+
+      renderGraph.addLink(link.fromId, link.toId, link.data);
+    });
+  } finally {
+    renderGraph.endUpdate();
+  }
+
+  currentSpecies = new Set(currentSpecies);
+
+  return addedNodeIds.map(String);
+}
+
 if (hideCu) {
   hiddenElements.add("Cu");
 }
 
-function getXyzBasePath(): string {
-  if (!xyzPath) return "";
-  return xyzPath.endsWith("/") ? xyzPath : `${xyzPath}/`;
+function getXyzBasePaths(): string[] {
+  return [xyzPath, ...xyzFallbackPaths]
+    .filter(Boolean)
+    .map((path) => (path.endsWith("/") ? path : `${path}/`));
 }
 
 function getNamedXyzUrls(name: string): string[] {
-  const basePath = getXyzBasePath();
-  const candidates = [
+  const candidates = getXyzBasePaths().flatMap((basePath) => [
     `${basePath}${encodeURIComponent(name)}.xyz`,
     `${basePath}${name}.xyz`,
-  ];
+  ]);
 
   return [...new Set(candidates)];
 }
@@ -1946,6 +2030,8 @@ function rClick() {
   }
   clearSpeciesSelection();
   renderGraph.clear();
+  resetEnabledGraphNodeIds();
+  pendingNodeFadeIns.clear();
   initialSpecies.clear();
   initialReactions.clear();
   currentSpecies.clear();
@@ -2274,6 +2360,8 @@ function addLayer() {
 }
 
 function addInitialNode(node: string) {
+  if (!isGraphNodeEnabled(node)) return;
+
   const addedNodes: NodeId[] = [];
   const addedEdges: [NodeId, NodeId][] = [];
 
@@ -2341,6 +2429,8 @@ function addSpeciesToRendergraph(
   addedNodes?: NodeId[], // Optional
   addedEdges?: [NodeId, NodeId][], // Optional
 ) {
+  if (!isGraphNodeEnabled(species)) return;
+
   const alreadyInGraph = renderGraph.hasNode(species);
   if (alreadyInGraph) {
     return;
@@ -2380,6 +2470,8 @@ function addAllPossibleReactionsToRendergraph(
   addedNodes?: NodeId[],
   addedEdges?: [NodeId, NodeId][],
 ) {
+  if (!isGraphNodeEnabled(species)) return;
+
   const isSelectiveAdd = inAddLayerContext && selectedSpecies.size > 0;
   if (isSelectiveAdd && !selectedSpecies.has(species)) {
     return;
@@ -2405,8 +2497,16 @@ function addAllPossibleReactionsToRendergraph(
 
     const reaction = graph.getNode(reactionId);
     if (!reaction) return;
+    if (!isGraphNodeEnabled(reactionId)) return;
 
     const inEdges = getInEdges(reaction);
+    const outEdges = getOutEdges(reaction);
+    const allParticipantsEnabled = [...inEdges, ...outEdges].every((edge) =>
+      isGraphNodeEnabled(
+        edge.fromId === reactionId ? edge.toId : edge.fromId,
+      ),
+    );
+    if (!allParticipantsEnabled) return;
 
     const numberOfUniqueReactants = new Set(
       inEdges.map((edge) => edge.fromId as string),
@@ -2422,7 +2522,6 @@ function addAllPossibleReactionsToRendergraph(
     const numberOfUniqueProducts = new Set(
       getOutEdges(reaction).map((edge) => edge.toId as string),
     ).size;
-    const outEdges = getOutEdges(reaction);
     const hasAllProducts = outEdges.every((edge) => {
       return isSelectiveAdd
         ? selectedSpecies.has(edge.toId as string) &&

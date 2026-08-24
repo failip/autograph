@@ -1,0 +1,4518 @@
+{
+  "nodes": [
+    {
+      "key": "N[O] + [H] => [NH2] + [OH]",
+      "attributes": {
+        "name": "N[O] + [H] => [NH2] + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[H] + N[O] => NO",
+      "attributes": {
+        "name": "[H] + N[O] => NO",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH]=O + [H] => [N]=O + [H][H]",
+      "attributes": {
+        "name": "[NH]=O + [H] => [N]=O + [H][H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[H] + [NH]=O => N[O]",
+      "attributes": {
+        "name": "[H] + [NH]=O => N[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[H] + [NH]=O => [NH]O",
+      "attributes": {
+        "name": "[H] + [NH]=O => [NH]O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [H] => [H][H] + O=[N+]([O-])[O]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [H] => [H][H] + O=[N+]([O-])[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [H] => O + O=[N+][O-]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [H] => O + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [H] => [OH] + ON=O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [H] => [OH] + ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH]O + [H] => [NH2] + [OH]",
+      "attributes": {
+        "name": "[NH]O + [H] => [NH2] + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[H] + [NH]O => NO",
+      "attributes": {
+        "name": "[H] + [NH]O => NO",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N=N + [H] => [N]=N + [H][H]",
+      "attributes": {
+        "name": "N=N + [H] => [N]=N + [H][H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[NH] + [H] => N=N + [H][H]",
+      "attributes": {
+        "name": "N[NH] + [H] => N=N + [H][H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[NH] + [H] => NN",
+      "attributes": {
+        "name": "N[NH] + [H] => NN",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + [H] => N[NH] + [H][H]",
+      "attributes": {
+        "name": "NN + [H] => N[NH] + [H][H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + [H] => N + [NH2]",
+      "attributes": {
+        "name": "NN + [H] => N + [NH2]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N#[N+][O-] + [H] => N#N + [OH]",
+      "attributes": {
+        "name": "N#[N+][O-] + [H] => N#N + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=N-N=O + [H] => [NH]=O + [N]=O",
+      "attributes": {
+        "name": "O=N-N=O + [H] => [NH]=O + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2] + [H] => N",
+      "attributes": {
+        "name": "[NH2] + [H] => N",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[N+](=O)[O-] + [H] => [NH][N+](=O)[O-] + [H][H]",
+      "attributes": {
+        "name": "N[N+](=O)[O-] + [H] => [NH][N+](=O)[O-] + [H][H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NO + [H] => N[O] + [H][H]",
+      "attributes": {
+        "name": "NO + [H] => N[O] + [H][H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NO + [H] => [NH]O + [H][H]",
+      "attributes": {
+        "name": "NO + [H] => [NH]O + [H][H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NO + [H] => [NH2] + O",
+      "attributes": {
+        "name": "NO + [H] => [NH2] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NO + [H] => N + [OH]",
+      "attributes": {
+        "name": "NO + [H] => N + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=N + [H] => N#N + [H][H]",
+      "attributes": {
+        "name": "[N]=N + [H] => N#N + [H][H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=O + [H] => [NH]=O",
+      "attributes": {
+        "name": "[N]=O + [H] => [NH]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[H] + O=O => O[O]",
+      "attributes": {
+        "name": "[H] + O=O => O[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[H] + O=O => [O] + [OH]",
+      "attributes": {
+        "name": "[H] + O=O => [O] + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O-]N=NO + [H+] => ON=NO",
+      "attributes": {
+        "name": "[O-]N=NO + [H+] => ON=NO",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N=N + [H+] => [NH2][NH+]",
+      "attributes": {
+        "name": "N=N + [H+] => [NH2][NH+]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + [H+] => [NH2][NH3+]",
+      "attributes": {
+        "name": "NN + [H+] => [NH2][NH3+]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O-]N=O + [H+] => ON=O",
+      "attributes": {
+        "name": "[O-]N=O + [H+] => ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O-]ON=O + [H+] => OON=O",
+      "attributes": {
+        "name": "[O-]ON=O + [H+] => OON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[H][H] + O=[N+]([O-])[O] => O[N+](=O)[O-] + [H]",
+      "attributes": {
+        "name": "[H][H] + O=[N+]([O-])[O] => O[N+](=O)[O-] + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "ON=NO => [O-]N=NO + [H+]",
+      "attributes": {
+        "name": "ON=NO => [O-]N=NO + [H+]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "ON=NO => N#[N+][O-] + O",
+      "attributes": {
+        "name": "ON=NO => N#[N+][O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[O] => [NH]O",
+      "attributes": {
+        "name": "N[O] => [NH]O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[O] + O[O] => [NH]=O + OO",
+      "attributes": {
+        "name": "N[O] + O[O] => [NH]=O + OO",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[O] + [O] => [NH]=O + [OH]",
+      "attributes": {
+        "name": "N[O] + [O] => [NH]=O + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[O] + [OH] => [NH]=O + O",
+      "attributes": {
+        "name": "N[O] + [OH] => [NH]=O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[OH2+] => O=[N+]=O + O",
+      "attributes": {
+        "name": "O=[N+]([O-])[OH2+] => O=[N+]=O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-] => O[N+](=O)[O-] + O[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-] => O[N+](=O)[O-] + O[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + O => [OH3+] + [O-][N+](=O)[O-]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + O => [OH3+] + [O-][N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=NON=O + O => O[N+](=O)[O-] + [NH]=O",
+      "attributes": {
+        "name": "O=NON=O + O => O[N+](=O)[O-] + [NH]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=NON=O + O => ON=O + ON=O",
+      "attributes": {
+        "name": "O=NON=O + O => ON=O + ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[N+](=O)[O-] + O => ON=O + O[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=[N+]([O-])[N+](=O)[O-] + O => ON=O + O[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])ON(=O)=O + O => O[N+](=O)[O-] + O[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=[N+]([O-])ON(=O)=O + O => O[N+](=O)[O-] + O[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NO[N+](=O)[O-] + O => O[N+](=O)[O-] + NO",
+      "attributes": {
+        "name": "NO[N+](=O)[O-] + O => O[N+](=O)[O-] + NO",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O + O=[N+][O-] => O[N+](=O)[O-] + [H]",
+      "attributes": {
+        "name": "O + O=[N+][O-] => O[N+](=O)[O-] + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+][O-] + O=[N+][O-] + O => ON=O + O[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=[N+][O-] + O=[N+][O-] + O => ON=O + O[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O] + O => [OH] + [OH]",
+      "attributes": {
+        "name": "[O] + O => [OH] + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O-] + O => [OH] + [OH-]",
+      "attributes": {
+        "name": "[O-] + O => [OH] + [OH-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O + [OH] => [H][H] + O[O]",
+      "attributes": {
+        "name": "O + [OH] => [H][H] + O[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "OO => [OH] + [OH]",
+      "attributes": {
+        "name": "OO => [OH] + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O-]N=NO => N#[N+][O-] + [OH-]",
+      "attributes": {
+        "name": "[O-]N=NO => N#[N+][O-] + [OH-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N=[N+]=[N-] + ON=O => N#N + N#[N+][O-] + O",
+      "attributes": {
+        "name": "N=[N+]=[N-] + ON=O => N#N + N#[N+][O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N=[N+]=[N-] + [OH] => [N]=[N+]=[N-] + O",
+      "attributes": {
+        "name": "N=[N+]=[N-] + [OH] => [N]=[N+]=[N-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH]=O => [N]=O + [H]",
+      "attributes": {
+        "name": "[NH]=O => [N]=O + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH]=O + [NH]=O => ON=NO",
+      "attributes": {
+        "name": "[NH]=O + [NH]=O => ON=NO",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH]=O + [NH]=O => N#[N+][O-] + O",
+      "attributes": {
+        "name": "[NH]=O + [NH]=O => N#[N+][O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [NH]=O => O=NON=O + O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [NH]=O => O=NON=O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "ON=O + [NH]=O => NO[N+](=O)[O-]",
+      "attributes": {
+        "name": "ON=O + [NH]=O => NO[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH]=O + [O] => [N]=O + [OH]",
+      "attributes": {
+        "name": "[NH]=O + [O] => [N]=O + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH]=O + O=O => [N]=O + O[O]",
+      "attributes": {
+        "name": "[NH]=O + O=O => [N]=O + O[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH]=O + [OH] => [N]=O + O",
+      "attributes": {
+        "name": "[NH]=O + [OH] => [N]=O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] => [H] + O=[N+]([O-])[O]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] => [H] + O=[N+]([O-])[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] => ON=O + [O]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] => ON=O + [O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] => [OH] + O=[N+][O-]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] => [OH] + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])ON(=O)=O + O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])ON(=O)=O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O + O + O=O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O + O + O=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + O[N+](=O)[O-] + [N]=O => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + O[N+](=O)[O-] + [N]=O => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + ON=O => O=[N+]([O-])[N+](=O)[O-] + O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + ON=O => O=[N+]([O-])[N+](=O)[O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + ON=O => O=NO[N+](=O)[O-] + O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + ON=O => O=NO[N+](=O)[O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + NN => N=N + ON=O + O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + NN => N=N + ON=O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [NH] => [NH]O + O=[N+][O-]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [NH] => [NH]O + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [NH2] => N[O] + ON=O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [NH2] => N[O] + ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [NH2] => N + O=[N+]([O-])[O]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [NH2] => N + O=[N+]([O-])[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NO + O[N+](=O)[O-] => ON=O + [NH]=O + O",
+      "attributes": {
+        "name": "NO + O[N+](=O)[O-] => ON=O + [NH]=O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + NO => NO[N+](=O)[O-] + O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + NO => NO[N+](=O)[O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + NO => [NH3+]O + [O-][N+](=O)[O-]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + NO => [NH3+]O + [O-][N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + N => N[O] + O + [N]=O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + N => N[O] + O + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + N => N[N+](=O)[O-] + O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + N => N[N+](=O)[O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + N => [NH4+].[O-][N+](=O)[O-]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + N => [NH4+].[O-][N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [N]=O => ON=O + O=[N+][O-]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [N]=O => ON=O + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [O] => [OH] + O=[N+]([O-])[O]",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [O] => [OH] + O=[N+]([O-])[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-] + [OH] => O=[N+]([O-])[O] + O",
+      "attributes": {
+        "name": "O[N+](=O)[O-] + [OH] => O=[N+]([O-])[O] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "OO[N+](=O)[O-] => O[O] + O=[N+][O-]",
+      "attributes": {
+        "name": "OO[N+](=O)[O-] => O[O] + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "OO[N+](=O)[O-] => [OH] + O=[N+]([O-])[O]",
+      "attributes": {
+        "name": "OO[N+](=O)[O-] => [OH] + O=[N+]([O-])[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH]O => N[O]",
+      "attributes": {
+        "name": "[NH]O => N[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[O] + O[O] => OO + O=O",
+      "attributes": {
+        "name": "O[O] + O[O] => OO + O=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[NH] + O[O] => NN + O=O",
+      "attributes": {
+        "name": "N[NH] + O[O] => NN + O=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[O] + [N]=O => O[N+](=O)[O-]",
+      "attributes": {
+        "name": "O[O] + [N]=O => O[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[O] + [N]=O => OON=O",
+      "attributes": {
+        "name": "O[O] + [N]=O => OON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=O + O[O] => O=[N+][O-] + [OH]",
+      "attributes": {
+        "name": "[N]=O + O[O] => O=[N+][O-] + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O[O] + O=[N+][O-] => OO[N+](=O)[O-]",
+      "attributes": {
+        "name": "O[O] + O=[N+][O-] => OO[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "ON=O => [O-]N=O + [H+]",
+      "attributes": {
+        "name": "ON=O => [O-]N=O + [H+]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "ON=O => [OH] + [N]=O",
+      "attributes": {
+        "name": "ON=O => [OH] + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "ON=O + ON=O => [N]=O + O=[N+][O-] + O",
+      "attributes": {
+        "name": "ON=O + ON=O => [N]=O + O=[N+][O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "ON=O + ON=O + ON=O => O[N+](=O)[O-] + [N]=O + [N]=O + O",
+      "attributes": {
+        "name": "ON=O + ON=O + ON=O => O[N+](=O)[O-] + [N]=O + [N]=O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + ON=O => N=[N+]=[N-] + O + O",
+      "attributes": {
+        "name": "NN + ON=O => N=[N+]=[N-] + O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NO + ON=O => N#[N+][O-] + O + O",
+      "attributes": {
+        "name": "NO + ON=O => N#[N+][O-] + O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "ON=O + O=[N+][O-] => O[N+](=O)[O-] + [N]=O",
+      "attributes": {
+        "name": "ON=O + O=[N+][O-] => O[N+](=O)[O-] + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[OH] + ON=O => O[N+](=O)[O-] + [H]",
+      "attributes": {
+        "name": "[OH] + ON=O => O[N+](=O)[O-] + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "ON=O + [OH] => O=[N+][O-] + O",
+      "attributes": {
+        "name": "ON=O + [OH] => O=[N+][O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "OON=O => [O-][N+](=O)[O-] + [H+]",
+      "attributes": {
+        "name": "OON=O => [O-][N+](=O)[O-] + [H+]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "OON=O => [H+] + [O-]ON=O",
+      "attributes": {
+        "name": "OON=O => [H+] + [O-]ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "OON=O => [OH] + O=[N+][O-]",
+      "attributes": {
+        "name": "OON=O => [OH] + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N] + O=O => [N]=O + [O]",
+      "attributes": {
+        "name": "[N] + O=O => [N]=O + [O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N] + [OH] => [N]=O + [H]",
+      "attributes": {
+        "name": "[N] + [OH] => [N]=O + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O] + N#N => [N]=O + [N]",
+      "attributes": {
+        "name": "[O] + N#N => [N]=O + [N]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N=N + [N]=O => N#[N+][O-] + [NH2]",
+      "attributes": {
+        "name": "N=N + [N]=O => N#[N+][O-] + [NH2]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N=N + O=[N+][O-] => [N]=N + ON=O",
+      "attributes": {
+        "name": "N=N + O=[N+][O-] => [N]=N + ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N=N + [O] => [NH2] + [N]=O",
+      "attributes": {
+        "name": "N=N + [O] => [NH2] + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N=N + [O] => [N]=N + [OH]",
+      "attributes": {
+        "name": "N=N + [O] => [N]=N + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[NH] + O=[N+][O-] => N=N + ON=O",
+      "attributes": {
+        "name": "N[NH] + O=[N+][O-] => N=N + ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[NH] + [O] => [NH2] + [NH]=O",
+      "attributes": {
+        "name": "N[NH] + [O] => [NH2] + [NH]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[NH] + [OH] => N=N + O",
+      "attributes": {
+        "name": "N[NH] + [OH] => N=N + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[NH] + [OH] => N + [NH]=O",
+      "attributes": {
+        "name": "N[NH] + [OH] => N + [NH]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2][NH+] => N=N + [H+]",
+      "attributes": {
+        "name": "[NH2][NH+] => N=N + [H+]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN => [NH2] + [NH2]",
+      "attributes": {
+        "name": "NN => [NH2] + [NH2]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + [NH2] => N[NH] + N",
+      "attributes": {
+        "name": "NN + [NH2] => N[NH] + N",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + [N]=O => N[NH] + [NH]=O",
+      "attributes": {
+        "name": "NN + [N]=O => N[NH] + [NH]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + O=[N+][O-] => N[NH] + ON=O",
+      "attributes": {
+        "name": "NN + O=[N+][O-] => N[NH] + ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + O=[N+]([O-])[O] => N[NH] + O[N+](=O)[O-]",
+      "attributes": {
+        "name": "NN + O=[N+]([O-])[O] => N[NH] + O[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + [O] => N[NH] + [OH]",
+      "attributes": {
+        "name": "NN + [O] => N[NH] + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NN + [OH] => N[NH] + O",
+      "attributes": {
+        "name": "NN + [OH] => N[NH] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2][NH3+] => NN + [H+]",
+      "attributes": {
+        "name": "[NH2][NH3+] => NN + [H+]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N#[N+][O-] + [N]=O => N#N + O=[N+][O-]",
+      "attributes": {
+        "name": "N#[N+][O-] + [N]=O => N#N + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N#[N+][O-] + [O] => N#N + O=O",
+      "attributes": {
+        "name": "N#[N+][O-] + [O] => N#N + O=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N#[N+][O-] + [O] => [N]=O + [N]=O",
+      "attributes": {
+        "name": "N#[N+][O-] + [O] => [N]=O + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N#[N+][O-] + [OH] => [NH]=O + [N]=O",
+      "attributes": {
+        "name": "N#[N+][O-] + [OH] => [NH]=O + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N#[N+][O-] + [OH] => N#N + O[O]",
+      "attributes": {
+        "name": "N#[N+][O-] + [OH] => N#N + O[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=N-N=O => [N]=O + [N]=O",
+      "attributes": {
+        "name": "O=N-N=O => [N]=O + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=N-N=O + [O] => [N]=O + O=[N+][O-]",
+      "attributes": {
+        "name": "O=N-N=O + [O] => [N]=O + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=NON=O => [N]=O + O=[N+][O-]",
+      "attributes": {
+        "name": "O=NON=O => [N]=O + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-]",
+      "attributes": {
+        "name": "O=[N+]([O-])[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])ON(=O)=O => O=[N+][O-] + O=[N+]([O-])[O]",
+      "attributes": {
+        "name": "O=[N+]([O-])ON(=O)=O => O=[N+][O-] + O=[N+]([O-])[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])OO[N+](=O)[O-] => O=[N+]([O-])[O] + O=[N+]([O-])[O]",
+      "attributes": {
+        "name": "O=[N+]([O-])OO[N+](=O)[O-] => O=[N+]([O-])[O] + O=[N+]([O-])[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=[N+]=[N-] + [N]=O => N#[N+][O-] + N#N",
+      "attributes": {
+        "name": "[N]=[N+]=[N-] + [N]=O => N#[N+][O-] + N#N",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2] + [NH] => N=N + [H]",
+      "attributes": {
+        "name": "[NH2] + [NH] => N=N + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH] + [NH2] => N[NH]",
+      "attributes": {
+        "name": "[NH] + [NH2] => N[NH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH] + [N]=O => N#[N+][O-] + [H]",
+      "attributes": {
+        "name": "[NH] + [N]=O => N#[N+][O-] + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH] + [N]=O => N#N + [OH]",
+      "attributes": {
+        "name": "[NH] + [N]=O => N#N + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH] + O=[N+][O-] => [NH]=O + [N]=O",
+      "attributes": {
+        "name": "[NH] + O=[N+][O-] => [NH]=O + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH] + O=[N+][O-] => N#[N+][O-] + [OH]",
+      "attributes": {
+        "name": "[NH] + O=[N+][O-] => N#[N+][O-] + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2] + [NH2] => N=N + [H][H]",
+      "attributes": {
+        "name": "[NH2] + [NH2] => N=N + [H][H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2] + [NH2] => NN",
+      "attributes": {
+        "name": "[NH2] + [NH2] => NN",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2] + [N]=O => N#N + O",
+      "attributes": {
+        "name": "[NH2] + [N]=O => N#N + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2] + [N]=O => [N]=N + [OH]",
+      "attributes": {
+        "name": "[NH2] + [N]=O => [N]=N + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2] + O=[N+][O-] => N[O] + [N]=O",
+      "attributes": {
+        "name": "[NH2] + O=[N+][O-] => N[O] + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2] + O=[N+][O-] => N#[N+][O-] + O",
+      "attributes": {
+        "name": "[NH2] + O=[N+][O-] => N#[N+][O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH2] + O=[N+][O-] => N[N+](=O)[O-]",
+      "attributes": {
+        "name": "[NH2] + O=[N+][O-] => N[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NO[N+](=O)[O-] => ON=O + [NH]=O",
+      "attributes": {
+        "name": "NO[N+](=O)[O-] => ON=O + [NH]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N[N+](=O)[O-] => N#[N+][O-] + O",
+      "attributes": {
+        "name": "N[N+](=O)[O-] => N#[N+][O-] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "NO => [NH2] + [OH]",
+      "attributes": {
+        "name": "NO => [NH2] + [OH]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N => [NH2] + [H]",
+      "attributes": {
+        "name": "N => [NH2] + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N + O=[N+]([O-])[O] => O[N+](=O)[O-] + [NH2]",
+      "attributes": {
+        "name": "N + O=[N+]([O-])[O] => O[N+](=O)[O-] + [NH2]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N + [OH] => [NH2] + O",
+      "attributes": {
+        "name": "N + [OH] => [NH2] + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH4+].[O-][N+](=O)[O-] => N#[N+][O-] + O + O",
+      "attributes": {
+        "name": "[NH4+].[O-][N+](=O)[O-] => N#[N+][O-] + O + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH4+].[O-][N+](=O)[O-] => O[N+](=O)[O-] + N",
+      "attributes": {
+        "name": "[NH4+].[O-][N+](=O)[O-] => O[N+](=O)[O-] + N",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[NH][N+](=O)[O-] => [NH]=O + [N]=O",
+      "attributes": {
+        "name": "[NH][N+](=O)[O-] => [NH]=O + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=N => N#N + [H]",
+      "attributes": {
+        "name": "[N]=N => N#N + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=N + [N]=O => N#N + [NH]=O",
+      "attributes": {
+        "name": "[N]=N + [N]=O => N#N + [NH]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=N + O=[N+][O-] => N#N + ON=O",
+      "attributes": {
+        "name": "[N]=N + O=[N+][O-] => N#N + ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=N + [O] => N#[N+][O-] + [H]",
+      "attributes": {
+        "name": "[N]=N + [O] => N#[N+][O-] + [H]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=N + [O] => [NH] + [N]=O",
+      "attributes": {
+        "name": "[N]=N + [O] => [NH] + [N]=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=N + O=O => N#N + O[O]",
+      "attributes": {
+        "name": "[N]=N + O=O => N#N + O[O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=N + [OH] => N#N + O",
+      "attributes": {
+        "name": "[N]=N + [OH] => N#N + O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=O + [N]=O => O=N-N=O",
+      "attributes": {
+        "name": "[N]=O + [N]=O => O=N-N=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=O + O=[N+][O-] => O=NON=O",
+      "attributes": {
+        "name": "[N]=O + O=[N+][O-] => O=NON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[O] + [N]=O => O=[N+][O-] + O=[N+][O-]",
+      "attributes": {
+        "name": "O=[N+]([O-])[O] + [N]=O => O=[N+][O-] + O=[N+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[N]=O + O=[O+][O-] => O=[N+][O-] + O=O",
+      "attributes": {
+        "name": "[N]=O + O=[O+][O-] => O=[N+][O-] + O=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[OH] + [N]=O => ON=O",
+      "attributes": {
+        "name": "[OH] + [N]=O => ON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+][O-] => [N]=O + [O]",
+      "attributes": {
+        "name": "O=[N+][O-] => [N]=O + [O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+][O-] + O=[N+][O-] => O=[N+]([O-])[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=[N+][O-] + O=[N+][O-] => O=[N+]([O-])[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+][O-] + O=[N+]([O-])[O] => O=[N+]([O-])ON(=O)=O",
+      "attributes": {
+        "name": "O=[N+][O-] + O=[N+]([O-])[O] => O=[N+]([O-])ON(=O)=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+][O-] + O=[O+][O-] => O=[N+]([O-])[O] + O=O",
+      "attributes": {
+        "name": "O=[N+][O-] + O=[O+][O-] => O=[N+]([O-])[O] + O=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+][O-] + [OH] => O[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=[N+][O-] + [OH] => O[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[OH] + O=[N+][O-] => OON=O",
+      "attributes": {
+        "name": "[OH] + O=[N+][O-] => OON=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[O] => [N]=O + O=O",
+      "attributes": {
+        "name": "O=[N+]([O-])[O] => [N]=O + O=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[O] => O=[N+][O-] + [O]",
+      "attributes": {
+        "name": "O=[N+]([O-])[O] => O=[N+][O-] + [O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[O] + O=[N+]([O-])[O] => O=[N+]([O-])OO[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=[N+]([O-])[O] + O=[N+]([O-])[O] => O=[N+]([O-])OO[N+](=O)[O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O-][N+](=O)[O-] => O=[N+][O-] + [O-]",
+      "attributes": {
+        "name": "[O-][N+](=O)[O-] => O=[N+][O-] + [O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O-][N+](=O)[O-] => [O-]N=O + [O]",
+      "attributes": {
+        "name": "[O-][N+](=O)[O-] => [O-]N=O + [O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O] + O=O => O=[O+][O-]",
+      "attributes": {
+        "name": "[O] + O=O => O=[O+][O-]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "[O] + O=[O+][O-] => O=O + O=O",
+      "attributes": {
+        "name": "[O] + O=[O+][O-] => O=O + O=O",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "O=O => [O] + [O]",
+      "attributes": {
+        "name": "O=O => [O] + [O]",
+        "type": "reaction",
+        "weight": 1.0
+      }
+    },
+    {
+      "key": "N",
+      "attributes": {
+        "name": "N",
+        "type": "species"
+      }
+    },
+    {
+      "key": "N#N",
+      "attributes": {
+        "name": "N#N",
+        "type": "species"
+      }
+    },
+    {
+      "key": "N#[N+][O-]",
+      "attributes": {
+        "name": "N#[N+][O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "N=N",
+      "attributes": {
+        "name": "N=N",
+        "type": "species"
+      }
+    },
+    {
+      "key": "N=[N+]=[N-]",
+      "attributes": {
+        "name": "N=[N+]=[N-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "NN",
+      "attributes": {
+        "name": "NN",
+        "type": "species"
+      }
+    },
+    {
+      "key": "NO",
+      "attributes": {
+        "name": "NO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "NO[N+](=O)[O-]",
+      "attributes": {
+        "name": "NO[N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "N[N+](=O)[O-]",
+      "attributes": {
+        "name": "N[N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "N[NH]",
+      "attributes": {
+        "name": "N[NH]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "N[O]",
+      "attributes": {
+        "name": "N[O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O",
+      "attributes": {
+        "name": "O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=N-N=O",
+      "attributes": {
+        "name": "O=N-N=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=NON=O",
+      "attributes": {
+        "name": "O=NON=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=NO[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=NO[N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=O",
+      "attributes": {
+        "name": "O=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=[N+]([O-])ON(=O)=O",
+      "attributes": {
+        "name": "O=[N+]([O-])ON(=O)=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=[N+]([O-])OO[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=[N+]([O-])OO[N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[N+](=O)[O-]",
+      "attributes": {
+        "name": "O=[N+]([O-])[N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[OH2+]",
+      "attributes": {
+        "name": "O=[N+]([O-])[OH2+]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=[N+]([O-])[O]",
+      "attributes": {
+        "name": "O=[N+]([O-])[O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=[N+]=O",
+      "attributes": {
+        "name": "O=[N+]=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=[N+][O-]",
+      "attributes": {
+        "name": "O=[N+][O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O=[O+][O-]",
+      "attributes": {
+        "name": "O=[O+][O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "ON=NO",
+      "attributes": {
+        "name": "ON=NO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "ON=O",
+      "attributes": {
+        "name": "ON=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "OO",
+      "attributes": {
+        "name": "OO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "OON=O",
+      "attributes": {
+        "name": "OON=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "OO[N+](=O)[O-]",
+      "attributes": {
+        "name": "OO[N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O[N+](=O)[O-]",
+      "attributes": {
+        "name": "O[N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "O[O]",
+      "attributes": {
+        "name": "O[O]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[H+]",
+      "attributes": {
+        "name": "[H+]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[H]",
+      "attributes": {
+        "name": "[H]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[H][H]",
+      "attributes": {
+        "name": "[H][H]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[NH2]",
+      "attributes": {
+        "name": "[NH2]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[NH2][NH+]",
+      "attributes": {
+        "name": "[NH2][NH+]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[NH2][NH3+]",
+      "attributes": {
+        "name": "[NH2][NH3+]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[NH3+]O",
+      "attributes": {
+        "name": "[NH3+]O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[NH4+].[O-][N+](=O)[O-]",
+      "attributes": {
+        "name": "[NH4+].[O-][N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[NH]",
+      "attributes": {
+        "name": "[NH]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[NH]=O",
+      "attributes": {
+        "name": "[NH]=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[NH]O",
+      "attributes": {
+        "name": "[NH]O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[NH][N+](=O)[O-]",
+      "attributes": {
+        "name": "[NH][N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[N]",
+      "attributes": {
+        "name": "[N]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[N]=N",
+      "attributes": {
+        "name": "[N]=N",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[N]=O",
+      "attributes": {
+        "name": "[N]=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[N]=[N+]=[N-]",
+      "attributes": {
+        "name": "[N]=[N+]=[N-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[O-]",
+      "attributes": {
+        "name": "[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[O-]N=NO",
+      "attributes": {
+        "name": "[O-]N=NO",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[O-]N=O",
+      "attributes": {
+        "name": "[O-]N=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[O-]ON=O",
+      "attributes": {
+        "name": "[O-]ON=O",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[O-][N+](=O)[O-]",
+      "attributes": {
+        "name": "[O-][N+](=O)[O-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[OH-]",
+      "attributes": {
+        "name": "[OH-]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[OH3+]",
+      "attributes": {
+        "name": "[OH3+]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[OH]",
+      "attributes": {
+        "name": "[OH]",
+        "type": "species"
+      }
+    },
+    {
+      "key": "[O]",
+      "attributes": {
+        "name": "[O]",
+        "type": "species"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "N[O]",
+      "target": "N[O] + [H] => [NH2] + [OH]"
+    },
+    {
+      "source": "[H]",
+      "target": "N[O] + [H] => [NH2] + [OH]"
+    },
+    {
+      "source": "N[O] + [H] => [NH2] + [OH]",
+      "target": "[NH2]"
+    },
+    {
+      "source": "N[O] + [H] => [NH2] + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[H]",
+      "target": "[H] + N[O] => NO"
+    },
+    {
+      "source": "N[O]",
+      "target": "[H] + N[O] => NO"
+    },
+    {
+      "source": "[H] + N[O] => NO",
+      "target": "NO"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "[NH]=O + [H] => [N]=O + [H][H]"
+    },
+    {
+      "source": "[H]",
+      "target": "[NH]=O + [H] => [N]=O + [H][H]"
+    },
+    {
+      "source": "[NH]=O + [H] => [N]=O + [H][H]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[NH]=O + [H] => [N]=O + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "[H]",
+      "target": "[H] + [NH]=O => N[O]"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "[H] + [NH]=O => N[O]"
+    },
+    {
+      "source": "[H] + [NH]=O => N[O]",
+      "target": "N[O]"
+    },
+    {
+      "source": "[H]",
+      "target": "[H] + [NH]=O => [NH]O"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "[H] + [NH]=O => [NH]O"
+    },
+    {
+      "source": "[H] + [NH]=O => [NH]O",
+      "target": "[NH]O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [H] => [H][H] + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "[H]",
+      "target": "O[N+](=O)[O-] + [H] => [H][H] + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [H] => [H][H] + O=[N+]([O-])[O]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [H] => [H][H] + O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [H] => O + O=[N+][O-]"
+    },
+    {
+      "source": "[H]",
+      "target": "O[N+](=O)[O-] + [H] => O + O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [H] => O + O=[N+][O-]",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [H] => O + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [H] => [OH] + ON=O"
+    },
+    {
+      "source": "[H]",
+      "target": "O[N+](=O)[O-] + [H] => [OH] + ON=O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [H] => [OH] + ON=O",
+      "target": "[OH]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [H] => [OH] + ON=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "[NH]O",
+      "target": "[NH]O + [H] => [NH2] + [OH]"
+    },
+    {
+      "source": "[H]",
+      "target": "[NH]O + [H] => [NH2] + [OH]"
+    },
+    {
+      "source": "[NH]O + [H] => [NH2] + [OH]",
+      "target": "[NH2]"
+    },
+    {
+      "source": "[NH]O + [H] => [NH2] + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[H]",
+      "target": "[H] + [NH]O => NO"
+    },
+    {
+      "source": "[NH]O",
+      "target": "[H] + [NH]O => NO"
+    },
+    {
+      "source": "[H] + [NH]O => NO",
+      "target": "NO"
+    },
+    {
+      "source": "N=N",
+      "target": "N=N + [H] => [N]=N + [H][H]"
+    },
+    {
+      "source": "[H]",
+      "target": "N=N + [H] => [N]=N + [H][H]"
+    },
+    {
+      "source": "N=N + [H] => [N]=N + [H][H]",
+      "target": "[N]=N"
+    },
+    {
+      "source": "N=N + [H] => [N]=N + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "N[NH]",
+      "target": "N[NH] + [H] => N=N + [H][H]"
+    },
+    {
+      "source": "[H]",
+      "target": "N[NH] + [H] => N=N + [H][H]"
+    },
+    {
+      "source": "N[NH] + [H] => N=N + [H][H]",
+      "target": "N=N"
+    },
+    {
+      "source": "N[NH] + [H] => N=N + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "N[NH]",
+      "target": "N[NH] + [H] => NN"
+    },
+    {
+      "source": "[H]",
+      "target": "N[NH] + [H] => NN"
+    },
+    {
+      "source": "N[NH] + [H] => NN",
+      "target": "NN"
+    },
+    {
+      "source": "NN",
+      "target": "NN + [H] => N[NH] + [H][H]"
+    },
+    {
+      "source": "[H]",
+      "target": "NN + [H] => N[NH] + [H][H]"
+    },
+    {
+      "source": "NN + [H] => N[NH] + [H][H]",
+      "target": "N[NH]"
+    },
+    {
+      "source": "NN + [H] => N[NH] + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "NN",
+      "target": "NN + [H] => N + [NH2]"
+    },
+    {
+      "source": "[H]",
+      "target": "NN + [H] => N + [NH2]"
+    },
+    {
+      "source": "NN + [H] => N + [NH2]",
+      "target": "N"
+    },
+    {
+      "source": "NN + [H] => N + [NH2]",
+      "target": "[NH2]"
+    },
+    {
+      "source": "N#[N+][O-]",
+      "target": "N#[N+][O-] + [H] => N#N + [OH]"
+    },
+    {
+      "source": "[H]",
+      "target": "N#[N+][O-] + [H] => N#N + [OH]"
+    },
+    {
+      "source": "N#[N+][O-] + [H] => N#N + [OH]",
+      "target": "N#N"
+    },
+    {
+      "source": "N#[N+][O-] + [H] => N#N + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "O=N-N=O",
+      "target": "O=N-N=O + [H] => [NH]=O + [N]=O"
+    },
+    {
+      "source": "[H]",
+      "target": "O=N-N=O + [H] => [NH]=O + [N]=O"
+    },
+    {
+      "source": "O=N-N=O + [H] => [NH]=O + [N]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "O=N-N=O + [H] => [NH]=O + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH2] + [H] => N"
+    },
+    {
+      "source": "[H]",
+      "target": "[NH2] + [H] => N"
+    },
+    {
+      "source": "[NH2] + [H] => N",
+      "target": "N"
+    },
+    {
+      "source": "N[N+](=O)[O-]",
+      "target": "N[N+](=O)[O-] + [H] => [NH][N+](=O)[O-] + [H][H]"
+    },
+    {
+      "source": "[H]",
+      "target": "N[N+](=O)[O-] + [H] => [NH][N+](=O)[O-] + [H][H]"
+    },
+    {
+      "source": "N[N+](=O)[O-] + [H] => [NH][N+](=O)[O-] + [H][H]",
+      "target": "[NH][N+](=O)[O-]"
+    },
+    {
+      "source": "N[N+](=O)[O-] + [H] => [NH][N+](=O)[O-] + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "NO",
+      "target": "NO + [H] => N[O] + [H][H]"
+    },
+    {
+      "source": "[H]",
+      "target": "NO + [H] => N[O] + [H][H]"
+    },
+    {
+      "source": "NO + [H] => N[O] + [H][H]",
+      "target": "N[O]"
+    },
+    {
+      "source": "NO + [H] => N[O] + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "NO",
+      "target": "NO + [H] => [NH]O + [H][H]"
+    },
+    {
+      "source": "[H]",
+      "target": "NO + [H] => [NH]O + [H][H]"
+    },
+    {
+      "source": "NO + [H] => [NH]O + [H][H]",
+      "target": "[NH]O"
+    },
+    {
+      "source": "NO + [H] => [NH]O + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "NO",
+      "target": "NO + [H] => [NH2] + O"
+    },
+    {
+      "source": "[H]",
+      "target": "NO + [H] => [NH2] + O"
+    },
+    {
+      "source": "NO + [H] => [NH2] + O",
+      "target": "[NH2]"
+    },
+    {
+      "source": "NO + [H] => [NH2] + O",
+      "target": "O"
+    },
+    {
+      "source": "NO",
+      "target": "NO + [H] => N + [OH]"
+    },
+    {
+      "source": "[H]",
+      "target": "NO + [H] => N + [OH]"
+    },
+    {
+      "source": "NO + [H] => N + [OH]",
+      "target": "N"
+    },
+    {
+      "source": "NO + [H] => N + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[N]=N",
+      "target": "[N]=N + [H] => N#N + [H][H]"
+    },
+    {
+      "source": "[H]",
+      "target": "[N]=N + [H] => N#N + [H][H]"
+    },
+    {
+      "source": "[N]=N + [H] => N#N + [H][H]",
+      "target": "N#N"
+    },
+    {
+      "source": "[N]=N + [H] => N#N + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[N]=O + [H] => [NH]=O"
+    },
+    {
+      "source": "[H]",
+      "target": "[N]=O + [H] => [NH]=O"
+    },
+    {
+      "source": "[N]=O + [H] => [NH]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "[H]",
+      "target": "[H] + O=O => O[O]"
+    },
+    {
+      "source": "O=O",
+      "target": "[H] + O=O => O[O]"
+    },
+    {
+      "source": "[H] + O=O => O[O]",
+      "target": "O[O]"
+    },
+    {
+      "source": "[H]",
+      "target": "[H] + O=O => [O] + [OH]"
+    },
+    {
+      "source": "O=O",
+      "target": "[H] + O=O => [O] + [OH]"
+    },
+    {
+      "source": "[H] + O=O => [O] + [OH]",
+      "target": "[O]"
+    },
+    {
+      "source": "[H] + O=O => [O] + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[O-]N=NO",
+      "target": "[O-]N=NO + [H+] => ON=NO"
+    },
+    {
+      "source": "[H+]",
+      "target": "[O-]N=NO + [H+] => ON=NO"
+    },
+    {
+      "source": "[O-]N=NO + [H+] => ON=NO",
+      "target": "ON=NO"
+    },
+    {
+      "source": "N=N",
+      "target": "N=N + [H+] => [NH2][NH+]"
+    },
+    {
+      "source": "[H+]",
+      "target": "N=N + [H+] => [NH2][NH+]"
+    },
+    {
+      "source": "N=N + [H+] => [NH2][NH+]",
+      "target": "[NH2][NH+]"
+    },
+    {
+      "source": "NN",
+      "target": "NN + [H+] => [NH2][NH3+]"
+    },
+    {
+      "source": "[H+]",
+      "target": "NN + [H+] => [NH2][NH3+]"
+    },
+    {
+      "source": "NN + [H+] => [NH2][NH3+]",
+      "target": "[NH2][NH3+]"
+    },
+    {
+      "source": "[O-]N=O",
+      "target": "[O-]N=O + [H+] => ON=O"
+    },
+    {
+      "source": "[H+]",
+      "target": "[O-]N=O + [H+] => ON=O"
+    },
+    {
+      "source": "[O-]N=O + [H+] => ON=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "[O-]ON=O",
+      "target": "[O-]ON=O + [H+] => OON=O"
+    },
+    {
+      "source": "[H+]",
+      "target": "[O-]ON=O + [H+] => OON=O"
+    },
+    {
+      "source": "[O-]ON=O + [H+] => OON=O",
+      "target": "OON=O"
+    },
+    {
+      "source": "[H][H]",
+      "target": "[H][H] + O=[N+]([O-])[O] => O[N+](=O)[O-] + [H]"
+    },
+    {
+      "source": "O=[N+]([O-])[O]",
+      "target": "[H][H] + O=[N+]([O-])[O] => O[N+](=O)[O-] + [H]"
+    },
+    {
+      "source": "[H][H] + O=[N+]([O-])[O] => O[N+](=O)[O-] + [H]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "[H][H] + O=[N+]([O-])[O] => O[N+](=O)[O-] + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "ON=NO",
+      "target": "ON=NO => [O-]N=NO + [H+]"
+    },
+    {
+      "source": "ON=NO => [O-]N=NO + [H+]",
+      "target": "[O-]N=NO"
+    },
+    {
+      "source": "ON=NO => [O-]N=NO + [H+]",
+      "target": "[H+]"
+    },
+    {
+      "source": "ON=NO",
+      "target": "ON=NO => N#[N+][O-] + O"
+    },
+    {
+      "source": "ON=NO => N#[N+][O-] + O",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "ON=NO => N#[N+][O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "N[O]",
+      "target": "N[O] => [NH]O"
+    },
+    {
+      "source": "N[O] => [NH]O",
+      "target": "[NH]O"
+    },
+    {
+      "source": "N[O]",
+      "target": "N[O] + O[O] => [NH]=O + OO"
+    },
+    {
+      "source": "O[O]",
+      "target": "N[O] + O[O] => [NH]=O + OO"
+    },
+    {
+      "source": "N[O] + O[O] => [NH]=O + OO",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "N[O] + O[O] => [NH]=O + OO",
+      "target": "OO"
+    },
+    {
+      "source": "N[O]",
+      "target": "N[O] + [O] => [NH]=O + [OH]"
+    },
+    {
+      "source": "[O]",
+      "target": "N[O] + [O] => [NH]=O + [OH]"
+    },
+    {
+      "source": "N[O] + [O] => [NH]=O + [OH]",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "N[O] + [O] => [NH]=O + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "N[O]",
+      "target": "N[O] + [OH] => [NH]=O + O"
+    },
+    {
+      "source": "[OH]",
+      "target": "N[O] + [OH] => [NH]=O + O"
+    },
+    {
+      "source": "N[O] + [OH] => [NH]=O + O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "N[O] + [OH] => [NH]=O + O",
+      "target": "O"
+    },
+    {
+      "source": "O=[N+]([O-])[OH2+]",
+      "target": "O=[N+]([O-])[OH2+] => O=[N+]=O + O"
+    },
+    {
+      "source": "O=[N+]([O-])[OH2+] => O=[N+]=O + O",
+      "target": "O=[N+]=O"
+    },
+    {
+      "source": "O=[N+]([O-])[OH2+] => O=[N+]=O + O",
+      "target": "O"
+    },
+    {
+      "source": "O=[N+]([O-])[OH2+]",
+      "target": "O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-] => O[N+](=O)[O-] + O[N+](=O)[O-]"
+    },
+    {
+      "source": "[O-][N+](=O)[O-]",
+      "target": "O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-] => O[N+](=O)[O-] + O[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-] => O[N+](=O)[O-] + O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + O => [OH3+] + [O-][N+](=O)[O-]"
+    },
+    {
+      "source": "O",
+      "target": "O[N+](=O)[O-] + O => [OH3+] + [O-][N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O => [OH3+] + [O-][N+](=O)[O-]",
+      "target": "[OH3+]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O => [OH3+] + [O-][N+](=O)[O-]",
+      "target": "[O-][N+](=O)[O-]"
+    },
+    {
+      "source": "O=NON=O",
+      "target": "O=NON=O + O => O[N+](=O)[O-] + [NH]=O"
+    },
+    {
+      "source": "O",
+      "target": "O=NON=O + O => O[N+](=O)[O-] + [NH]=O"
+    },
+    {
+      "source": "O=NON=O + O => O[N+](=O)[O-] + [NH]=O",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "O=NON=O + O => O[N+](=O)[O-] + [NH]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "O=NON=O",
+      "target": "O=NON=O + O => ON=O + ON=O"
+    },
+    {
+      "source": "O",
+      "target": "O=NON=O + O => ON=O + ON=O"
+    },
+    {
+      "source": "O=NON=O + O => ON=O + ON=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "O=[N+]([O-])[N+](=O)[O-]",
+      "target": "O=[N+]([O-])[N+](=O)[O-] + O => ON=O + O[N+](=O)[O-]"
+    },
+    {
+      "source": "O",
+      "target": "O=[N+]([O-])[N+](=O)[O-] + O => ON=O + O[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+]([O-])[N+](=O)[O-] + O => ON=O + O[N+](=O)[O-]",
+      "target": "ON=O"
+    },
+    {
+      "source": "O=[N+]([O-])[N+](=O)[O-] + O => ON=O + O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+]([O-])ON(=O)=O",
+      "target": "O=[N+]([O-])ON(=O)=O + O => O[N+](=O)[O-] + O[N+](=O)[O-]"
+    },
+    {
+      "source": "O",
+      "target": "O=[N+]([O-])ON(=O)=O + O => O[N+](=O)[O-] + O[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+]([O-])ON(=O)=O + O => O[N+](=O)[O-] + O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "NO[N+](=O)[O-]",
+      "target": "NO[N+](=O)[O-] + O => O[N+](=O)[O-] + NO"
+    },
+    {
+      "source": "O",
+      "target": "NO[N+](=O)[O-] + O => O[N+](=O)[O-] + NO"
+    },
+    {
+      "source": "NO[N+](=O)[O-] + O => O[N+](=O)[O-] + NO",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "NO[N+](=O)[O-] + O => O[N+](=O)[O-] + NO",
+      "target": "NO"
+    },
+    {
+      "source": "O",
+      "target": "O + O=[N+][O-] => O[N+](=O)[O-] + [H]"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "O + O=[N+][O-] => O[N+](=O)[O-] + [H]"
+    },
+    {
+      "source": "O + O=[N+][O-] => O[N+](=O)[O-] + [H]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "O + O=[N+][O-] => O[N+](=O)[O-] + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "O=[N+][O-] + O=[N+][O-] + O => ON=O + O[N+](=O)[O-]"
+    },
+    {
+      "source": "O",
+      "target": "O=[N+][O-] + O=[N+][O-] + O => ON=O + O[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+][O-] + O=[N+][O-] + O => ON=O + O[N+](=O)[O-]",
+      "target": "ON=O"
+    },
+    {
+      "source": "O=[N+][O-] + O=[N+][O-] + O => ON=O + O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "[O]",
+      "target": "[O] + O => [OH] + [OH]"
+    },
+    {
+      "source": "O",
+      "target": "[O] + O => [OH] + [OH]"
+    },
+    {
+      "source": "[O] + O => [OH] + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[O-]",
+      "target": "[O-] + O => [OH] + [OH-]"
+    },
+    {
+      "source": "O",
+      "target": "[O-] + O => [OH] + [OH-]"
+    },
+    {
+      "source": "[O-] + O => [OH] + [OH-]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[O-] + O => [OH] + [OH-]",
+      "target": "[OH-]"
+    },
+    {
+      "source": "O",
+      "target": "O + [OH] => [H][H] + O[O]"
+    },
+    {
+      "source": "[OH]",
+      "target": "O + [OH] => [H][H] + O[O]"
+    },
+    {
+      "source": "O + [OH] => [H][H] + O[O]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "O + [OH] => [H][H] + O[O]",
+      "target": "O[O]"
+    },
+    {
+      "source": "OO",
+      "target": "OO => [OH] + [OH]"
+    },
+    {
+      "source": "OO => [OH] + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[O-]N=NO",
+      "target": "[O-]N=NO => N#[N+][O-] + [OH-]"
+    },
+    {
+      "source": "[O-]N=NO => N#[N+][O-] + [OH-]",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "[O-]N=NO => N#[N+][O-] + [OH-]",
+      "target": "[OH-]"
+    },
+    {
+      "source": "N=[N+]=[N-]",
+      "target": "N=[N+]=[N-] + ON=O => N#N + N#[N+][O-] + O"
+    },
+    {
+      "source": "ON=O",
+      "target": "N=[N+]=[N-] + ON=O => N#N + N#[N+][O-] + O"
+    },
+    {
+      "source": "N=[N+]=[N-] + ON=O => N#N + N#[N+][O-] + O",
+      "target": "N#N"
+    },
+    {
+      "source": "N=[N+]=[N-] + ON=O => N#N + N#[N+][O-] + O",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "N=[N+]=[N-] + ON=O => N#N + N#[N+][O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "N=[N+]=[N-]",
+      "target": "N=[N+]=[N-] + [OH] => [N]=[N+]=[N-] + O"
+    },
+    {
+      "source": "[OH]",
+      "target": "N=[N+]=[N-] + [OH] => [N]=[N+]=[N-] + O"
+    },
+    {
+      "source": "N=[N+]=[N-] + [OH] => [N]=[N+]=[N-] + O",
+      "target": "[N]=[N+]=[N-]"
+    },
+    {
+      "source": "N=[N+]=[N-] + [OH] => [N]=[N+]=[N-] + O",
+      "target": "O"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "[NH]=O => [N]=O + [H]"
+    },
+    {
+      "source": "[NH]=O => [N]=O + [H]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[NH]=O => [N]=O + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "[NH]=O + [NH]=O => ON=NO"
+    },
+    {
+      "source": "[NH]=O + [NH]=O => ON=NO",
+      "target": "ON=NO"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "[NH]=O + [NH]=O => N#[N+][O-] + O"
+    },
+    {
+      "source": "[NH]=O + [NH]=O => N#[N+][O-] + O",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "[NH]=O + [NH]=O => N#[N+][O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [NH]=O => O=NON=O + O"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "O[N+](=O)[O-] + [NH]=O => O=NON=O + O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [NH]=O => O=NON=O + O",
+      "target": "O=NON=O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [NH]=O => O=NON=O + O",
+      "target": "O"
+    },
+    {
+      "source": "ON=O",
+      "target": "ON=O + [NH]=O => NO[N+](=O)[O-]"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "ON=O + [NH]=O => NO[N+](=O)[O-]"
+    },
+    {
+      "source": "ON=O + [NH]=O => NO[N+](=O)[O-]",
+      "target": "NO[N+](=O)[O-]"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "[NH]=O + [O] => [N]=O + [OH]"
+    },
+    {
+      "source": "[O]",
+      "target": "[NH]=O + [O] => [N]=O + [OH]"
+    },
+    {
+      "source": "[NH]=O + [O] => [N]=O + [OH]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[NH]=O + [O] => [N]=O + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "[NH]=O + O=O => [N]=O + O[O]"
+    },
+    {
+      "source": "O=O",
+      "target": "[NH]=O + O=O => [N]=O + O[O]"
+    },
+    {
+      "source": "[NH]=O + O=O => [N]=O + O[O]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[NH]=O + O=O => [N]=O + O[O]",
+      "target": "O[O]"
+    },
+    {
+      "source": "[NH]=O",
+      "target": "[NH]=O + [OH] => [N]=O + O"
+    },
+    {
+      "source": "[OH]",
+      "target": "[NH]=O + [OH] => [N]=O + O"
+    },
+    {
+      "source": "[NH]=O + [OH] => [N]=O + O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[NH]=O + [OH] => [N]=O + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] => [H] + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-] => [H] + O=[N+]([O-])[O]",
+      "target": "[H]"
+    },
+    {
+      "source": "O[N+](=O)[O-] => [H] + O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] => ON=O + [O]"
+    },
+    {
+      "source": "O[N+](=O)[O-] => ON=O + [O]",
+      "target": "ON=O"
+    },
+    {
+      "source": "O[N+](=O)[O-] => ON=O + [O]",
+      "target": "[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] => [OH] + O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] => [OH] + O=[N+][O-]",
+      "target": "[OH]"
+    },
+    {
+      "source": "O[N+](=O)[O-] => [OH] + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-]",
+      "target": "O=[N+]([O-])[OH2+]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])[OH2+] + [O-][N+](=O)[O-]",
+      "target": "[O-][N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])ON(=O)=O + O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])ON(=O)=O + O",
+      "target": "O=[N+]([O-])ON(=O)=O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+]([O-])ON(=O)=O + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O + O + O=O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O + O + O=O",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O + O + O=O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] + O[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O + O + O=O",
+      "target": "O=O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + O[N+](=O)[O-] + [N]=O => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O"
+    },
+    {
+      "source": "[N]=O",
+      "target": "O[N+](=O)[O-] + O[N+](=O)[O-] + [N]=O => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O[N+](=O)[O-] + [N]=O => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + O[N+](=O)[O-] + [N]=O => O=[N+][O-] + O=[N+][O-] + O=[N+][O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + ON=O => O=[N+]([O-])[N+](=O)[O-] + O"
+    },
+    {
+      "source": "ON=O",
+      "target": "O[N+](=O)[O-] + ON=O => O=[N+]([O-])[N+](=O)[O-] + O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + ON=O => O=[N+]([O-])[N+](=O)[O-] + O",
+      "target": "O=[N+]([O-])[N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + ON=O => O=[N+]([O-])[N+](=O)[O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + ON=O => O=NO[N+](=O)[O-] + O"
+    },
+    {
+      "source": "ON=O",
+      "target": "O[N+](=O)[O-] + ON=O => O=NO[N+](=O)[O-] + O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + ON=O => O=NO[N+](=O)[O-] + O",
+      "target": "O=NO[N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + ON=O => O=NO[N+](=O)[O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + NN => N=N + ON=O + O"
+    },
+    {
+      "source": "NN",
+      "target": "O[N+](=O)[O-] + NN => N=N + ON=O + O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + NN => N=N + ON=O + O",
+      "target": "N=N"
+    },
+    {
+      "source": "O[N+](=O)[O-] + NN => N=N + ON=O + O",
+      "target": "ON=O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + NN => N=N + ON=O + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [NH] => [NH]O + O=[N+][O-]"
+    },
+    {
+      "source": "[NH]",
+      "target": "O[N+](=O)[O-] + [NH] => [NH]O + O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [NH] => [NH]O + O=[N+][O-]",
+      "target": "[NH]O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [NH] => [NH]O + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [NH2] => N[O] + ON=O"
+    },
+    {
+      "source": "[NH2]",
+      "target": "O[N+](=O)[O-] + [NH2] => N[O] + ON=O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [NH2] => N[O] + ON=O",
+      "target": "N[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [NH2] => N[O] + ON=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [NH2] => N + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "[NH2]",
+      "target": "O[N+](=O)[O-] + [NH2] => N + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [NH2] => N + O=[N+]([O-])[O]",
+      "target": "N"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [NH2] => N + O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O]"
+    },
+    {
+      "source": "NO",
+      "target": "NO + O[N+](=O)[O-] => ON=O + [NH]=O + O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "NO + O[N+](=O)[O-] => ON=O + [NH]=O + O"
+    },
+    {
+      "source": "NO + O[N+](=O)[O-] => ON=O + [NH]=O + O",
+      "target": "ON=O"
+    },
+    {
+      "source": "NO + O[N+](=O)[O-] => ON=O + [NH]=O + O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "NO + O[N+](=O)[O-] => ON=O + [NH]=O + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + NO => NO[N+](=O)[O-] + O"
+    },
+    {
+      "source": "NO",
+      "target": "O[N+](=O)[O-] + NO => NO[N+](=O)[O-] + O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + NO => NO[N+](=O)[O-] + O",
+      "target": "NO[N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + NO => NO[N+](=O)[O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + NO => [NH3+]O + [O-][N+](=O)[O-]"
+    },
+    {
+      "source": "NO",
+      "target": "O[N+](=O)[O-] + NO => [NH3+]O + [O-][N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + NO => [NH3+]O + [O-][N+](=O)[O-]",
+      "target": "[NH3+]O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + NO => [NH3+]O + [O-][N+](=O)[O-]",
+      "target": "[O-][N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + N => N[O] + O + [N]=O"
+    },
+    {
+      "source": "N",
+      "target": "O[N+](=O)[O-] + N => N[O] + O + [N]=O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + N => N[O] + O + [N]=O",
+      "target": "N[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + N => N[O] + O + [N]=O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + N => N[O] + O + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + N => N[N+](=O)[O-] + O"
+    },
+    {
+      "source": "N",
+      "target": "O[N+](=O)[O-] + N => N[N+](=O)[O-] + O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + N => N[N+](=O)[O-] + O",
+      "target": "N[N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + N => N[N+](=O)[O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + N => [NH4+].[O-][N+](=O)[O-]"
+    },
+    {
+      "source": "N",
+      "target": "O[N+](=O)[O-] + N => [NH4+].[O-][N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + N => [NH4+].[O-][N+](=O)[O-]",
+      "target": "[NH4+].[O-][N+](=O)[O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [N]=O => ON=O + O=[N+][O-]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "O[N+](=O)[O-] + [N]=O => ON=O + O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [N]=O => ON=O + O=[N+][O-]",
+      "target": "ON=O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [N]=O => ON=O + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [O] => [OH] + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "[O]",
+      "target": "O[N+](=O)[O-] + [O] => [OH] + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [O] => [OH] + O=[N+]([O-])[O]",
+      "target": "[OH]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [O] => [OH] + O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-] + [OH] => O=[N+]([O-])[O] + O"
+    },
+    {
+      "source": "[OH]",
+      "target": "O[N+](=O)[O-] + [OH] => O=[N+]([O-])[O] + O"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [OH] => O=[N+]([O-])[O] + O",
+      "target": "O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O[N+](=O)[O-] + [OH] => O=[N+]([O-])[O] + O",
+      "target": "O"
+    },
+    {
+      "source": "OO[N+](=O)[O-]",
+      "target": "OO[N+](=O)[O-] => O[O] + O=[N+][O-]"
+    },
+    {
+      "source": "OO[N+](=O)[O-] => O[O] + O=[N+][O-]",
+      "target": "O[O]"
+    },
+    {
+      "source": "OO[N+](=O)[O-] => O[O] + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "OO[N+](=O)[O-]",
+      "target": "OO[N+](=O)[O-] => [OH] + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "OO[N+](=O)[O-] => [OH] + O=[N+]([O-])[O]",
+      "target": "[OH]"
+    },
+    {
+      "source": "OO[N+](=O)[O-] => [OH] + O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O]"
+    },
+    {
+      "source": "[NH]O",
+      "target": "[NH]O => N[O]"
+    },
+    {
+      "source": "[NH]O => N[O]",
+      "target": "N[O]"
+    },
+    {
+      "source": "O[O]",
+      "target": "O[O] + O[O] => OO + O=O"
+    },
+    {
+      "source": "O[O] + O[O] => OO + O=O",
+      "target": "OO"
+    },
+    {
+      "source": "O[O] + O[O] => OO + O=O",
+      "target": "O=O"
+    },
+    {
+      "source": "N[NH]",
+      "target": "N[NH] + O[O] => NN + O=O"
+    },
+    {
+      "source": "O[O]",
+      "target": "N[NH] + O[O] => NN + O=O"
+    },
+    {
+      "source": "N[NH] + O[O] => NN + O=O",
+      "target": "NN"
+    },
+    {
+      "source": "N[NH] + O[O] => NN + O=O",
+      "target": "O=O"
+    },
+    {
+      "source": "O[O]",
+      "target": "O[O] + [N]=O => O[N+](=O)[O-]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "O[O] + [N]=O => O[N+](=O)[O-]"
+    },
+    {
+      "source": "O[O] + [N]=O => O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "O[O]",
+      "target": "O[O] + [N]=O => OON=O"
+    },
+    {
+      "source": "[N]=O",
+      "target": "O[O] + [N]=O => OON=O"
+    },
+    {
+      "source": "O[O] + [N]=O => OON=O",
+      "target": "OON=O"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[N]=O + O[O] => O=[N+][O-] + [OH]"
+    },
+    {
+      "source": "O[O]",
+      "target": "[N]=O + O[O] => O=[N+][O-] + [OH]"
+    },
+    {
+      "source": "[N]=O + O[O] => O=[N+][O-] + [OH]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "[N]=O + O[O] => O=[N+][O-] + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "O[O]",
+      "target": "O[O] + O=[N+][O-] => OO[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "O[O] + O=[N+][O-] => OO[N+](=O)[O-]"
+    },
+    {
+      "source": "O[O] + O=[N+][O-] => OO[N+](=O)[O-]",
+      "target": "OO[N+](=O)[O-]"
+    },
+    {
+      "source": "ON=O",
+      "target": "ON=O => [O-]N=O + [H+]"
+    },
+    {
+      "source": "ON=O => [O-]N=O + [H+]",
+      "target": "[O-]N=O"
+    },
+    {
+      "source": "ON=O => [O-]N=O + [H+]",
+      "target": "[H+]"
+    },
+    {
+      "source": "ON=O",
+      "target": "ON=O => [OH] + [N]=O"
+    },
+    {
+      "source": "ON=O => [OH] + [N]=O",
+      "target": "[OH]"
+    },
+    {
+      "source": "ON=O => [OH] + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "ON=O",
+      "target": "ON=O + ON=O => [N]=O + O=[N+][O-] + O"
+    },
+    {
+      "source": "ON=O + ON=O => [N]=O + O=[N+][O-] + O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "ON=O + ON=O => [N]=O + O=[N+][O-] + O",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "ON=O + ON=O => [N]=O + O=[N+][O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "ON=O",
+      "target": "ON=O + ON=O + ON=O => O[N+](=O)[O-] + [N]=O + [N]=O + O"
+    },
+    {
+      "source": "ON=O + ON=O + ON=O => O[N+](=O)[O-] + [N]=O + [N]=O + O",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "ON=O + ON=O + ON=O => O[N+](=O)[O-] + [N]=O + [N]=O + O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "ON=O + ON=O + ON=O => O[N+](=O)[O-] + [N]=O + [N]=O + O",
+      "target": "O"
+    },
+    {
+      "source": "NN",
+      "target": "NN + ON=O => N=[N+]=[N-] + O + O"
+    },
+    {
+      "source": "ON=O",
+      "target": "NN + ON=O => N=[N+]=[N-] + O + O"
+    },
+    {
+      "source": "NN + ON=O => N=[N+]=[N-] + O + O",
+      "target": "N=[N+]=[N-]"
+    },
+    {
+      "source": "NN + ON=O => N=[N+]=[N-] + O + O",
+      "target": "O"
+    },
+    {
+      "source": "NO",
+      "target": "NO + ON=O => N#[N+][O-] + O + O"
+    },
+    {
+      "source": "ON=O",
+      "target": "NO + ON=O => N#[N+][O-] + O + O"
+    },
+    {
+      "source": "NO + ON=O => N#[N+][O-] + O + O",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "NO + ON=O => N#[N+][O-] + O + O",
+      "target": "O"
+    },
+    {
+      "source": "ON=O",
+      "target": "ON=O + O=[N+][O-] => O[N+](=O)[O-] + [N]=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "ON=O + O=[N+][O-] => O[N+](=O)[O-] + [N]=O"
+    },
+    {
+      "source": "ON=O + O=[N+][O-] => O[N+](=O)[O-] + [N]=O",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "ON=O + O=[N+][O-] => O[N+](=O)[O-] + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[OH]",
+      "target": "[OH] + ON=O => O[N+](=O)[O-] + [H]"
+    },
+    {
+      "source": "ON=O",
+      "target": "[OH] + ON=O => O[N+](=O)[O-] + [H]"
+    },
+    {
+      "source": "[OH] + ON=O => O[N+](=O)[O-] + [H]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "[OH] + ON=O => O[N+](=O)[O-] + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "ON=O",
+      "target": "ON=O + [OH] => O=[N+][O-] + O"
+    },
+    {
+      "source": "[OH]",
+      "target": "ON=O + [OH] => O=[N+][O-] + O"
+    },
+    {
+      "source": "ON=O + [OH] => O=[N+][O-] + O",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "ON=O + [OH] => O=[N+][O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "OON=O",
+      "target": "OON=O => [O-][N+](=O)[O-] + [H+]"
+    },
+    {
+      "source": "OON=O => [O-][N+](=O)[O-] + [H+]",
+      "target": "[O-][N+](=O)[O-]"
+    },
+    {
+      "source": "OON=O => [O-][N+](=O)[O-] + [H+]",
+      "target": "[H+]"
+    },
+    {
+      "source": "OON=O",
+      "target": "OON=O => [H+] + [O-]ON=O"
+    },
+    {
+      "source": "OON=O => [H+] + [O-]ON=O",
+      "target": "[H+]"
+    },
+    {
+      "source": "OON=O => [H+] + [O-]ON=O",
+      "target": "[O-]ON=O"
+    },
+    {
+      "source": "OON=O",
+      "target": "OON=O => [OH] + O=[N+][O-]"
+    },
+    {
+      "source": "OON=O => [OH] + O=[N+][O-]",
+      "target": "[OH]"
+    },
+    {
+      "source": "OON=O => [OH] + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "[N]",
+      "target": "[N] + O=O => [N]=O + [O]"
+    },
+    {
+      "source": "O=O",
+      "target": "[N] + O=O => [N]=O + [O]"
+    },
+    {
+      "source": "[N] + O=O => [N]=O + [O]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[N] + O=O => [N]=O + [O]",
+      "target": "[O]"
+    },
+    {
+      "source": "[N]",
+      "target": "[N] + [OH] => [N]=O + [H]"
+    },
+    {
+      "source": "[OH]",
+      "target": "[N] + [OH] => [N]=O + [H]"
+    },
+    {
+      "source": "[N] + [OH] => [N]=O + [H]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[N] + [OH] => [N]=O + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "[O]",
+      "target": "[O] + N#N => [N]=O + [N]"
+    },
+    {
+      "source": "N#N",
+      "target": "[O] + N#N => [N]=O + [N]"
+    },
+    {
+      "source": "[O] + N#N => [N]=O + [N]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[O] + N#N => [N]=O + [N]",
+      "target": "[N]"
+    },
+    {
+      "source": "N=N",
+      "target": "N=N + [N]=O => N#[N+][O-] + [NH2]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "N=N + [N]=O => N#[N+][O-] + [NH2]"
+    },
+    {
+      "source": "N=N + [N]=O => N#[N+][O-] + [NH2]",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "N=N + [N]=O => N#[N+][O-] + [NH2]",
+      "target": "[NH2]"
+    },
+    {
+      "source": "N=N",
+      "target": "N=N + O=[N+][O-] => [N]=N + ON=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "N=N + O=[N+][O-] => [N]=N + ON=O"
+    },
+    {
+      "source": "N=N + O=[N+][O-] => [N]=N + ON=O",
+      "target": "[N]=N"
+    },
+    {
+      "source": "N=N + O=[N+][O-] => [N]=N + ON=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "N=N",
+      "target": "N=N + [O] => [NH2] + [N]=O"
+    },
+    {
+      "source": "[O]",
+      "target": "N=N + [O] => [NH2] + [N]=O"
+    },
+    {
+      "source": "N=N + [O] => [NH2] + [N]=O",
+      "target": "[NH2]"
+    },
+    {
+      "source": "N=N + [O] => [NH2] + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "N=N",
+      "target": "N=N + [O] => [N]=N + [OH]"
+    },
+    {
+      "source": "[O]",
+      "target": "N=N + [O] => [N]=N + [OH]"
+    },
+    {
+      "source": "N=N + [O] => [N]=N + [OH]",
+      "target": "[N]=N"
+    },
+    {
+      "source": "N=N + [O] => [N]=N + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "N[NH]",
+      "target": "N[NH] + O=[N+][O-] => N=N + ON=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "N[NH] + O=[N+][O-] => N=N + ON=O"
+    },
+    {
+      "source": "N[NH] + O=[N+][O-] => N=N + ON=O",
+      "target": "N=N"
+    },
+    {
+      "source": "N[NH] + O=[N+][O-] => N=N + ON=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "N[NH]",
+      "target": "N[NH] + [O] => [NH2] + [NH]=O"
+    },
+    {
+      "source": "[O]",
+      "target": "N[NH] + [O] => [NH2] + [NH]=O"
+    },
+    {
+      "source": "N[NH] + [O] => [NH2] + [NH]=O",
+      "target": "[NH2]"
+    },
+    {
+      "source": "N[NH] + [O] => [NH2] + [NH]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "N[NH]",
+      "target": "N[NH] + [OH] => N=N + O"
+    },
+    {
+      "source": "[OH]",
+      "target": "N[NH] + [OH] => N=N + O"
+    },
+    {
+      "source": "N[NH] + [OH] => N=N + O",
+      "target": "N=N"
+    },
+    {
+      "source": "N[NH] + [OH] => N=N + O",
+      "target": "O"
+    },
+    {
+      "source": "N[NH]",
+      "target": "N[NH] + [OH] => N + [NH]=O"
+    },
+    {
+      "source": "[OH]",
+      "target": "N[NH] + [OH] => N + [NH]=O"
+    },
+    {
+      "source": "N[NH] + [OH] => N + [NH]=O",
+      "target": "N"
+    },
+    {
+      "source": "N[NH] + [OH] => N + [NH]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "[NH2][NH+]",
+      "target": "[NH2][NH+] => N=N + [H+]"
+    },
+    {
+      "source": "[NH2][NH+] => N=N + [H+]",
+      "target": "N=N"
+    },
+    {
+      "source": "[NH2][NH+] => N=N + [H+]",
+      "target": "[H+]"
+    },
+    {
+      "source": "NN",
+      "target": "NN => [NH2] + [NH2]"
+    },
+    {
+      "source": "NN => [NH2] + [NH2]",
+      "target": "[NH2]"
+    },
+    {
+      "source": "NN",
+      "target": "NN + [NH2] => N[NH] + N"
+    },
+    {
+      "source": "[NH2]",
+      "target": "NN + [NH2] => N[NH] + N"
+    },
+    {
+      "source": "NN + [NH2] => N[NH] + N",
+      "target": "N[NH]"
+    },
+    {
+      "source": "NN + [NH2] => N[NH] + N",
+      "target": "N"
+    },
+    {
+      "source": "NN",
+      "target": "NN + [N]=O => N[NH] + [NH]=O"
+    },
+    {
+      "source": "[N]=O",
+      "target": "NN + [N]=O => N[NH] + [NH]=O"
+    },
+    {
+      "source": "NN + [N]=O => N[NH] + [NH]=O",
+      "target": "N[NH]"
+    },
+    {
+      "source": "NN + [N]=O => N[NH] + [NH]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "NN",
+      "target": "NN + O=[N+][O-] => N[NH] + ON=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "NN + O=[N+][O-] => N[NH] + ON=O"
+    },
+    {
+      "source": "NN + O=[N+][O-] => N[NH] + ON=O",
+      "target": "N[NH]"
+    },
+    {
+      "source": "NN + O=[N+][O-] => N[NH] + ON=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "NN",
+      "target": "NN + O=[N+]([O-])[O] => N[NH] + O[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+]([O-])[O]",
+      "target": "NN + O=[N+]([O-])[O] => N[NH] + O[N+](=O)[O-]"
+    },
+    {
+      "source": "NN + O=[N+]([O-])[O] => N[NH] + O[N+](=O)[O-]",
+      "target": "N[NH]"
+    },
+    {
+      "source": "NN + O=[N+]([O-])[O] => N[NH] + O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "NN",
+      "target": "NN + [O] => N[NH] + [OH]"
+    },
+    {
+      "source": "[O]",
+      "target": "NN + [O] => N[NH] + [OH]"
+    },
+    {
+      "source": "NN + [O] => N[NH] + [OH]",
+      "target": "N[NH]"
+    },
+    {
+      "source": "NN + [O] => N[NH] + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "NN",
+      "target": "NN + [OH] => N[NH] + O"
+    },
+    {
+      "source": "[OH]",
+      "target": "NN + [OH] => N[NH] + O"
+    },
+    {
+      "source": "NN + [OH] => N[NH] + O",
+      "target": "N[NH]"
+    },
+    {
+      "source": "NN + [OH] => N[NH] + O",
+      "target": "O"
+    },
+    {
+      "source": "[NH2][NH3+]",
+      "target": "[NH2][NH3+] => NN + [H+]"
+    },
+    {
+      "source": "[NH2][NH3+] => NN + [H+]",
+      "target": "NN"
+    },
+    {
+      "source": "[NH2][NH3+] => NN + [H+]",
+      "target": "[H+]"
+    },
+    {
+      "source": "N#[N+][O-]",
+      "target": "N#[N+][O-] + [N]=O => N#N + O=[N+][O-]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "N#[N+][O-] + [N]=O => N#N + O=[N+][O-]"
+    },
+    {
+      "source": "N#[N+][O-] + [N]=O => N#N + O=[N+][O-]",
+      "target": "N#N"
+    },
+    {
+      "source": "N#[N+][O-] + [N]=O => N#N + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "N#[N+][O-]",
+      "target": "N#[N+][O-] + [O] => N#N + O=O"
+    },
+    {
+      "source": "[O]",
+      "target": "N#[N+][O-] + [O] => N#N + O=O"
+    },
+    {
+      "source": "N#[N+][O-] + [O] => N#N + O=O",
+      "target": "N#N"
+    },
+    {
+      "source": "N#[N+][O-] + [O] => N#N + O=O",
+      "target": "O=O"
+    },
+    {
+      "source": "N#[N+][O-]",
+      "target": "N#[N+][O-] + [O] => [N]=O + [N]=O"
+    },
+    {
+      "source": "[O]",
+      "target": "N#[N+][O-] + [O] => [N]=O + [N]=O"
+    },
+    {
+      "source": "N#[N+][O-] + [O] => [N]=O + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "N#[N+][O-]",
+      "target": "N#[N+][O-] + [OH] => [NH]=O + [N]=O"
+    },
+    {
+      "source": "[OH]",
+      "target": "N#[N+][O-] + [OH] => [NH]=O + [N]=O"
+    },
+    {
+      "source": "N#[N+][O-] + [OH] => [NH]=O + [N]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "N#[N+][O-] + [OH] => [NH]=O + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "N#[N+][O-]",
+      "target": "N#[N+][O-] + [OH] => N#N + O[O]"
+    },
+    {
+      "source": "[OH]",
+      "target": "N#[N+][O-] + [OH] => N#N + O[O]"
+    },
+    {
+      "source": "N#[N+][O-] + [OH] => N#N + O[O]",
+      "target": "N#N"
+    },
+    {
+      "source": "N#[N+][O-] + [OH] => N#N + O[O]",
+      "target": "O[O]"
+    },
+    {
+      "source": "O=N-N=O",
+      "target": "O=N-N=O => [N]=O + [N]=O"
+    },
+    {
+      "source": "O=N-N=O => [N]=O + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "O=N-N=O",
+      "target": "O=N-N=O + [O] => [N]=O + O=[N+][O-]"
+    },
+    {
+      "source": "[O]",
+      "target": "O=N-N=O + [O] => [N]=O + O=[N+][O-]"
+    },
+    {
+      "source": "O=N-N=O + [O] => [N]=O + O=[N+][O-]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "O=N-N=O + [O] => [N]=O + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O=NON=O",
+      "target": "O=NON=O => [N]=O + O=[N+][O-]"
+    },
+    {
+      "source": "O=NON=O => [N]=O + O=[N+][O-]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "O=NON=O => [N]=O + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O=[N+]([O-])[N+](=O)[O-]",
+      "target": "O=[N+]([O-])[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-]"
+    },
+    {
+      "source": "O=[N+]([O-])[N+](=O)[O-] => O=[N+][O-] + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O=[N+]([O-])ON(=O)=O",
+      "target": "O=[N+]([O-])ON(=O)=O => O=[N+][O-] + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O=[N+]([O-])ON(=O)=O => O=[N+][O-] + O=[N+]([O-])[O]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O=[N+]([O-])ON(=O)=O => O=[N+][O-] + O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O=[N+]([O-])OO[N+](=O)[O-]",
+      "target": "O=[N+]([O-])OO[N+](=O)[O-] => O=[N+]([O-])[O] + O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O=[N+]([O-])OO[N+](=O)[O-] => O=[N+]([O-])[O] + O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O]"
+    },
+    {
+      "source": "[N]=[N+]=[N-]",
+      "target": "[N]=[N+]=[N-] + [N]=O => N#[N+][O-] + N#N"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[N]=[N+]=[N-] + [N]=O => N#[N+][O-] + N#N"
+    },
+    {
+      "source": "[N]=[N+]=[N-] + [N]=O => N#[N+][O-] + N#N",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "[N]=[N+]=[N-] + [N]=O => N#[N+][O-] + N#N",
+      "target": "N#N"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH2] + [NH] => N=N + [H]"
+    },
+    {
+      "source": "[NH]",
+      "target": "[NH2] + [NH] => N=N + [H]"
+    },
+    {
+      "source": "[NH2] + [NH] => N=N + [H]",
+      "target": "N=N"
+    },
+    {
+      "source": "[NH2] + [NH] => N=N + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "[NH]",
+      "target": "[NH] + [NH2] => N[NH]"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH] + [NH2] => N[NH]"
+    },
+    {
+      "source": "[NH] + [NH2] => N[NH]",
+      "target": "N[NH]"
+    },
+    {
+      "source": "[NH]",
+      "target": "[NH] + [N]=O => N#[N+][O-] + [H]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[NH] + [N]=O => N#[N+][O-] + [H]"
+    },
+    {
+      "source": "[NH] + [N]=O => N#[N+][O-] + [H]",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "[NH] + [N]=O => N#[N+][O-] + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "[NH]",
+      "target": "[NH] + [N]=O => N#N + [OH]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[NH] + [N]=O => N#N + [OH]"
+    },
+    {
+      "source": "[NH] + [N]=O => N#N + [OH]",
+      "target": "N#N"
+    },
+    {
+      "source": "[NH] + [N]=O => N#N + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[NH]",
+      "target": "[NH] + O=[N+][O-] => [NH]=O + [N]=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "[NH] + O=[N+][O-] => [NH]=O + [N]=O"
+    },
+    {
+      "source": "[NH] + O=[N+][O-] => [NH]=O + [N]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "[NH] + O=[N+][O-] => [NH]=O + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[NH]",
+      "target": "[NH] + O=[N+][O-] => N#[N+][O-] + [OH]"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "[NH] + O=[N+][O-] => N#[N+][O-] + [OH]"
+    },
+    {
+      "source": "[NH] + O=[N+][O-] => N#[N+][O-] + [OH]",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "[NH] + O=[N+][O-] => N#[N+][O-] + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH2] + [NH2] => N=N + [H][H]"
+    },
+    {
+      "source": "[NH2] + [NH2] => N=N + [H][H]",
+      "target": "N=N"
+    },
+    {
+      "source": "[NH2] + [NH2] => N=N + [H][H]",
+      "target": "[H][H]"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH2] + [NH2] => NN"
+    },
+    {
+      "source": "[NH2] + [NH2] => NN",
+      "target": "NN"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH2] + [N]=O => N#N + O"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[NH2] + [N]=O => N#N + O"
+    },
+    {
+      "source": "[NH2] + [N]=O => N#N + O",
+      "target": "N#N"
+    },
+    {
+      "source": "[NH2] + [N]=O => N#N + O",
+      "target": "O"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH2] + [N]=O => [N]=N + [OH]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[NH2] + [N]=O => [N]=N + [OH]"
+    },
+    {
+      "source": "[NH2] + [N]=O => [N]=N + [OH]",
+      "target": "[N]=N"
+    },
+    {
+      "source": "[NH2] + [N]=O => [N]=N + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH2] + O=[N+][O-] => N[O] + [N]=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "[NH2] + O=[N+][O-] => N[O] + [N]=O"
+    },
+    {
+      "source": "[NH2] + O=[N+][O-] => N[O] + [N]=O",
+      "target": "N[O]"
+    },
+    {
+      "source": "[NH2] + O=[N+][O-] => N[O] + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH2] + O=[N+][O-] => N#[N+][O-] + O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "[NH2] + O=[N+][O-] => N#[N+][O-] + O"
+    },
+    {
+      "source": "[NH2] + O=[N+][O-] => N#[N+][O-] + O",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "[NH2] + O=[N+][O-] => N#[N+][O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "[NH2]",
+      "target": "[NH2] + O=[N+][O-] => N[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "[NH2] + O=[N+][O-] => N[N+](=O)[O-]"
+    },
+    {
+      "source": "[NH2] + O=[N+][O-] => N[N+](=O)[O-]",
+      "target": "N[N+](=O)[O-]"
+    },
+    {
+      "source": "NO[N+](=O)[O-]",
+      "target": "NO[N+](=O)[O-] => ON=O + [NH]=O"
+    },
+    {
+      "source": "NO[N+](=O)[O-] => ON=O + [NH]=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "NO[N+](=O)[O-] => ON=O + [NH]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "N[N+](=O)[O-]",
+      "target": "N[N+](=O)[O-] => N#[N+][O-] + O"
+    },
+    {
+      "source": "N[N+](=O)[O-] => N#[N+][O-] + O",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "N[N+](=O)[O-] => N#[N+][O-] + O",
+      "target": "O"
+    },
+    {
+      "source": "NO",
+      "target": "NO => [NH2] + [OH]"
+    },
+    {
+      "source": "NO => [NH2] + [OH]",
+      "target": "[NH2]"
+    },
+    {
+      "source": "NO => [NH2] + [OH]",
+      "target": "[OH]"
+    },
+    {
+      "source": "N",
+      "target": "N => [NH2] + [H]"
+    },
+    {
+      "source": "N => [NH2] + [H]",
+      "target": "[NH2]"
+    },
+    {
+      "source": "N => [NH2] + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "N",
+      "target": "N + O=[N+]([O-])[O] => O[N+](=O)[O-] + [NH2]"
+    },
+    {
+      "source": "O=[N+]([O-])[O]",
+      "target": "N + O=[N+]([O-])[O] => O[N+](=O)[O-] + [NH2]"
+    },
+    {
+      "source": "N + O=[N+]([O-])[O] => O[N+](=O)[O-] + [NH2]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "N + O=[N+]([O-])[O] => O[N+](=O)[O-] + [NH2]",
+      "target": "[NH2]"
+    },
+    {
+      "source": "N",
+      "target": "N + [OH] => [NH2] + O"
+    },
+    {
+      "source": "[OH]",
+      "target": "N + [OH] => [NH2] + O"
+    },
+    {
+      "source": "N + [OH] => [NH2] + O",
+      "target": "[NH2]"
+    },
+    {
+      "source": "N + [OH] => [NH2] + O",
+      "target": "O"
+    },
+    {
+      "source": "[NH4+].[O-][N+](=O)[O-]",
+      "target": "[NH4+].[O-][N+](=O)[O-] => N#[N+][O-] + O + O"
+    },
+    {
+      "source": "[NH4+].[O-][N+](=O)[O-] => N#[N+][O-] + O + O",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "[NH4+].[O-][N+](=O)[O-] => N#[N+][O-] + O + O",
+      "target": "O"
+    },
+    {
+      "source": "[NH4+].[O-][N+](=O)[O-]",
+      "target": "[NH4+].[O-][N+](=O)[O-] => O[N+](=O)[O-] + N"
+    },
+    {
+      "source": "[NH4+].[O-][N+](=O)[O-] => O[N+](=O)[O-] + N",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "[NH4+].[O-][N+](=O)[O-] => O[N+](=O)[O-] + N",
+      "target": "N"
+    },
+    {
+      "source": "[NH][N+](=O)[O-]",
+      "target": "[NH][N+](=O)[O-] => [NH]=O + [N]=O"
+    },
+    {
+      "source": "[NH][N+](=O)[O-] => [NH]=O + [N]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "[NH][N+](=O)[O-] => [NH]=O + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[N]=N",
+      "target": "[N]=N => N#N + [H]"
+    },
+    {
+      "source": "[N]=N => N#N + [H]",
+      "target": "N#N"
+    },
+    {
+      "source": "[N]=N => N#N + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "[N]=N",
+      "target": "[N]=N + [N]=O => N#N + [NH]=O"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[N]=N + [N]=O => N#N + [NH]=O"
+    },
+    {
+      "source": "[N]=N + [N]=O => N#N + [NH]=O",
+      "target": "N#N"
+    },
+    {
+      "source": "[N]=N + [N]=O => N#N + [NH]=O",
+      "target": "[NH]=O"
+    },
+    {
+      "source": "[N]=N",
+      "target": "[N]=N + O=[N+][O-] => N#N + ON=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "[N]=N + O=[N+][O-] => N#N + ON=O"
+    },
+    {
+      "source": "[N]=N + O=[N+][O-] => N#N + ON=O",
+      "target": "N#N"
+    },
+    {
+      "source": "[N]=N + O=[N+][O-] => N#N + ON=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "[N]=N",
+      "target": "[N]=N + [O] => N#[N+][O-] + [H]"
+    },
+    {
+      "source": "[O]",
+      "target": "[N]=N + [O] => N#[N+][O-] + [H]"
+    },
+    {
+      "source": "[N]=N + [O] => N#[N+][O-] + [H]",
+      "target": "N#[N+][O-]"
+    },
+    {
+      "source": "[N]=N + [O] => N#[N+][O-] + [H]",
+      "target": "[H]"
+    },
+    {
+      "source": "[N]=N",
+      "target": "[N]=N + [O] => [NH] + [N]=O"
+    },
+    {
+      "source": "[O]",
+      "target": "[N]=N + [O] => [NH] + [N]=O"
+    },
+    {
+      "source": "[N]=N + [O] => [NH] + [N]=O",
+      "target": "[NH]"
+    },
+    {
+      "source": "[N]=N + [O] => [NH] + [N]=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "[N]=N",
+      "target": "[N]=N + O=O => N#N + O[O]"
+    },
+    {
+      "source": "O=O",
+      "target": "[N]=N + O=O => N#N + O[O]"
+    },
+    {
+      "source": "[N]=N + O=O => N#N + O[O]",
+      "target": "N#N"
+    },
+    {
+      "source": "[N]=N + O=O => N#N + O[O]",
+      "target": "O[O]"
+    },
+    {
+      "source": "[N]=N",
+      "target": "[N]=N + [OH] => N#N + O"
+    },
+    {
+      "source": "[OH]",
+      "target": "[N]=N + [OH] => N#N + O"
+    },
+    {
+      "source": "[N]=N + [OH] => N#N + O",
+      "target": "N#N"
+    },
+    {
+      "source": "[N]=N + [OH] => N#N + O",
+      "target": "O"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[N]=O + [N]=O => O=N-N=O"
+    },
+    {
+      "source": "[N]=O + [N]=O => O=N-N=O",
+      "target": "O=N-N=O"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[N]=O + O=[N+][O-] => O=NON=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "[N]=O + O=[N+][O-] => O=NON=O"
+    },
+    {
+      "source": "[N]=O + O=[N+][O-] => O=NON=O",
+      "target": "O=NON=O"
+    },
+    {
+      "source": "O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O] + [N]=O => O=[N+][O-] + O=[N+][O-]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "O=[N+]([O-])[O] + [N]=O => O=[N+][O-] + O=[N+][O-]"
+    },
+    {
+      "source": "O=[N+]([O-])[O] + [N]=O => O=[N+][O-] + O=[N+][O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[N]=O + O=[O+][O-] => O=[N+][O-] + O=O"
+    },
+    {
+      "source": "O=[O+][O-]",
+      "target": "[N]=O + O=[O+][O-] => O=[N+][O-] + O=O"
+    },
+    {
+      "source": "[N]=O + O=[O+][O-] => O=[N+][O-] + O=O",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "[N]=O + O=[O+][O-] => O=[N+][O-] + O=O",
+      "target": "O=O"
+    },
+    {
+      "source": "[OH]",
+      "target": "[OH] + [N]=O => ON=O"
+    },
+    {
+      "source": "[N]=O",
+      "target": "[OH] + [N]=O => ON=O"
+    },
+    {
+      "source": "[OH] + [N]=O => ON=O",
+      "target": "ON=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "O=[N+][O-] => [N]=O + [O]"
+    },
+    {
+      "source": "O=[N+][O-] => [N]=O + [O]",
+      "target": "[N]=O"
+    },
+    {
+      "source": "O=[N+][O-] => [N]=O + [O]",
+      "target": "[O]"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "O=[N+][O-] + O=[N+][O-] => O=[N+]([O-])[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+][O-] + O=[N+][O-] => O=[N+]([O-])[N+](=O)[O-]",
+      "target": "O=[N+]([O-])[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "O=[N+][O-] + O=[N+]([O-])[O] => O=[N+]([O-])ON(=O)=O"
+    },
+    {
+      "source": "O=[N+]([O-])[O]",
+      "target": "O=[N+][O-] + O=[N+]([O-])[O] => O=[N+]([O-])ON(=O)=O"
+    },
+    {
+      "source": "O=[N+][O-] + O=[N+]([O-])[O] => O=[N+]([O-])ON(=O)=O",
+      "target": "O=[N+]([O-])ON(=O)=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "O=[N+][O-] + O=[O+][O-] => O=[N+]([O-])[O] + O=O"
+    },
+    {
+      "source": "O=[O+][O-]",
+      "target": "O=[N+][O-] + O=[O+][O-] => O=[N+]([O-])[O] + O=O"
+    },
+    {
+      "source": "O=[N+][O-] + O=[O+][O-] => O=[N+]([O-])[O] + O=O",
+      "target": "O=[N+]([O-])[O]"
+    },
+    {
+      "source": "O=[N+][O-] + O=[O+][O-] => O=[N+]([O-])[O] + O=O",
+      "target": "O=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "O=[N+][O-] + [OH] => O[N+](=O)[O-]"
+    },
+    {
+      "source": "[OH]",
+      "target": "O=[N+][O-] + [OH] => O[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+][O-] + [OH] => O[N+](=O)[O-]",
+      "target": "O[N+](=O)[O-]"
+    },
+    {
+      "source": "[OH]",
+      "target": "[OH] + O=[N+][O-] => OON=O"
+    },
+    {
+      "source": "O=[N+][O-]",
+      "target": "[OH] + O=[N+][O-] => OON=O"
+    },
+    {
+      "source": "[OH] + O=[N+][O-] => OON=O",
+      "target": "OON=O"
+    },
+    {
+      "source": "O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O] => [N]=O + O=O"
+    },
+    {
+      "source": "O=[N+]([O-])[O] => [N]=O + O=O",
+      "target": "[N]=O"
+    },
+    {
+      "source": "O=[N+]([O-])[O] => [N]=O + O=O",
+      "target": "O=O"
+    },
+    {
+      "source": "O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O] => O=[N+][O-] + [O]"
+    },
+    {
+      "source": "O=[N+]([O-])[O] => O=[N+][O-] + [O]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "O=[N+]([O-])[O] => O=[N+][O-] + [O]",
+      "target": "[O]"
+    },
+    {
+      "source": "O=[N+]([O-])[O]",
+      "target": "O=[N+]([O-])[O] + O=[N+]([O-])[O] => O=[N+]([O-])OO[N+](=O)[O-]"
+    },
+    {
+      "source": "O=[N+]([O-])[O] + O=[N+]([O-])[O] => O=[N+]([O-])OO[N+](=O)[O-]",
+      "target": "O=[N+]([O-])OO[N+](=O)[O-]"
+    },
+    {
+      "source": "[O-][N+](=O)[O-]",
+      "target": "[O-][N+](=O)[O-] => O=[N+][O-] + [O-]"
+    },
+    {
+      "source": "[O-][N+](=O)[O-] => O=[N+][O-] + [O-]",
+      "target": "O=[N+][O-]"
+    },
+    {
+      "source": "[O-][N+](=O)[O-] => O=[N+][O-] + [O-]",
+      "target": "[O-]"
+    },
+    {
+      "source": "[O-][N+](=O)[O-]",
+      "target": "[O-][N+](=O)[O-] => [O-]N=O + [O]"
+    },
+    {
+      "source": "[O-][N+](=O)[O-] => [O-]N=O + [O]",
+      "target": "[O-]N=O"
+    },
+    {
+      "source": "[O-][N+](=O)[O-] => [O-]N=O + [O]",
+      "target": "[O]"
+    },
+    {
+      "source": "[O]",
+      "target": "[O] + O=O => O=[O+][O-]"
+    },
+    {
+      "source": "O=O",
+      "target": "[O] + O=O => O=[O+][O-]"
+    },
+    {
+      "source": "[O] + O=O => O=[O+][O-]",
+      "target": "O=[O+][O-]"
+    },
+    {
+      "source": "[O]",
+      "target": "[O] + O=[O+][O-] => O=O + O=O"
+    },
+    {
+      "source": "O=[O+][O-]",
+      "target": "[O] + O=[O+][O-] => O=O + O=O"
+    },
+    {
+      "source": "[O] + O=[O+][O-] => O=O + O=O",
+      "target": "O=O"
+    },
+    {
+      "source": "O=O",
+      "target": "O=O => [O] + [O]"
+    },
+    {
+      "source": "O=O => [O] + [O]",
+      "target": "[O]"
+    }
+  ]
+}

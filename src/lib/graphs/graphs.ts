@@ -1,5 +1,5 @@
 import fromJson from 'ngraph.fromjson';
-import type { Graph } from 'ngraph.graph';
+import createGraph, { type Graph } from 'ngraph.graph';
 
 type GraphologyNode = {
   key: string;
@@ -38,4 +38,24 @@ export function edgeLoadTransform(edge: GraphologyEdge) {
 
 export function createGraphFromString(graph: string): Graph {
   return fromJson(graph.replace('edges', 'links'), nodeLoadTransform, edgeLoadTransform);
+}
+
+export function mergeGraphs(graphs: readonly Graph[]): Graph {
+  const mergedGraph = createGraph();
+
+  for (const graph of graphs) {
+    graph.forEachNode((node) => {
+      if (!mergedGraph.hasNode(node.id)) {
+        mergedGraph.addNode(node.id, node.data);
+      }
+    });
+
+    graph.forEachLink((link) => {
+      if (!mergedGraph.hasLink(link.fromId, link.toId)) {
+        mergedGraph.addLink(link.fromId, link.toId, link.data);
+      }
+    });
+  }
+
+  return mergedGraph;
 }
