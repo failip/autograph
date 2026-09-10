@@ -57,9 +57,10 @@ export type TrajectoryPlaybackOptions = {
   moleculeGenerator?: MoleculeGenerator;
 };
 
-export type StandaloneTrajectoryViewerOptions = TrajectoryPlaybackOptions & {
+export type StandaloneTrajectoryViewerOptions = Omit<TrajectoryPlaybackOptions, "onStateChange"> & {
   canvas: HTMLCanvasElement;
   wrapper: HTMLElement;
+  onStateChange?: (state: TrajectoryViewerState) => void;
 };
 
 function validateRun(parsedRun: Run): void {
@@ -457,7 +458,6 @@ export class StandaloneTrajectoryViewer {
 
     this.scene = new Scene();
     this.camera = new PerspectiveCamera(TRAJECTORY_CAMERA_FOV, 1, 0.01, 1000);
-    this.camera.position.set(0, 0, this.getCameraDistance());
     this.scene.add(this.camera);
 
     this.playback = new TrajectoryPlaybackObject({
@@ -468,6 +468,7 @@ export class StandaloneTrajectoryViewer {
       onStateChange: () => this.emitState(),
     });
     this.scene.add(this.playback.root);
+    this.camera.position.set(0, 0, this.getCameraDistance());
 
     const ambientLight = new AmbientLight(0xffffff, 1.6);
     this.scene.add(ambientLight);
