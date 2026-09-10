@@ -9,6 +9,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"test:pwa": "node --test scripts/test-pwa.mjs",
 		"test:molecules": "node --test scripts/test-molecule-assets.mjs",
+		"test:confetti": "node --test scripts/test-confetti.mjs",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {

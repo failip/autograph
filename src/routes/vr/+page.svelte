@@ -17,6 +17,7 @@ type GraphController = {
     fadeInDelayMs?: number,
   ): string[];
   enableGraphNodes(nodeIds: readonly string[]): string[];
+  celebrateDiscovery(): void;
 };
 
 const TUTORIAL_START_SPECIES = ["O=O"];
@@ -95,6 +96,7 @@ function handleGraphEvent(event: GraphEvent): void {
     event.addedNodeIds.includes(TUTORIAL_COMPLETION_SPECIES)
   ) {
     tutorialCompletionSpeciesReached = true;
+    graphController.celebrateDiscovery();
     return;
   }
 

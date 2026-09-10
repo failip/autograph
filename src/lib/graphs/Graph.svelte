@@ -22,6 +22,7 @@ import SideButton from "$lib/ui/SideButton.svelte";
 import { COUNT_OPERATORS, type Filter } from "$lib/filter/filter";
 import type { GraphEvent, GraphEventHandler } from "$lib/graphs/graph-events";
 import { HdrSceneBackground } from "$lib/rendering/background";
+import { ConfettiBurst } from "$lib/rendering/ConfettiBurst";
 import { MoleculeGenerator } from "$lib/rendering/molecules";
 import { ObjectOrbitControls } from "$lib/rendering/ObjectOrbitControls";
 import {
@@ -35,7 +36,7 @@ import {
   VRControls,
   type VRControllerHints,
 } from "$lib/vr/controls/VRControls";
-import { onMount } from "svelte";
+import { onDestroy, onMount } from "svelte";
 import {
   AmbientLight,
   Box3,
@@ -805,6 +806,20 @@ function syncDisconnectedComponentSprings(): void {
 }
 
 const objects = new Map<string, Object3D>();
+let confetti: ConfettiBurst | null = null;
+let confettiPending = false;
+
+export function celebrateDiscovery(): void {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // Start once reaction playback has finished and the graph view is restored.
+  confettiPending = true;
+}
+
+onDestroy(() => {
+  confettiPending = false;
+  confetti?.dispose();
+  confetti = null;
+});
 
 onMount(async () => {
   if (!(await isInlineXrAvailable())) {
@@ -1446,6 +1461,7 @@ onMount(async () => {
     const deltaSeconds =
       lastGraphAnimationTime === 0 ? 0 : (time - lastGraphAnimationTime) / 1000;
     lastGraphAnimationTime = time;
+    confetti?.update(deltaSeconds);
 
     if (reactionPlaybackActive) {
       updateReactionPlayback(deltaSeconds);
@@ -1560,6 +1576,16 @@ onMount(async () => {
     }
 
     updateNodeFadeIns(time);
+    if (confettiPending) {
+      if (!confetti) {
+        confetti = new ConfettiBurst();
+        // Confetti belongs to the room, so graph transforms and fades cannot hide it.
+        scene.add(confetti.mesh);
+      }
+      const immersive = renderer.xr.isPresenting;
+      confetti.play(immersive ? renderer.xr.getCamera() : camera, immersive);
+      confettiPending = false;
+    }
     renderer.render(scene, camera);
 
     if (!webXR) {
@@ -2047,6 +2073,8 @@ function rClick() {
   if (anyOverlaysVisible) {
     return;
   }
+  confettiPending = false;
+  confetti?.clear();
   clearSpeciesSelection();
   renderGraph.clear();
   resetEnabledGraphNodeIds();
