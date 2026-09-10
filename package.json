@@ -7,6 +7,7 @@
 		"build": "vite build",
 		"preview": "vite preview --host 0.0.0.0",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"test:pwa": "node --test scripts/test-pwa.mjs",
 		"test:molecules": "node --test scripts/test-molecule-assets.mjs",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},

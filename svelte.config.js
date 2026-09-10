@@ -8,10 +8,14 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
-		// If your environment is not supported or you settled on a specific environment, switch out the adapter.
-		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
-		adapter: adapter()
+		adapter: adapter(),
+		serviceWorker: {
+			// Register in PwaStatus so development stays free of offline caches.
+			register: false,
+			// Include the default content used by /vr, /pes, and /trajectory.
+			files: (file) =>
+				/^(fonts\/.*\.woff2|images\/.*\.svg|icons\/.*\.(png|svg)|manifest\.webmanifest|qwantani_dusk_2_puresky_1k\.hdr|graphs\/AtmosphereReduced\/.*\.(json|xyz)|tasks\/PES\.gltf|trajectory\/Run1\.xyz)$/.test(file)
+		}
 	}
 };
 

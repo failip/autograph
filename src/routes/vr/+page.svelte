@@ -32,6 +32,7 @@ const REACTION_VIEWING_QUERY_PARAMETER = "reactionViewing";
 
 let graph: NGraph;
 let graphLoaded = false;
+let loadError = "";
 let reactionTrajectoryPlaybackEnabled = true;
 let graphController: GraphController | undefined;
 let extendedNetworkNodeIds: string[] = [];
@@ -168,6 +169,9 @@ onMount(async () => {
     graphLoaded = true;
   } catch (error) {
     console.error("Failed to load AtmosphereReduced graph data:", error);
+    loadError = navigator.onLine
+      ? "The reaction network could not be loaded. Please try again."
+      : "This reaction network is not saved offline yet. Connect to the internet and open it to save a copy.";
   }
 });
 </script>
@@ -186,13 +190,24 @@ onMount(async () => {
   />
 {:else}
   <div class="loading">
-    <p>Loading AtmosphereReduced graph for VR...</p>
+    {#if loadError}
+      <p role="alert">{loadError}</p>
+      <button onclick={() => window.location.reload()}>Try again</button>
+      <a href="/">Back to Autograph</a>
+    {:else}
+      <p>Loading AtmosphereReduced graph for VR...</p>
+    {/if}
   </div>
 {/if}
 
 <style>
 .loading {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  box-sizing: border-box;
+  text-align: center;
   justify-content: center;
   align-items: center;
   height: 100vh;

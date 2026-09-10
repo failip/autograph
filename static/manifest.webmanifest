@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "Autograph",
+  "short_name": "Autograph",
+  "description": "Explore reaction networks, potential energy surfaces, and molecular trajectories.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f0f0f0",
+  "theme_color": "#f0f0f0",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Reaction networks", "url": "./vr" },
+    { "name": "Potential energy surfaces", "short_name": "PES", "url": "./pes" },
+    { "name": "Molecular trajectories", "short_name": "Trajectory", "url": "./trajectory" }
+  ]
+}
